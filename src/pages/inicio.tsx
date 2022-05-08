@@ -1,6 +1,7 @@
 import { Box } from "@chakra-ui/react";
 import Head from "next/head";
 import { BannerCarousel } from "../components/BannerCarousel";
+import { Header } from "../components/Header";
 import { setupAPIClient } from "../service/api";
 import { withSSRAuth } from "../utils/withSSRAuth";
 
@@ -10,6 +11,8 @@ export default function Home() {
       <Head>
         <title>Create Next App</title>
       </Head>
+
+      <Header inativeEventScroll />
 
       <Box>
         <BannerCarousel

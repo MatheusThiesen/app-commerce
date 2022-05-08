@@ -39,7 +39,16 @@ export function Product({ product }: ProductComponentProps) {
           alignItems="center"
           h="full"
         >
-          <Image src={uri} maxH="240" objectFit="contain" />
+          <Image
+            src={uri}
+            maxH="240"
+            objectFit="contain"
+            onError={({ currentTarget }) => {
+              currentTarget.onerror = null; // prevents looping
+              currentTarget.src =
+                "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
+            }}
+          />
           <Text mt="4" fontSize="sm" fontWeight="light">
             {name}
           </Text>

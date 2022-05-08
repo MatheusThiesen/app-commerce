@@ -52,7 +52,7 @@ export default function SignIn() {
           as="form"
           w="100%"
           maxW={360}
-          bg="gray.700"
+          bg="white"
           p="8"
           borderRadius={8}
           flexDir="column"
@@ -60,15 +60,13 @@ export default function SignIn() {
         >
           <Stack spacing="4">
             <Input
-              value={"diego@rocketseat.team"}
-              name="email"
+              value={"teste@teste.com"}
               label="E-mail"
               type="email"
               error={errors?.email}
               {...register("email")}
             />
             <Input
-              name="password"
               label="Password"
               type="password"
               error={errors?.password}

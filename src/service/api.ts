@@ -14,6 +14,7 @@ export function setupAPIClient(
 
   const api = axios.create({
     baseURL: "http://localhost:4444/",
+    // baseURL: "http://192.168.1.155:4444/",
     headers: {
       Authorization: `Barer ${cookies["nextauth.token"]}`,
     },

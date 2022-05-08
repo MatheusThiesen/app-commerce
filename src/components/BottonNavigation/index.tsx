@@ -6,17 +6,20 @@ import { IoBagHandleOutline, IoHomeOutline } from "react-icons/io5";
 import { MainNavLink } from "./MainNavLink";
 import { NavLink } from "./NavLink";
 
+export const bottonNavigationY = "3.5rem";
+
 export function BottonNavigation() {
   return (
     <Flex
       as="nav"
       justify="center"
       position="fixed"
+      zIndex={10}
       boxShadow="dark-lg"
       bottom={0}
       left={0}
       w="full"
-      h="3.5rem"
+      h={bottonNavigationY}
       bg="white"
     >
       <Flex w="full" h="3.5rem" maxW="lg">

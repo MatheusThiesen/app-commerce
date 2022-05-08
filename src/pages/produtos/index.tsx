@@ -1,7 +1,12 @@
 import { Box, SimpleGrid } from "@chakra-ui/react";
+import { useState } from "react";
+import { bottonNavigationY } from "../../components/BottonNavigation";
+import { Header } from "../../components/Header";
 import { Product } from "../../components/Product";
 
 export default function Home() {
+  const [headerSizeY, setHeaderSizeY] = useState("");
+
   const products = [
     {
       id: "1",
@@ -47,7 +52,12 @@ export default function Home() {
 
   return (
     <>
-      <Box overflowY="scroll" maxH="100vh" px="3" pt="3" pb="8rem">
+      <Header getHeaderY={(value) => setHeaderSizeY(value)} />
+      <Box
+        pt={`calc(${headerSizeY} + 1rem)`}
+        pb={`calc(${bottonNavigationY} + 4rem)`}
+        px="2"
+      >
         <SimpleGrid columns={[2, 2, 4]} spacing="3">
           {products.map((product) => (
             <Product key={product.id} product={product} />

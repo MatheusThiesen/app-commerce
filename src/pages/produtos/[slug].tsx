@@ -1,34 +1,97 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import React, { useRef, useState } from "react";
-import * as THREE from "three";
-
-function Box(props: JSX.IntrinsicElements["mesh"]) {
-  const mesh = useRef<THREE.Mesh>(null!);
-  const [hovered, setHover] = useState(false);
-  const [active, setActive] = useState(false);
-  useFrame((state, delta) => (mesh.current.rotation.x += 0.01));
-  return (
-    <mesh
-      {...props}
-      ref={mesh}
-      scale={active ? 1.5 : 1}
-      onClick={(event) => setActive(!active)}
-      onPointerOver={(event) => setHover(true)}
-      onPointerOut={(event) => setHover(false)}
-    >
-      <boxGeometry args={[2, 2, 2]} />
-      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
-    </mesh>
-  );
-}
+import {
+  Box,
+  Button,
+  Flex,
+  Icon,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react";
+import React from "react";
+import { IoMdHeartEmpty } from "react-icons/io";
+import { IoCubeOutline } from "react-icons/io5";
+import { Header } from "../../components/Header";
+import { Model } from "../../components/Model";
+import { ProductCarousel } from "../../components/ProductCarousel";
 
 export default function Produto() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   return (
-    <Canvas>
-      <ambientLight />
-      <pointLight position={[10, 10, 10]} />
-      <Box position={[-1.2, 0, 0]} />
-      <Box position={[1.2, 0, 0]} />
-    </Canvas>
+    <>
+      <Header inativeEventScroll />
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent h="65%" px="0">
+          <ModalHeader>Objeto 3D</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody p="0">
+            <Model />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      <Flex flexDir="column" bg="white" pb="10rem">
+        <Box>
+          <ProductCarousel
+            bg="white"
+            h="300"
+            banners={[
+              {
+                id: "1",
+                name: "Tenis Nike",
+                uri: "https://alpar.sfo3.digitaloceanspaces.com/Produtos/CW3411402_01",
+              },
+              {
+                id: "2",
+                name: "Logo Nike",
+                uri: "https://alpar.sfo3.digitaloceanspaces.com/Produtos/CW3411402_02",
+              },
+              {
+                id: "3",
+                name: "Logo Nike",
+                uri: "https://alpar.sfo3.digitaloceanspaces.com/Produtos/CW3411402_03",
+              },
+            ]}
+          />
+        </Box>
+
+        <Box px="1rem">
+          <Box py="0.5rem" display="flex" justifyContent="end" gap="0.5rem">
+            <Button
+              h="2.5rem"
+              w="2.5rem"
+              p="0"
+              borderRadius="full"
+              onClick={onOpen}
+            >
+              <Icon as={IoCubeOutline} fontSize="20" />
+            </Button>
+            <Button h="2.5rem" w="2.5rem" p="0" borderRadius="full">
+              <Icon
+                as={IoMdHeartEmpty} //IoIosHeart
+                fontSize="20"
+              />
+            </Button>
+          </Box>
+          <Box>
+            <Text as="h1" fontSize="2xl" fontWeight="bold">
+              NIKE TENIS DOWNSHIFTER 11
+            </Text>
+          </Box>
+          <Box>
+            <Text as="span" fontSize="2xl" fontWeight="light">
+              R$ 299,99
+            </Text>
+          </Box>
+        </Box>
+      </Flex>
+    </>
   );
 }

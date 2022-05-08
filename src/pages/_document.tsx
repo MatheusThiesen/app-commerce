@@ -13,7 +13,7 @@ export default class MyDocument extends Document {
             rel="stylesheet"
           />
         </Head>
-        <body>
+        <body style={{ overflow: "auto" }}>
           <ColorModeScript initialColorMode={theme.initialColorMode} />
           <Main />
           <NextScript />

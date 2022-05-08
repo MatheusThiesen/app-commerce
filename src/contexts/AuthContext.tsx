@@ -1,4 +1,3 @@
-import { Flex, Image } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import Router from "next/router";
 import { destroyCookie, parseCookies, setCookie } from "nookies";
@@ -10,7 +9,6 @@ import {
   useState,
 } from "react";
 import { BottonNavigation } from "../components/BottonNavigation";
-import { Header } from "../components/Header";
 import { api } from "../service/apiClient";
 
 type User = {
@@ -138,11 +136,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider value={{ signIn, isAuthenticated, user, signOut }}>
-      <Header>
-        <Flex w="full" h="full" py="2" justifyContent="center">
-          <Image h="full" objectFit="contain" src="/assets/logo-white.png" />
-        </Flex>
-      </Header>
       {children}
       {isAuthenticated && <BottonNavigation />}
     </AuthContext.Provider>
