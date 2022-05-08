@@ -6,13 +6,12 @@ import {
   Tbody,
   Td,
   Text,
-  Th,
-  Thead,
   Tr,
 } from "@chakra-ui/react";
 import Link from "next/link";
+import { useState } from "react";
 import { bottonNavigationY } from "../../components/BottonNavigation";
-import { Header, headerSizeY } from "../../components/Header";
+import { Header } from "../../components/Header";
 
 const clients = [
   {
@@ -81,16 +80,18 @@ const clients = [
 ];
 
 export default function Clientes() {
+  const [headerSizeY, setHeaderSizeY] = useState("");
+
   return (
     <>
-      <Header />
+      <Header getHeaderY={(value) => setHeaderSizeY(value)}>seila</Header>
       <Box pt={headerSizeY} pb={`calc(${bottonNavigationY} + 4rem)`}>
         <Table colorScheme="blackAlpha">
-          <Thead>
+          {/* <Thead>
             <Tr>
               <Th>Clientes </Th>
             </Tr>
-          </Thead>
+          </Thead> */}
           <Tbody>
             {clients.map((client) => (
               <Tr key={client.id}>
