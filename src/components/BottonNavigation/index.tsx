@@ -6,9 +6,11 @@ import { IoBagHandleOutline, IoHomeOutline } from "react-icons/io5";
 import { MainNavLink } from "./MainNavLink";
 import { NavLink } from "./NavLink";
 
-export const bottonNavigationY = "3.5rem";
+interface BottonNavigationPros {
+  bottonNavigationY: string;
+}
 
-export function BottonNavigation() {
+export function BottonNavigation({ bottonNavigationY }: BottonNavigationPros) {
   return (
     <Flex
       as="nav"

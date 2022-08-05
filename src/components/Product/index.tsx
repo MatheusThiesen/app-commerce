@@ -41,7 +41,7 @@ export function Product({ product }: ProductComponentProps) {
         >
           <Image
             src={uri}
-            maxH="240"
+            h="100"
             objectFit="contain"
             onError={({ currentTarget }) => {
               currentTarget.onerror = null; // prevents looping

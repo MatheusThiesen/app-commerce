@@ -12,7 +12,6 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
-import React from "react";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { IoCubeOutline } from "react-icons/io5";
 import { Header } from "../../components/Header";
@@ -24,7 +23,7 @@ export default function Produto() {
 
   return (
     <>
-      <Header inativeEventScroll />
+      <Header isGoBack inativeEventScroll />
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

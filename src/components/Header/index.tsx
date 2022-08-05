@@ -1,5 +1,7 @@
-import { Box, Flex, Image } from "@chakra-ui/react";
+import { Box, Button, Flex, Image, Text } from "@chakra-ui/react";
+import Router from "next/router";
 import { ReactNode, useEffect, useState } from "react";
+import { IoIosArrowBack } from "react-icons/io";
 
 interface HeaderProps {
   inativeEventScroll?: boolean;
@@ -7,18 +9,44 @@ interface HeaderProps {
   childrenSizeY?: number;
   headerSizeY?: number;
 
+  Left?: ReactNode;
+  Right?: ReactNode;
+  isGoBack?: boolean;
+
   getHeaderY?: (set: () => string) => void;
 }
 
 export function Header({
-  inativeEventScroll = false,
   children,
+  getHeaderY,
+  Left,
+  Right,
+  inativeEventScroll = false,
   childrenSizeY = 0,
   headerSizeY = 3.5,
-  getHeaderY,
+  isGoBack = false,
 }: HeaderProps) {
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+
+  if (!Left && isGoBack) {
+    Left = (
+      <Flex ml="4" align="center">
+        <Button
+          p="0"
+          bg="transparent"
+          d="flex"
+          _hover={{ bg: "transparent" }}
+          alignItems="center"
+          justifyContent="center"
+          onClick={() => Router.back()}
+        >
+          <IoIosArrowBack color="white" fontSize={"1.8rem"} />
+          <Text color="white">Voltar</Text>
+        </Button>
+      </Flex>
+    );
+  }
 
   const headerSize = `${headerSizeY + childrenSizeY}rem`;
 
@@ -66,10 +94,23 @@ export function Header({
       }
       flexDir="column"
     >
-      <Flex bg="red.500" w="full" h="full" py="2" justifyContent="center">
+      <Flex
+        bg="red.500"
+        w="full"
+        h={`${headerSizeY}rem`}
+        py="2"
+        justifyContent="space-between"
+        align="center"
+      >
+        <Flex flex={1}>{Left && Left}</Flex>
         <Image h="full" objectFit="contain" src="/assets/logo-white.png" />
+        <Flex flex={1} align="flex-end" justify="flex-end">
+          {Right && Right}
+        </Flex>
       </Flex>
-      <Box>{children}</Box>
+      <Box w="full" h="full">
+        {children}
+      </Box>
     </Flex>
   );
 }

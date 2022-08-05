@@ -29,9 +29,8 @@ export function ProductCarousel({ banners, ...rest }: BannerCarouselProps) {
         className={styles["container-carousel-product"]}
       >
         {banners.map((banner) => (
-          <SwiperSlide>
+          <SwiperSlide key={banner.id} id={banner.id}>
             <Image
-              key={banner.id}
               background="#fff"
               boxSize="full"
               objectFit="contain"

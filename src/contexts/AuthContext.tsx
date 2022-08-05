@@ -8,7 +8,6 @@ import {
   useEffect,
   useState,
 } from "react";
-import { BottonNavigation } from "../components/BottonNavigation";
 import { api } from "../service/apiClient";
 
 type User = {
@@ -137,7 +136,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   return (
     <AuthContext.Provider value={{ signIn, isAuthenticated, user, signOut }}>
       {children}
-      {isAuthenticated && <BottonNavigation />}
     </AuthContext.Provider>
   );
 }

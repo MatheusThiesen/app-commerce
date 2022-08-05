@@ -1,11 +1,14 @@
-import { Box } from "@chakra-ui/react";
+import { Box, Button } from "@chakra-ui/react";
 import Head from "next/head";
 import { BannerCarousel } from "../components/BannerCarousel";
 import { Header } from "../components/Header";
+import { useAuth } from "../contexts/AuthContext";
 import { setupAPIClient } from "../service/api";
 import { withSSRAuth } from "../utils/withSSRAuth";
 
 export default function Home() {
+  const { signOut } = useAuth();
+
   return (
     <>
       <Head>
@@ -32,6 +35,8 @@ export default function Home() {
           ]}
         />
       </Box>
+
+      <Button onClick={signOut}>Logout</Button>
     </>
   );
 }
