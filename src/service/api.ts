@@ -16,7 +16,7 @@ export function setupAPIClient(
     baseURL: "http://localhost:4444/",
     // baseURL: "http://192.168.1.209:4444/",
     headers: {
-      Authorization: `Barer ${cookies["nextauth.token"]}`,
+      Authorization: `Bearer ${cookies["nextauth.token"]}`,
     },
   });
 
@@ -24,7 +24,7 @@ export function setupAPIClient(
     (success) => success,
     (error: AxiosError) => {
       if (error.response?.status === 401) {
-        if (error.response.data?.code === "token.expired") {
+        if (error.response.data?.message === "Unauthorized") {
           cookies = parseCookies(ctx);
 
           const { "nextauth.refreshToken": refreshToken } = cookies;
@@ -34,11 +34,17 @@ export function setupAPIClient(
             isRefreshing = true;
 
             api
-              .post("/refresh", {
-                refreshToken,
-              })
+              .post(
+                "/auth/refresh",
+                {},
+                {
+                  headers: {
+                    ["Authorization"]: `Bearer ${refreshToken}`,
+                  },
+                }
+              )
               .then((response) => {
-                const { token } = response.data;
+                const { access_token: token } = response.data;
 
                 setCookie(ctx, "nextauth.token", token, {
                   maxAge: 60 * 60 * 24 * 30, //30 Days
@@ -47,7 +53,7 @@ export function setupAPIClient(
                 setCookie(
                   ctx,
                   "nextauth.refreshToken",
-                  response.data.refreshToken,
+                  response.data["refresh_token"],
                   {
                     maxAge: 60 * 60 * 24 * 30, //30 Days
                     path: "/",
@@ -55,7 +61,7 @@ export function setupAPIClient(
                 );
 
                 //@ts-ignore
-                api.defaults.headers["Authorization"] = `Barer ${token}`;
+                api.defaults.headers["Authorization"] = `Bearer ${token}`;
 
                 failedRequestQueue.forEach((request) =>
                   request.onSuccess(token)
@@ -79,7 +85,7 @@ export function setupAPIClient(
             failedRequestQueue.push({
               onSuccess: (token: string) => {
                 //@ts-ignore
-                originalConfig.headers["Authorization"] = `Barer ${token}`;
+                originalConfig.headers["Authorization"] = `Bearer ${token}`;
 
                 resolve(api(originalConfig));
               },

@@ -12,9 +12,10 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
+import Head from "next/head";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { IoCubeOutline } from "react-icons/io5";
-import { Header } from "../../components/Header";
+import { HeaderNavigation as Header } from "../../components/HeaderNavigation";
 import { Model } from "../../components/Model";
 import { ProductCarousel } from "../../components/ProductCarousel";
 
@@ -23,7 +24,11 @@ export default function Produto() {
 
   return (
     <>
-      <Header isGoBack inativeEventScroll />
+      <Head>
+        <title>Produtos - App Alpar do Brasil</title>
+      </Head>
+
+      <Header isGoBack title="Detalhes" inativeEventScroll />
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

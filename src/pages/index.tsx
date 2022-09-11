@@ -56,11 +56,10 @@ export default function SignIn() {
           p="8"
           borderRadius={8}
           flexDir="column"
-          onSubmit={handleSubmit(HandleSignIn)}
+          onSubmit={handleSubmit(HandleSignIn as any)}
         >
           <Stack spacing="4">
             <Input
-              value={"teste@teste.com"}
               label="E-mail"
               type="email"
               error={errors?.email}

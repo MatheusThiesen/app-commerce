@@ -24,7 +24,7 @@ export function NavLink({ href, icon, children, ...rest }: NavLinkProps) {
         justifyContent="flex-end"
         pb="0.50rem"
         _hover={{ textDecoration: "none" }}
-        {...rest}
+        {...(rest as any)}
       >
         <Icon as={icon} fontSize="20" />
         <Text fontSize="sm" fontWeight="light">

@@ -1,21 +1,17 @@
-import { Box, Button } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import Head from "next/head";
 import { BannerCarousel } from "../components/BannerCarousel";
-import { Header } from "../components/Header";
-import { useAuth } from "../contexts/AuthContext";
-import { setupAPIClient } from "../service/api";
+
 import { withSSRAuth } from "../utils/withSSRAuth";
 
 export default function Home() {
-  const { signOut } = useAuth();
-
   return (
     <>
       <Head>
-        <title>Create Next App</title>
+        <title>Inicio - App Alpar do Brasil</title>
       </Head>
 
-      <Header inativeEventScroll />
+      {/* <Header inativeEventScroll /> */}
 
       <Box>
         <BannerCarousel
@@ -35,15 +31,15 @@ export default function Home() {
           ]}
         />
       </Box>
-
-      <Button onClick={signOut}>Logout</Button>
     </>
   );
 }
 
 export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
-  const apiClient = setupAPIClient(ctx);
-  const response = await apiClient.get("me");
+  // const apiClient = setupAPIClient(ctx);
+  // const response = await apiClient.get("/auth/me");
+
+  // console.log(response);
 
   return {
     props: {},

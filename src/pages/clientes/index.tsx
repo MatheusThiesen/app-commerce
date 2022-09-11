@@ -10,9 +10,9 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { useState } from "react";
-import { bottonNavigationY } from "../../components/BottonNavigation";
-import { Header } from "../../components/Header";
+import { HeaderNavigation as Header } from "../../components/HeaderNavigation";
 import { TitlesListing } from "../../components/TitlesListing ";
+import { useBottonNavigation } from "../../hooks/useBottomNavigation";
 
 const clients = [
   {
@@ -82,13 +82,14 @@ const clients = [
 
 export default function Clientes() {
   const [headerSizeY, setHeaderSizeY] = useState("");
+  const { widthNavigationY } = useBottonNavigation();
 
   return (
     <>
       <Header getHeaderY={(value) => setHeaderSizeY(value)} childrenSizeY={2.5}>
         <TitlesListing title="CLIENTES" />
       </Header>
-      <Box pt={headerSizeY} pb={`calc(${bottonNavigationY} + 4rem)`}>
+      <Box pt={headerSizeY} pb={`calc(${widthNavigationY} + 4rem)`}>
         <Table colorScheme="blackAlpha">
           <Tbody>
             {clients.map((client) => (

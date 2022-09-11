@@ -13,9 +13,9 @@ import {
 import { useState } from "react";
 import { FaMoneyCheckAlt, FaUser } from "react-icons/fa";
 import { IoBagHandleSharp } from "react-icons/io5";
-import { useBottonNavigation } from "../../../hooks/useBottonNavigation";
+import { useBottonNavigation } from "../../../hooks/useBottomNavigation";
 
-import { Header } from "../../../components/Header";
+import { HeaderNavigation as Header } from "../../../components/HeaderNavigation";
 import { TabOrder } from "../../../components/TabOrder";
 
 export default function Pedido() {

@@ -2,7 +2,8 @@ import { ChakraProvider } from "@chakra-ui/react";
 import type { AppProps } from "next/app";
 import { QueryClientProvider } from "react-query";
 import { AuthProvider } from "../contexts/AuthContext";
-import { BottonNavigationProvider } from "../hooks/useBottonNavigation";
+import { BottomNavigationProvider } from "../hooks/useBottomNavigation";
+import { HeaderNavigationProvider } from "../hooks/useHeaderNavigation";
 import { makeServer } from "../service/mirage";
 import { queryClient } from "../service/queryClient";
 import { theme } from "../styles/theme";
@@ -16,9 +17,11 @@ function MyApp({ Component, pageProps }: AppProps) {
     <QueryClientProvider client={queryClient}>
       <ChakraProvider theme={theme}>
         <AuthProvider>
-          <BottonNavigationProvider>
-            <Component {...pageProps} />
-          </BottonNavigationProvider>
+          <HeaderNavigationProvider>
+            <BottomNavigationProvider>
+              <Component {...pageProps} />
+            </BottomNavigationProvider>
+          </HeaderNavigationProvider>
         </AuthProvider>
       </ChakraProvider>
     </QueryClientProvider>

@@ -11,9 +11,15 @@ import {
 import { api } from "../service/apiClient";
 
 type User = {
+  codigo: number;
+  nome: string;
+  nomeGuerra: string;
   email: string;
-  permissions: string[];
-  roles: string[];
+  codGerente?: number;
+  codSupervisor?: number;
+  eAtivo: boolean;
+  eGerente: boolean;
+  eSupervisor: boolean;
 };
 
 type SignCredentials = {
@@ -80,11 +86,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if (token) {
       api
-        .get("/me")
+        .get("/auth/me")
         .then((response) => {
-          const { email, permissions, roles } = response.data;
+          const {
+            codigo,
+            nome,
+            nomeGuerra,
+            email,
+            codGerente,
+            codSupervisor,
+            eAtivo,
+            eGerente,
+            eSupervisor,
+          } = response.data;
 
-          setUser({ email, permissions, roles });
+          setUser({
+            codigo,
+            nome,
+            nomeGuerra,
+            email,
+            codGerente,
+            codSupervisor,
+            eAtivo,
+            eGerente,
+            eSupervisor,
+          });
         })
         .catch(() => {
           signOut();
@@ -97,12 +123,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     password,
   }: SignCredentials): Promise<ReponseSignIn | void> {
     try {
-      const response = await api.post("sessions", {
+      const response = await api.post("/auth/signin", {
         email,
-        password,
+        senha: password,
       });
 
-      const { token, refreshToken, permissions, roles } = response.data;
+      const { access_token: token, refresh_token: refreshToken } =
+        response.data;
 
       setCookie(undefined, "nextauth.token", token, {
         maxAge: 60 * 60 * 24 * 30, //30 Days
@@ -113,13 +140,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         path: "/",
       });
 
-      setUser({
-        email,
-        permissions,
-        roles,
-      });
+      //@ts-ignore
+      api.defaults.headers["Authorization"] = `Bearer ${token}`;
 
-      api.defaults.headers["Authorization"] = `Barer ${token}`;
+      const me = await api.get("/auth/me");
+
+      setUser(me.data);
 
       Router.push("/inicio");
       authChannel.postMessage("signIn");

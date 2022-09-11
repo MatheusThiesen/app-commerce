@@ -13,9 +13,8 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { IoMdAddCircle } from "react-icons/io";
-import { Header } from "../../components/Header";
+import { HeaderNavigation as Header } from "../../components/HeaderNavigation";
 import { TitlesListing } from "../../components/TitlesListing ";
-import { useBottonNavigation } from "../../hooks/useBottonNavigation";
 
 const orders = [
   {
@@ -78,7 +77,6 @@ const orders = [
 ];
 
 export default function Pedidos() {
-  const { widthNavigationY } = useBottonNavigation();
   const [headerSizeY, setHeaderSizeY] = useState("");
 
   return (
@@ -101,7 +99,7 @@ export default function Pedidos() {
         <TitlesListing title="PEDIDOS" />
       </Header>
 
-      <Box pt={headerSizeY} pb={`calc(${widthNavigationY} + 4rem)`}>
+      <Box>
         <Table colorScheme="blackAlpha">
           <Tbody>
             {orders.map((order) => (
