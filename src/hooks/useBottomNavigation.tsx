@@ -1,12 +1,9 @@
-import { createContext, ReactNode, useContext, useState } from "react";
-import { BottomNavigation } from "../components/BottomNavigation";
+import { Box } from "@chakra-ui/react";
+import { createContext, ReactNode, useContext } from "react";
+import { BottomNavigation as Bottom } from "../components/BottomNavigation";
 import { useAuth } from "../contexts/AuthContext";
 
-type BottomNavigationContextData = {
-  isActive: boolean;
-  setIsActive: (v: boolean) => void;
-  // widthNavigationY: string;
-};
+type BottomNavigationContextData = {};
 
 type BottomNavigationProviderProps = {
   children: ReactNode;
@@ -19,21 +16,15 @@ const BottomNavigationContext = createContext(
 export function BottomNavigationProvider({
   children,
 }: BottomNavigationProviderProps) {
-  const [isActive, setIsActive] = useState(true);
-  const [widthNavigationY, setWidthNavigationY] = useState<string>("3.5rem");
   const { isAuthenticated } = useAuth();
 
   return (
-    <BottomNavigationContext.Provider
-      value={{
-        isActive,
-        setIsActive,
-      }}
-    >
-      {children}
-      {isAuthenticated && isActive && (
-        <BottomNavigation bottomNavigationY={widthNavigationY} />
-      )}
+    <BottomNavigationContext.Provider value={{}}>
+      <Box pb={["5rem", "5rem", "5rem", "0"]} h="full" w="full">
+        {children}
+      </Box>
+
+      {isAuthenticated && <Bottom height="3.5rem" />}
     </BottomNavigationContext.Provider>
   );
 }
