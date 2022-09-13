@@ -1,13 +1,10 @@
 import { Box, Button, Flex, SimpleGrid } from "@chakra-ui/react";
 import Head from "next/head";
-import { useState } from "react";
 import { IoBook } from "react-icons/io5";
-import { HeaderNavigation as Header } from "../../components/HeaderNavigation";
+import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { Product } from "../../components/Product";
 
 export default function Home() {
-  const [headerSizeY, setHeaderSizeY] = useState("");
-
   const products = [
     {
       id: "1",
@@ -73,34 +70,34 @@ export default function Home() {
         <title>Produtos - App Alpar do Brasil</title>
       </Head>
 
-      <Header
+      <HeaderNavigation
         title="Produtos"
-        getHeaderY={(value) => setHeaderSizeY(value)}
-        childrenSizeY={2.5}
         Right={
           <Button colorScheme="none" display="flex" alignItems="center">
             <IoBook fontSize={"20"} color="white" />
           </Button>
         }
-      >
-        <Flex w="full" justify="space-around">
-          <Button bg="white" borderRadius={0} w="full">
-            Ordenação
-          </Button>
-          <Button
-            bg="white"
-            borderRadius={0}
-            borderLeft="1px solid #ccc"
-            w="full"
-          >
-            Filtros
-          </Button>
-        </Flex>
-      </Header>
+        contentHeight={2.5}
+        content={
+          <Flex w="full" justify="space-around">
+            <Button bg="white" borderRadius={0} w="full">
+              Ordenação
+            </Button>
+            <Button
+              bg="white"
+              borderRadius={0}
+              borderLeft="1px solid #ccc"
+              w="full"
+            >
+              Filtros
+            </Button>
+          </Flex>
+        }
+      />
 
-      <Box pt={headerSizeY} pb={"4"}>
+      <Box pt={["5.5rem", "5.5rem", "5.5rem", "4rem"]}>
         <Box px="2" py="3">
-          <SimpleGrid columns={[2, 2, 4, 6]} spacing="1">
+          <SimpleGrid columns={[2, 2, 4, 4]} spacing="1">
             {products.map((product) => (
               <Product key={product.id} product={product} />
             ))}

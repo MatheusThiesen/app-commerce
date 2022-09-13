@@ -1,6 +1,8 @@
 import { Box } from "@chakra-ui/react";
 import Head from "next/head";
 import { BannerCarousel } from "../components/BannerCarousel";
+import { HeaderNavigation } from "../components/HeaderNavigation";
+import { setupAPIClient } from "../service/api";
 
 import { withSSRAuth } from "../utils/withSSRAuth";
 
@@ -11,7 +13,7 @@ export default function Home() {
         <title>Inicio - App Alpar do Brasil</title>
       </Head>
 
-      {/* <Header inativeEventScroll /> */}
+      <HeaderNavigation isInativeEventScroll />
 
       <Box>
         <BannerCarousel
@@ -36,10 +38,10 @@ export default function Home() {
 }
 
 export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
-  // const apiClient = setupAPIClient(ctx);
-  // const response = await apiClient.get("/auth/me");
+  const apiClient = setupAPIClient(ctx);
+  const response = await apiClient.get("/auth/me");
 
-  // console.log(response);
+  console.log(response);
 
   return {
     props: {},

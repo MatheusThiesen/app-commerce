@@ -1,63 +1,47 @@
 import {
-  Avatar,
   Box,
   Button,
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
   Flex,
   Image,
   Link as CharkraLink,
-  List,
-  ListItem,
   Text,
-  useBreakpointValue,
   useDisclosure,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import Router from "next/router";
 import { ReactNode, useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
-import { IoClose, IoMenu } from "react-icons/io5";
+import { IoMenu } from "react-icons/io5";
+import { DrawerMenu } from "./DrawerMenu";
 
-interface HeaderProps {
-  inativeEventScroll?: boolean;
-  children?: ReactNode;
-  childrenSizeY?: number;
+export interface HeaderProps {
+  isInativeEventScroll?: boolean;
+  isGoBack?: boolean;
 
-  // headerSizeY?: number;
+  content?: ReactNode;
+  contentHeight?: number;
+
+  title?: string;
+  height?: number;
 
   Left?: ReactNode;
   Right?: ReactNode;
-  isGoBack?: boolean;
-
-  title?: string;
-
-  getHeaderY?: (set: () => string) => void;
 }
 
 export function HeaderNavigation({
-  children,
-  getHeaderY,
+  title,
   Left,
   Right,
-  title,
-  inativeEventScroll = false,
-  childrenSizeY = 0,
-  // headerSizeY = 3.5,
+  content,
+  contentHeight = 0,
+  height = 3.5,
+  isInativeEventScroll = false,
   isGoBack = false,
 }: HeaderProps) {
-  const mobile = useBreakpointValue({
-    base: true,
-    md: false,
-  });
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   if (!Left && isGoBack) {
     Left = (
@@ -78,10 +62,10 @@ export function HeaderNavigation({
     );
   }
 
-  const headerSize = `${3.5 + childrenSizeY}rem`;
+  const headerSize = `${height + contentHeight}rem`;
 
   const controlNavbar = () => {
-    if (typeof window !== "undefined" && !inativeEventScroll) {
+    if (typeof window !== "undefined" && !isInativeEventScroll) {
       if (window.scrollY === 0) {
         setShow(true);
       } else {
@@ -106,94 +90,49 @@ export function HeaderNavigation({
     }
   }, [lastScrollY]);
 
-  useEffect(() => {
-    if (getHeaderY) getHeaderY(() => (mobile ? headerSize : "4rem"));
-  }, []);
-
   return (
     <>
-      <Drawer placement="left" onClose={onClose} isOpen={isOpen}>
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerHeader borderBottomWidth="1px">
-            <Flex justify={"space-between"} align="center">
-              <Flex align={"center"}>
-                <Avatar size="md" name="Matheus Thiesen" />
-                <Text fontSize="sm" ml="2">
-                  Matheus Thiesen
-                </Text>
-              </Flex>
-
-              <Box
-                _hover={{
-                  cursor: "pointer",
-                }}
-                onClick={onClose}
-              >
-                <IoClose size={26} />
-              </Box>
-            </Flex>
-          </DrawerHeader>
-          <DrawerBody mt="6">
-            <List spacing="2">
-              <ListItem>
-                <CharkraLink fontWeight="bold">
-                  <Link href="/inicio">INICIO</Link>
-                </CharkraLink>
-              </ListItem>
-              <ListItem>
-                <CharkraLink fontWeight="bold">
-                  <Link href="/produtos">PRODUTOS</Link>
-                </CharkraLink>
-              </ListItem>
-              <ListItem>
-                <CharkraLink fontWeight="bold">
-                  <Link href="/mais">MAIS</Link>
-                </CharkraLink>
-              </ListItem>
-            </List>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-
+      <DrawerMenu isOpen={isOpen} onClose={onClose} />
+      {/* MOBILE */}
       <Flex
         as="header"
         zIndex={10}
-        h={mobile ? headerSize : "4rem"}
+        h={headerSize}
         w="full"
         alignItems="center"
         boxShadow={show ? "xl" : "none"}
-        position={inativeEventScroll ? undefined : "fixed"}
+        position={isInativeEventScroll ? undefined : "fixed"}
         transition="transform 0.2s"
         transform={
           show ? "translateY(0)" : `translateY(calc(${headerSize} * -1))`
         }
         flexDir="column"
+        display={["flex", "flex", "flex", "none"]}
       >
         <Flex
           bg="red.500"
           w="full"
-          h={mobile ? "3.5rem" : "full"}
+          h={`${height}rem`}
           py="2"
           justifyContent="space-between"
           align="center"
           px={["0", "0", "0", "30"]}
         >
-          <Flex flex={1}>
-            {mobile ? (
-              Left && Left
-            ) : (
-              <Button variant="unstyled" onClick={onOpen}>
-                <Flex align="center" justify="center">
-                  <IoMenu color="white" fontSize="32" />
-                  <Text color="white" ml="2">
-                    Menu
-                  </Text>
-                </Flex>
-              </Button>
-            )}
-          </Flex>
-          {title && mobile ? (
+          <Button
+            display={["none", "none", "none", "flex"]}
+            variant="unstyled"
+            onClick={onOpen}
+          >
+            <Flex align="center" justify="center">
+              <IoMenu color="white" fontSize="32" />
+              <Text color="white" ml="2">
+                Menu
+              </Text>
+            </Flex>
+          </Button>
+
+          <Flex flex={1}>{Left && Left}</Flex>
+          {title ? (
             <Text color="white" fontSize={"medium"} fontWeight="bold">
               {title}
             </Text>
@@ -210,15 +149,63 @@ export function HeaderNavigation({
           )}
 
           <Flex flex={1} align="flex-end" justify="flex-end">
-            {Right && mobile && Right}
+            {Right && Right}
           </Flex>
         </Flex>
 
-        {children && mobile && (
+        {content && (
           <Box w="full" h="calc(100% - 3.5rem)">
-            {children}
+            {content}
           </Box>
         )}
+      </Flex>
+
+      {/* WEB */}
+      <Flex
+        as="header"
+        zIndex={10}
+        h={`${height + 1}rem`}
+        w="full"
+        alignItems="center"
+        boxShadow={show ? "xl" : "none"}
+        position={isInativeEventScroll ? undefined : "fixed"}
+        transition="transform 0.2s"
+        transform={
+          show ? "translateY(0)" : `translateY(calc(${height + 1}rem * -1))`
+        }
+        flexDir="column"
+        display={["none", "none", "none", "flex"]}
+      >
+        <Flex
+          bg="red.500"
+          w="full"
+          h="full"
+          py="2"
+          justifyContent="space-between"
+          align="center"
+          px={["30"]}
+        >
+          <Button variant="unstyled" onClick={onOpen}>
+            <Flex align="center" justify="center">
+              <IoMenu color="white" fontSize="32" />
+              <Text color="white" ml="2">
+                Menu
+              </Text>
+            </Flex>
+          </Button>
+
+          <CharkraLink h="full">
+            <Link href="/inicio">
+              <Image
+                h="full"
+                objectFit="contain"
+                src="/assets/logo-white.png"
+              />
+            </Link>
+          </CharkraLink>
+
+          <Box />
+        </Flex>
       </Flex>
     </>
   );

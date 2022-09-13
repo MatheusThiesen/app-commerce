@@ -3,7 +3,6 @@ import type { AppProps } from "next/app";
 import { QueryClientProvider } from "react-query";
 import { AuthProvider } from "../contexts/AuthContext";
 import { BottomNavigationProvider } from "../hooks/useBottomNavigation";
-import { HeaderNavigationProvider } from "../hooks/useHeaderNavigation";
 import { makeServer } from "../service/mirage";
 import { queryClient } from "../service/queryClient";
 import { theme } from "../styles/theme";
@@ -17,11 +16,9 @@ function MyApp({ Component, pageProps }: AppProps) {
     <QueryClientProvider client={queryClient}>
       <ChakraProvider theme={theme}>
         <AuthProvider>
-          <HeaderNavigationProvider>
-            <BottomNavigationProvider>
-              <Component {...pageProps} />
-            </BottomNavigationProvider>
-          </HeaderNavigationProvider>
+          <BottomNavigationProvider>
+            <Component {...pageProps} />
+          </BottomNavigationProvider>
         </AuthProvider>
       </ChakraProvider>
     </QueryClientProvider>

@@ -6,10 +6,10 @@ import { MainNavLink } from "./MainNavLink";
 import { NavLink } from "./NavLink";
 
 interface BottomNavigationPros {
-  bottomNavigationY: string;
+  height: string;
 }
 
-export function BottomNavigation({ bottomNavigationY }: BottomNavigationPros) {
+export function BottomNavigation({ height }: BottomNavigationPros) {
   return (
     <Flex
       as="nav"
@@ -20,7 +20,7 @@ export function BottomNavigation({ bottomNavigationY }: BottomNavigationPros) {
       bottom={0}
       left={0}
       w="full"
-      h={bottomNavigationY}
+      h={height}
       bg="white"
       display={["flex", "flex", "flex", "none"]}
     >

@@ -15,7 +15,7 @@ import {
 import Head from "next/head";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { IoCubeOutline } from "react-icons/io5";
-import { HeaderNavigation as Header } from "../../components/HeaderNavigation";
+import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { Model } from "../../components/Model";
 import { ProductCarousel } from "../../components/ProductCarousel";
 
@@ -28,7 +28,7 @@ export default function Produto() {
         <title>Produtos - App Alpar do Brasil</title>
       </Head>
 
-      <Header isGoBack title="Detalhes" inativeEventScroll />
+      <HeaderNavigation isInativeEventScroll isGoBack title="Detalhes" />
 
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

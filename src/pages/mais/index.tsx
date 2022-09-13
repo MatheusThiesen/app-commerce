@@ -1,6 +1,6 @@
 import { Box, Button } from "@chakra-ui/react";
 import Head from "next/head";
-import { HeaderNavigation as Header } from "../../components/HeaderNavigation";
+import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function SignIn() {
@@ -12,7 +12,7 @@ export default function SignIn() {
         <title>Mais - App Alpar do Brasil</title>
       </Head>
 
-      <Header title="Mais" />
+      <HeaderNavigation title="Mais" isInativeEventScroll />
 
       <Box>
         <Button onClick={signOut}>Logout</Button>
