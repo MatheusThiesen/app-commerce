@@ -95,15 +95,22 @@ export default function Home() {
         }
       />
 
-      <Box pt={["5.5rem", "5.5rem", "5.5rem", "4rem"]}>
-        <Box px="2" py="3">
-          <SimpleGrid columns={[2, 2, 4, 4]} spacing="1">
-            {products.map((product) => (
-              <Product key={product.id} product={product} />
-            ))}
-          </SimpleGrid>
-        </Box>
-      </Box>
+      <Flex
+        pt={["5.5rem", "5.5rem", "5.5rem", "7rem"]}
+        justify="center"
+        w="full"
+      >
+        <Flex w="full" maxW="1200px">
+          <Box w="25rem" mr="3rem" bg="white" borderRadius="md"></Box>
+          <Box w="full">
+            <SimpleGrid columns={[2, 2, 4, 4]} spacing="1">
+              {products.map((product) => (
+                <Product key={product.id} product={product} />
+              ))}
+            </SimpleGrid>
+          </Box>
+        </Flex>
+      </Flex>
     </>
   );
 }

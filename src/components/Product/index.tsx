@@ -31,7 +31,7 @@ export function Product({ product }: ProductComponentProps) {
       bg="white"
       px="4"
       py="4"
-      borderRadius="2"
+      borderRadius="md"
       boxShadow="base"
       // transition="box-shadow .4s ease-in-out,-webkit-box-shadow .2s ease-in-out;"
       _hover={{

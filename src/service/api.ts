@@ -79,6 +79,8 @@ export function setupAPIClient(
               .finally(() => {
                 isRefreshing = false;
               });
+          } else {
+            signOut();
           }
 
           return new Promise((resolve, reject) => {
