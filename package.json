@@ -24,7 +24,7 @@
     "react-dom": "18.0.0",
     "react-hook-form": "^7.29.0",
     "react-icons": "^4.4.0",
-    "react-query": "^3.34.19",
+    "react-query": "^3.39.2",
     "sass": "^1.50.0",
     "swiper": "^8.1.0",
     "three": "^0.139.2",

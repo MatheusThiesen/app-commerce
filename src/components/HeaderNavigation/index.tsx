@@ -1,17 +1,25 @@
 import {
+  Avatar,
   Box,
   Button,
   Flex,
   Image,
   Link as CharkraLink,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuGroup,
+  MenuItem,
+  MenuList,
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import Router from "next/router";
-import { ReactNode, useEffect, useState } from "react";
+import { memo, ReactNode, useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import { IoMenu } from "react-icons/io5";
+import { useAuth } from "../../contexts/AuthContext";
 import { DrawerMenu } from "./DrawerMenu";
 
 export interface HeaderProps {
@@ -28,7 +36,7 @@ export interface HeaderProps {
   Right?: ReactNode;
 }
 
-export function HeaderNavigation({
+export function HeaderNavigationComponent({
   title,
   Left,
   Right,
@@ -39,6 +47,7 @@ export function HeaderNavigation({
   isGoBack = false,
 }: HeaderProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { signOut } = useAuth();
 
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -204,9 +213,27 @@ export function HeaderNavigation({
             </Link>
           </CharkraLink>
 
-          <Box />
+          <Menu>
+            <MenuButton>
+              <Flex align={"center"}>
+                <Avatar size="md" name="Matheus Thiesen" bg="white" />
+                <Text fontSize="sm" fontWeight="bold" ml="2" color="white">
+                  Matheus Thiesen
+                </Text>
+              </Flex>
+            </MenuButton>
+            <MenuList zIndex="1000">
+              <MenuGroup title="Perfil">
+                <MenuItem>Minha conta</MenuItem>
+                <MenuDivider />
+                <MenuItem onClick={signOut}>Sair </MenuItem>
+              </MenuGroup>
+            </MenuList>
+          </Menu>
         </Flex>
       </Flex>
     </>
   );
 }
+
+export const HeaderNavigation = memo(HeaderNavigationComponent);

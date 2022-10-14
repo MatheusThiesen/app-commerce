@@ -14,7 +14,7 @@ type WithSSRAuthOptions = {
 };
 
 export function withSSRAuth<P>(
-  fn: GetServerSideProps<P>,
+  fn: GetServerSideProps<any>,
   options?: WithSSRAuthOptions
 ) {
   return async (
@@ -32,7 +32,7 @@ export function withSSRAuth<P>(
       };
     }
 
-    if (options) {
+    if (!!options) {
       const user = decode<{ permissions: string[]; roles: string[] }>(token);
       const { permissions, roles } = options;
       const userHasValidPermissions = validateUserPermission({
@@ -55,6 +55,9 @@ export function withSSRAuth<P>(
     try {
       return await fn(ctx);
     } catch (err) {
+      // console.log("cheguei 2");
+      console.log(err instanceof AuthTokenError);
+
       if (err instanceof AuthTokenError) {
         destroyCookie(ctx, "nextauth.token");
         destroyCookie(ctx, "nextauth.refreshToken");

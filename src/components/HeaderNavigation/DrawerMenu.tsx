@@ -13,6 +13,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import Link from "next/link";
+import { memo } from "react";
 import { IoClose } from "react-icons/io5";
 
 interface DrawerMenuProps {
@@ -20,7 +21,7 @@ interface DrawerMenuProps {
   isOpen: boolean;
 }
 
-export function DrawerMenu({ isOpen, onClose }: DrawerMenuProps) {
+export function DrawerMenuComponent({ isOpen, onClose }: DrawerMenuProps) {
   const options = [
     {
       name: "INICIO",
@@ -69,8 +70,11 @@ export function DrawerMenu({ isOpen, onClose }: DrawerMenuProps) {
               </ListItem>
             ))}
           </List>
+          <Box></Box>
         </DrawerBody>
       </DrawerContent>
     </Drawer>
   );
 }
+
+export const DrawerMenu = memo(DrawerMenuComponent);

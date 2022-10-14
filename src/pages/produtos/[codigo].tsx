@@ -4,8 +4,10 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Button,
+  Divider,
   Flex,
   Icon,
+  Link as CharkraLink,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -15,14 +17,34 @@ import {
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
+import axios from "axios";
 import Head from "next/head";
+import Link from "next/link";
 import { IoMdHeartEmpty } from "react-icons/io";
 import { IoChevronForwardSharp, IoCubeOutline } from "react-icons/io5";
+import xml2js from "xml2js";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { Model } from "../../components/Model";
 import { ProductCarousel } from "../../components/ProductCarousel";
+import { getProductOne, Product } from "../../hooks/queries/useProducts";
+import { withSSRAuth } from "../../utils/withSSRAuth";
 
-export default function Produto() {
+type ResponseXmlToJson = {
+  ListBucketResult: {
+    Contents: {
+      Key: string[];
+    }[];
+  };
+};
+
+const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
+
+interface ProdutoProps {
+  product?: Product;
+  images?: string[];
+}
+
+export default function Produto(props: ProdutoProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
@@ -46,20 +68,30 @@ export default function Produto() {
 
       <Flex flexDir="column" align="center" width="full" mt="8">
         <Flex flexDir="column" width="full" maxW="1200px" px="4" align="center">
-          <Box w="full" mb="2">
+          <Flex w="full" mb="2" align="center">
+            <CharkraLink h="full" color="gray.600">
+              <Link href="/produtos">Voltar à listagem</Link>
+            </CharkraLink>
+
+            <Divider h="1rem" mx="2" orientation="vertical" />
+
             <Breadcrumb
               spacing="8px"
               separator={<IoChevronForwardSharp color="gray.500" />}
             >
               <BreadcrumbItem>
-                <BreadcrumbLink href="#">Produtos</BreadcrumbLink>
+                <BreadcrumbLink>
+                  <Link href="/produtos">Produtos </Link>
+                </BreadcrumbLink>
               </BreadcrumbItem>
 
               <BreadcrumbItem>
-                <BreadcrumbLink href="#">Calçados</BreadcrumbLink>
+                <BreadcrumbLink>
+                  <Link href="/produtos?genero=masculino">Calçados </Link>
+                </BreadcrumbLink>
               </BreadcrumbItem>
             </Breadcrumb>
-          </Box>
+          </Flex>
 
           <Flex
             flexDir={["row"]}
@@ -73,23 +105,13 @@ export default function Produto() {
               <ProductCarousel
                 bg="white"
                 h="300"
-                banners={[
-                  {
-                    id: "1",
-                    name: "Tenis Nike",
-                    uri: "https://alpar.sfo3.digitaloceanspaces.com/Produtos/CW3411402_01",
-                  },
-                  {
-                    id: "2",
-                    name: "Logo Nike",
-                    uri: "https://alpar.sfo3.digitaloceanspaces.com/Produtos/CW3411402_02",
-                  },
-                  {
-                    id: "3",
-                    name: "Logo Nike",
-                    uri: "https://alpar.sfo3.digitaloceanspaces.com/Produtos/CW3411402_03",
-                  },
-                ]}
+                banners={
+                  props.images?.map((image, index) => ({
+                    id: index.toString(),
+                    name: props.product?.descricao ?? "-",
+                    uri: image,
+                  })) ?? []
+                }
               />
             </Box>
 
@@ -102,16 +124,16 @@ export default function Produto() {
               borderRadius="lg"
             >
               <Text as="h1" fontSize="2xl" fontWeight="bold">
-                NIKE TENIS DOWNSHIFTER 11
+                {props.product?.descricao}
               </Text>
               <Text as="p" fontSize="sm" fontWeight="light" color="gray.600">
-                Referência DA87243
+                Referência {props.product?.referencia}
               </Text>
               <Text as="span" fontSize="2xl" fontWeight="medium">
-                PDV R$ 299,99
+                PDV {props.product?.precoVendaFormat}
               </Text>
               <Text as="p" fontSize="small" mt="2" fontWeight="medium">
-                Cor: Azul e Branco
+                {/* Cor: Azul e Branco */}
               </Text>
             </Box>
           </Flex>
@@ -138,3 +160,33 @@ export default function Produto() {
     </>
   );
 }
+
+export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
+  const product = await getProductOne(Number(ctx.query.codigo), ctx);
+
+  var images: string[] = [];
+
+  if (product) {
+    const response = await axios(
+      `${spaceImages}/?prefix=Produtos%2F${product.referencia}&max-keys=10`,
+      {
+        method: "GET",
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "*",
+          "Access-Control-Allow-Credentials": "true",
+        },
+      }
+    );
+    const xmlToJson = (await xml2js.parseStringPromise(
+      response.data
+    )) as ResponseXmlToJson;
+    images = xmlToJson?.ListBucketResult?.Contents?.map(
+      (key) => spaceImages + "/" + key?.Key[0]
+    );
+  }
+
+  return {
+    props: { product, images },
+  };
+});

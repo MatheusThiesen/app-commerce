@@ -9,10 +9,11 @@ import {
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { IoMdHeartEmpty } from "react-icons/io";
+import { memo } from "react";
+import { BsBookmark } from "react-icons/bs";
 
 interface ProductProps {
-  id: string;
+  cod: number;
   name: string;
   priceSale: string;
   reference: string;
@@ -22,8 +23,8 @@ interface ProductComponentProps {
   product: ProductProps;
 }
 
-export function Product({ product }: ProductComponentProps) {
-  const { id, name, reference, priceSale, uri } = product;
+export function ProductComponent({ product }: ProductComponentProps) {
+  const { cod, name, reference, priceSale, uri } = product;
 
   const MotionBox = motion(Box);
   return (
@@ -38,10 +39,12 @@ export function Product({ product }: ProductComponentProps) {
         textDecoration: "none",
       }}
       whileHover={{ boxShadow: "0px 10px 15px 4px rgba(0,0,0,0.20)" }}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
       whileTap={{ scale: 0.95 }}
+      // initial={{ opacity: 0.8 }}
+      // whileInView={{ opacity: 1 }}
+      // border="2px solid "
+      // borderColor="blue.600"
     >
       <Flex
         position="relative"
@@ -50,15 +53,28 @@ export function Product({ product }: ProductComponentProps) {
         alignItems="start"
         h="full"
       >
+        {/* <Box position="absolute" top="0" left="0">
+          <Checkbox defaultChecked size="lg" />
+        </Box> */}
+        <Box position="absolute" top="0" left="0">
+          <Button h="2.5rem" w="2.5rem" p="0" borderRadius="full">
+            <Icon
+              as={BsBookmark} //BsBookmarkFill
+              fontSize="20"
+              // color="blue.600"
+            />
+          </Button>
+        </Box>
+        {/* 
         <Box position="absolute" top="0" right="0">
           <Button h="2.5rem" w="2.5rem" p="0" borderRadius="full">
             <Icon
               as={IoMdHeartEmpty} //IoIosHeart
               fontSize="20"
             />
-          </Button>
-        </Box>
-        <Link href={`/produtos/${id}`} passHref>
+          </Button> 
+        </Box>*/}
+        <Link href={`/produtos/${cod}`} passHref>
           <ChakraLink _hover={{}}>
             <Flex w="full" flexDirection="column" align="center">
               <Image
@@ -78,9 +94,25 @@ export function Product({ product }: ProductComponentProps) {
                 {name}
               </Text>
 
-              <Text fontSize="small" color="gray.600" fontWeight="light">
-                Referência {reference}
-              </Text>
+              <Flex flexDir="column" mb="1.5">
+                <Text
+                  as="span"
+                  fontSize="smaller"
+                  color="gray.600"
+                  fontWeight="light"
+                  whiteSpace="nowrap"
+                >
+                  Cód. Produto #{cod}
+                </Text>
+                <Text
+                  as="span"
+                  fontSize="smaller"
+                  color="gray.600"
+                  fontWeight="light"
+                >
+                  Referência {reference}
+                </Text>
+              </Flex>
               <Text fontSize="sm" fontWeight="bold">
                 PDV {priceSale}
               </Text>
@@ -91,3 +123,7 @@ export function Product({ product }: ProductComponentProps) {
     </MotionBox>
   );
 }
+
+export const Product = memo(ProductComponent, (prevProps, nextProps) =>
+  Object.is(prevProps.product, nextProps.product)
+);

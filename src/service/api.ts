@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, HeadersDefaults } from "axios";
 import { GetServerSidePropsContext } from "next";
 import { parseCookies, setCookie } from "nookies";
 import { signOut } from "../contexts/AuthContext";
@@ -6,6 +6,10 @@ import { AuthTokenError } from "./errors/AuthTokenError";
 
 let isRefreshing = false;
 let failedRequestQueue: any[] = [];
+
+interface CommonHeaderProperties extends HeadersDefaults {
+  Authorization: string;
+}
 
 export function setupAPIClient(
   ctx: GetServerSidePropsContext | undefined = undefined
@@ -61,7 +65,7 @@ export function setupAPIClient(
                 );
 
                 //@ts-ignore
-                api.defaults.headers["Authorization"] = `Bearer ${token}`;
+                api?.defaults?.headers["Authorization"] = `Bearer ${token}`;
 
                 failedRequestQueue.forEach((request) =>
                   request.onSuccess(token)
@@ -102,8 +106,6 @@ export function setupAPIClient(
           }
         }
       }
-
-      return Promise.reject(error);
     }
   );
 

@@ -1,6 +1,7 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import type { AppProps } from "next/app";
 import { QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
 import { AuthProvider } from "../contexts/AuthContext";
 import { BottomNavigationProvider } from "../hooks/useBottomNavigation";
 import { makeServer } from "../service/mirage";
@@ -21,6 +22,8 @@ function MyApp({ Component, pageProps }: AppProps) {
           </BottomNavigationProvider>
         </AuthProvider>
       </ChakraProvider>
+
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
