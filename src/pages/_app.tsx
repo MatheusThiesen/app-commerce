@@ -4,22 +4,20 @@ import { QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { AuthProvider } from "../contexts/AuthContext";
 import { BottomNavigationProvider } from "../hooks/useBottomNavigation";
-import { makeServer } from "../service/mirage";
+import { ProductCatalogProvider } from "../hooks/useProductCatalog";
 import { queryClient } from "../service/queryClient";
 import { theme } from "../styles/theme";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  if (process.env.NODE_ENV !== "development") {
-    makeServer();
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraProvider theme={theme}>
         <AuthProvider>
-          <BottomNavigationProvider>
-            <Component {...pageProps} />
-          </BottomNavigationProvider>
+          <ProductCatalogProvider>
+            <BottomNavigationProvider>
+              <Component {...pageProps} />
+            </BottomNavigationProvider>
+          </ProductCatalogProvider>
         </AuthProvider>
       </ChakraProvider>
 

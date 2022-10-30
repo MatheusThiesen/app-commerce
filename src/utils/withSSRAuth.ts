@@ -55,7 +55,6 @@ export function withSSRAuth<P>(
     try {
       return await fn(ctx);
     } catch (err) {
-      // console.log("cheguei 2");
       console.log(err instanceof AuthTokenError);
 
       if (err instanceof AuthTokenError) {

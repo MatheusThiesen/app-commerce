@@ -24,6 +24,7 @@ import { DrawerMenu } from "./DrawerMenu";
 
 export interface HeaderProps {
   isInativeEventScroll?: boolean;
+  isNotHideHeaderEventScroll?: boolean;
   isGoBack?: boolean;
 
   content?: ReactNode;
@@ -44,6 +45,7 @@ export function HeaderNavigationComponent({
   contentHeight = 0,
   height = 3.5,
   isInativeEventScroll = false,
+  isNotHideHeaderEventScroll = false,
   isGoBack = false,
 }: HeaderProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -90,14 +92,16 @@ export function HeaderNavigationComponent({
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.addEventListener("scroll", controlNavbar);
+    if (!isNotHideHeaderEventScroll) {
+      if (typeof window !== "undefined") {
+        window.addEventListener("scroll", controlNavbar);
 
-      return () => {
-        window.removeEventListener("scroll", controlNavbar);
-      };
+        return () => {
+          window.removeEventListener("scroll", controlNavbar);
+        };
+      }
     }
-  }, [lastScrollY]);
+  }, [lastScrollY, isNotHideHeaderEventScroll]);
 
   return (
     <>
@@ -176,9 +180,9 @@ export function HeaderNavigationComponent({
         h={`${height + 1}rem`}
         w="full"
         alignItems="center"
-        boxShadow={show ? "xl" : "none"}
+        boxShadow={show ? "2xl" : "none"}
         position={isInativeEventScroll ? undefined : "fixed"}
-        transition="transform 0.2s"
+        transition="all 0.2s"
         transform={
           show ? "translateY(0)" : `translateY(calc(${height + 1}rem * -1))`
         }
@@ -203,15 +207,15 @@ export function HeaderNavigationComponent({
             </Flex>
           </Button>
 
-          <CharkraLink h="full">
-            <Link href="/inicio">
+          <Link href=" /inicio">
+            <CharkraLink h="full">
               <Image
                 h="full"
                 objectFit="contain"
                 src="/assets/logo-white.png"
               />
-            </Link>
-          </CharkraLink>
+            </CharkraLink>
+          </Link>
 
           <Menu>
             <MenuButton>
@@ -224,7 +228,13 @@ export function HeaderNavigationComponent({
             </MenuButton>
             <MenuList zIndex="1000">
               <MenuGroup title="Perfil">
-                <MenuItem>Minha conta</MenuItem>
+                <MenuItem>
+                  <Link href="/conta" passHref>
+                    <CharkraLink _hover={{ textDecoration: "none" }}>
+                      Minha conta
+                    </CharkraLink>
+                  </Link>
+                </MenuItem>
                 <MenuDivider />
                 <MenuItem onClick={signOut}>Sair </MenuItem>
               </MenuGroup>

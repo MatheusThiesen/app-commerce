@@ -13,13 +13,13 @@ import {
 import { useState } from "react";
 import { FaMoneyCheckAlt, FaUser } from "react-icons/fa";
 import { IoBagHandleSharp } from "react-icons/io5";
-import { useBottonNavigation } from "../../../hooks/useBottomNavigation";
+// import { useBottonNavigation } from "../../../hooks/useBottomNavigation";
 
-import { HeaderNavigation as Header } from "../../../components/HeaderNavigation";
 import { TabOrder } from "../../../components/TabOrder";
 
 export default function Pedido() {
-  const { widthNavigationY } = useBottonNavigation();
+  // const { widthNavigationY } = useBottonNavigation();
+  const widthNavigationY = 1;
   const [headerSizeY, setHeaderSizeY] = useState("");
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -29,7 +29,7 @@ export default function Pedido() {
 
   return (
     <>
-      <Header getHeaderY={(value) => setHeaderSizeY(value)} isGoBack />
+      {/* <Header getHeaderY={(value) => setHeaderSizeY(value)} isGoBack /> */}
 
       <Box pt={headerSizeY} pb={`calc(${widthNavigationY} + 4rem)`}>
         <Box p="4">

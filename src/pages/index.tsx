@@ -62,13 +62,21 @@ export default function SignIn() {
             <Input
               label="E-mail"
               type="email"
-              error={errors?.email}
+              error={
+                !!errors?.email?.message
+                  ? String(errors?.email?.message)
+                  : undefined
+              }
               {...register("email")}
             />
             <Input
               label="Password"
               type="password"
-              error={errors?.password}
+              error={
+                !!errors?.email?.message
+                  ? String(errors?.email?.message)
+                  : undefined
+              }
               {...register("password")}
             />
           </Stack>

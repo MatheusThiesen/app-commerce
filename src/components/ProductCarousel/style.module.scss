@@ -1,9 +1,11 @@
 .container-carousel-product {
   height: 100%;
   border-radius: 1rem;
+  padding: 1.6rem;
 
   div {
     color: #333;
+    bottom: 0 !important;
 
     span {
       background-color: #333 !important;

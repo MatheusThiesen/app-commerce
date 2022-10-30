@@ -1,4 +1,4 @@
-import { Flex } from "@chakra-ui/react";
+import { Stack } from "@chakra-ui/react";
 import { memo } from "react";
 import { FilterList } from "../../hooks/queries/useProducts";
 import { FilterItem } from "../FilterItem";
@@ -7,35 +7,43 @@ interface ProductListFilterProps {
   filters: FilterList[];
   selectedFilter: SelectedFilter[];
   onChangeSelectedFilter: (a: SelectedFilter[]) => void;
+
+  isOpen?: boolean;
 }
 export interface SelectedFilter {
   name: string;
   value: string | number;
+  field: string | number;
 }
 
 export function ProductListFilterComponent({
   filters,
   onChangeSelectedFilter,
   selectedFilter,
+  isOpen,
 }: ProductListFilterProps) {
   return (
-    <Flex flexDirection="column">
+    <Stack flexDirection="column" spacing="2">
       {filters.map((filter, index) => (
         <FilterItem
           key={filter.name}
           AccordionItem={{
-            border: index - 1 === filter.data.length ? 0 : undefined,
+            // border: index - 1 === filter.data.length ? 0 : undefined,
+            border: 0,
           }}
           title={filter.label}
+          name={filter.name}
           data={filter.data.map((item) => ({
             name: item.name,
             value: item.value,
+            field: item.name,
           }))}
           selectedFilter={selectedFilter}
           onChangeSelectedFilter={onChangeSelectedFilter}
+          isOpen={isOpen}
         />
       ))}
-    </Flex>
+    </Stack>
   );
 }
 

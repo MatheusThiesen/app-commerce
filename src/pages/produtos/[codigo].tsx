@@ -3,28 +3,20 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
-  Button,
   Divider,
   Flex,
-  Icon,
+  HStack,
+  Image,
   Link as CharkraLink,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   Text,
-  useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
 import Head from "next/head";
 import Link from "next/link";
-import { IoMdHeartEmpty } from "react-icons/io";
-import { IoChevronForwardSharp, IoCubeOutline } from "react-icons/io5";
+import { useRouter } from "next/router";
+import { IoChevronForwardSharp } from "react-icons/io5";
 import xml2js from "xml2js";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
-import { Model } from "../../components/Model";
 import { ProductCarousel } from "../../components/ProductCarousel";
 import { getProductOne, Product } from "../../hooks/queries/useProducts";
 import { withSSRAuth } from "../../utils/withSSRAuth";
@@ -37,15 +29,15 @@ type ResponseXmlToJson = {
   };
 };
 
-const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
-
 interface ProdutoProps {
   product?: Product;
   images?: string[];
 }
 
 export default function Produto(props: ProdutoProps) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
+  const {} = useRouter();
+  if (!props) return "Loading";
 
   return (
     <>
@@ -55,23 +47,14 @@ export default function Produto(props: ProdutoProps) {
 
       <HeaderNavigation isInativeEventScroll isGoBack title="Detalhes" />
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent h="65%" px="0">
-          <ModalHeader>Objeto 3D</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody p="0">
-            <Model />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-
       <Flex flexDir="column" align="center" width="full" mt="8">
         <Flex flexDir="column" width="full" maxW="1200px" px="4" align="center">
           <Flex w="full" mb="2" align="center">
-            <CharkraLink h="full" color="gray.600">
-              <Link href="/produtos">Voltar à listagem</Link>
-            </CharkraLink>
+            <Link href="/produtos">
+              <CharkraLink h="full" color="gray.600">
+                Voltar à listagem
+              </CharkraLink>
+            </Link>
 
             <Divider h="1rem" mx="2" orientation="vertical" />
 
@@ -80,31 +63,31 @@ export default function Produto(props: ProdutoProps) {
               separator={<IoChevronForwardSharp color="gray.500" />}
             >
               <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <Link href="/produtos">Produtos </Link>
-                </BreadcrumbLink>
+                <Link href="/produtos">
+                  <BreadcrumbLink>Produtos</BreadcrumbLink>
+                </Link>
               </BreadcrumbItem>
 
               <BreadcrumbItem>
-                <BreadcrumbLink>
-                  <Link href="/produtos?genero=masculino">Calçados </Link>
-                </BreadcrumbLink>
+                <Link href="/produtos?genero=masculino">
+                  <BreadcrumbLink>Calçados</BreadcrumbLink>
+                </Link>
               </BreadcrumbItem>
             </Breadcrumb>
           </Flex>
 
           <Flex
-            flexDir={["row"]}
-            p="4"
+            flexDir={["column", "column", "column", "row"]}
+            p="2"
             w="full"
             bg="white"
             borderRadius="md"
             shadow="md"
           >
-            <Box w="60%" pr="8">
+            <Box w={["100%", "100%", "100%", "60%"]} pr="8">
               <ProductCarousel
                 bg="white"
-                h="300"
+                h="26rem"
                 banners={
                   props.images?.map((image, index) => ({
                     id: index.toString(),
@@ -113,14 +96,23 @@ export default function Produto(props: ProdutoProps) {
                   })) ?? []
                 }
               />
+
+              <Box>
+                <Divider />
+                <Text as="h2" mt="4" fontSize="2xl" fontWeight="light">
+                  Características do produto
+                </Text>
+
+                {props.product?.descricaoAdicional}
+              </Box>
             </Box>
 
             <Box
-              w="40%"
-              px="4"
-              pt="6"
-              border="1px"
-              borderColor="gray.200"
+              w={["100%", "100%", "100%", "40%"]}
+              px="6"
+              pt="4"
+              borderColor="gray.100"
+              borderWidth={[0, 0, 0, "1px"]}
               borderRadius="lg"
             >
               <Text as="h1" fontSize="2xl" fontWeight="bold">
@@ -132,30 +124,62 @@ export default function Produto(props: ProdutoProps) {
               <Text as="span" fontSize="2xl" fontWeight="medium">
                 PDV {props.product?.precoVendaFormat}
               </Text>
-              <Text as="p" fontSize="small" mt="2" fontWeight="medium">
-                {/* Cor: Azul e Branco */}
+              <Text as="p" fontSize="small" mt="2" fontWeight="light">
+                Cor:{" "}
+                <Text as="span" fontSize="small" mt="2" fontWeight="bold">
+                  {props.product?.corPrimaria?.descricao}
+                </Text>
               </Text>
+
+              {props.product?.variacoes && (
+                <HStack spacing={1}>
+                  {props.product?.variacoes?.map((variation) => (
+                    <Link
+                      href={`/produtos/${variation.codigo}`}
+                      key={variation.codigo}
+                      passHref
+                    >
+                      <Box
+                        as="a"
+                        w="4rem"
+                        h="4rem"
+                        borderRadius="md"
+                        cursor={
+                          props.product?.referencia === variation.referencia
+                            ? "auto"
+                            : "pointer"
+                        }
+                        borderWidth={
+                          props.product?.referencia === variation.referencia
+                            ? "2px"
+                            : "1px"
+                        }
+                        borderColor={
+                          props.product?.referencia === variation.referencia
+                            ? "blue.500"
+                            : "gray.200"
+                        }
+                      >
+                        <Image
+                          w="full"
+                          h="full"
+                          objectFit="contain"
+                          src={`${spaceImages}/Produtos/${variation.referencia}_01`}
+                          alt={variation.descricao}
+                          onError={({ currentTarget }) => {
+                            currentTarget.onerror = null; // prevents looping
+                            currentTarget.src =
+                              "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
+                          }}
+                        />
+                      </Box>
+                    </Link>
+                  ))}
+                </HStack>
+              )}
             </Box>
           </Flex>
         </Flex>
-
-        <Box py="0.5rem" display="flex" justifyContent="end" gap="0.5rem">
-          <Button
-            h="2.5rem"
-            w="2.5rem"
-            p="0"
-            borderRadius="full"
-            onClick={onOpen}
-          >
-            <Icon as={IoCubeOutline} fontSize="20" />
-          </Button>
-          <Button h="2.5rem" w="2.5rem" p="0" borderRadius="full">
-            <Icon
-              as={IoMdHeartEmpty} //IoIosHeart
-              fontSize="20"
-            />
-          </Button>
-        </Box>
       </Flex>
     </>
   );
@@ -163,12 +187,10 @@ export default function Produto(props: ProdutoProps) {
 
 export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   const product = await getProductOne(Number(ctx.query.codigo), ctx);
-
   var images: string[] = [];
-
   if (product) {
     const response = await axios(
-      `${spaceImages}/?prefix=Produtos%2F${product.referencia}&max-keys=10`,
+      `https://alpar.sfo3.digitaloceanspaces.com/?prefix=Produtos%2F${product.referencia}&max-keys=10`,
       {
         method: "GET",
         headers: {
@@ -182,7 +204,7 @@ export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
       response.data
     )) as ResponseXmlToJson;
     images = xmlToJson?.ListBucketResult?.Contents?.map(
-      (key) => spaceImages + "/" + key?.Key[0]
+      (key) => "https://alpar.sfo3.digitaloceanspaces.com" + "/" + key?.Key[0]
     );
   }
 

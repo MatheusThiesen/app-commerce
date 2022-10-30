@@ -7,14 +7,9 @@ import {
   Tbody,
   Td,
   Text,
-  Tooltip,
   Tr,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { useState } from "react";
-import { IoMdAddCircle } from "react-icons/io";
-import { HeaderNavigation as Header } from "../../components/HeaderNavigation";
-import { TitlesListing } from "../../components/TitlesListing ";
 
 const orders = [
   {
@@ -77,11 +72,9 @@ const orders = [
 ];
 
 export default function Pedidos() {
-  const [headerSizeY, setHeaderSizeY] = useState("");
-
   return (
     <>
-      <Header
+      {/* <Header
         Right={
           <Tooltip label="Novo Pedido">
             <Flex mr="4" align="center">
@@ -93,11 +86,9 @@ export default function Pedidos() {
             </Flex>
           </Tooltip>
         }
-        getHeaderY={(value) => setHeaderSizeY(value)}
-        childrenSizeY={2.5}
       >
         <TitlesListing title="PEDIDOS" />
-      </Header>
+      </Header> */}
 
       <Box>
         <Table colorScheme="blackAlpha">

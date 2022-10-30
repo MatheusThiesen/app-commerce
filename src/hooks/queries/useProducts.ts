@@ -8,16 +8,28 @@ export type Product = {
   codigoAlternativo: string;
   referencia: string;
   descricao: string;
+  descricaoComplementar: string;
+  descricaoAdicional: string;
   precoVenda: number;
   precoVendaFormat: string;
   marca: {
     codigo: number;
     descricao: string;
   };
-  colecao: {
+  colecao?: {
     codigo: number;
     descricao: string;
   };
+  corPrimaria?: {
+    codigo: number;
+    descricao: string;
+  };
+  variacoes?: {
+    codigo: number;
+    codigoAlternativo: number;
+    referencia: string;
+    descricao: string;
+  }[];
 };
 
 export type FilterList = {
@@ -25,9 +37,10 @@ export type FilterList = {
   name: string;
   data: ItemFilter[];
 };
-type ItemFilter = {
+export type ItemFilter = {
   name: string;
   value: number | string;
+  field: number | string;
 };
 
 type ProductApiResponse = {
@@ -39,7 +52,7 @@ type ProductApiResponse = {
 };
 
 type GetProductsResponse = {
-  products: Omit<Product, "colecao">[];
+  products: Omit<Product, "colecao" | "variacoes">[];
   page: number;
   pagesize: number;
   total: number;
@@ -53,18 +66,24 @@ interface UseProductsProps {
   page: number;
   pagesize?: number;
   orderby?: string;
+  filters?: ItemFilter[];
 }
 
 async function getProducts({
   page,
   pagesize,
   orderby,
+  filters,
 }: UseProductsProps): Promise<GetProductsResponse> {
   const { data } = await api.get<ProductApiResponse>("/products", {
     params: {
       page: page - 1,
       pagesize,
       orderby,
+      filters: filters?.map((filter) => ({
+        name: filter.name,
+        value: filter.value,
+      })),
     },
   });
 
@@ -110,10 +129,15 @@ export async function getProductOne(
   return product;
 }
 
-export function useProducts({ page, pagesize, orderby }: UseProductsProps) {
+export function useProducts({
+  page,
+  pagesize,
+  orderby,
+  filters,
+}: UseProductsProps) {
   return useQuery(
-    ["products", page, pagesize, orderby],
-    () => getProducts({ page, pagesize, orderby }),
+    ["products", page, pagesize, orderby, filters],
+    () => getProducts({ page, pagesize, orderby, filters }),
     {}
   );
 }

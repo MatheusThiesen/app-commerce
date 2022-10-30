@@ -19,6 +19,9 @@ export const theme: ThemeConfig = extendTheme({
     red: {
       "500": "#E5122A",
     },
+    blue: {
+      "400": "#007aff",
+    },
   },
   fonts: {
     heaing: "Roboto",

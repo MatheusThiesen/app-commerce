@@ -20,11 +20,14 @@ import { SelectedFilter } from "../ProductListFilter";
 interface ItemProps {
   name: string;
   value: number | string;
+  field: string | number;
 }
 
 interface FilterItemProps {
   title: string;
+  name: string;
   data: ItemProps[];
+  isOpen?: boolean;
 
   selectedFilter: SelectedFilter[];
   onChangeSelectedFilter: (a: SelectedFilter[]) => void;
@@ -35,9 +38,11 @@ interface FilterItemProps {
 export function FilterItem({
   title,
   data,
+  name,
   selectedFilter,
   onChangeSelectedFilter,
   AccordionItem: AccordionItemProps,
+  isOpen,
 }: FilterItemProps) {
   const [search, setSearch] = useState("");
 
@@ -59,7 +64,12 @@ export function FilterItem({
   }): void {
     if (checked) {
       const date = selectedFilter;
-      onChangeSelectedFilter([...date, item]);
+      const newItem: ItemProps = {
+        name: name,
+        value: item.value,
+        field: item.name,
+      };
+      onChangeSelectedFilter([...date, newItem]);
     } else {
       const date = selectedFilter.filter((f) => f.value !== item.value);
       onChangeSelectedFilter([...date]);
@@ -77,39 +87,47 @@ export function FilterItem({
   );
 
   return (
-    <AccordionChakra defaultIndex={[0]} allowMultiple allowToggle w="full">
+    <AccordionChakra
+      defaultIndex={isOpen ? [0] : [1]}
+      allowMultiple
+      allowToggle
+      w="full"
+      bg="white"
+      borderRadius="md"
+    >
       <AccordionItem borderTop="0" {...(AccordionItemProps as any)}>
-        <Text>
-          <AccordionButton>
-            <Box flex="1" textAlign="left">
-              <Text fontSize="md" color="gray.800" fontWeight="bold">
-                {title}
-              </Text>
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </Text>
-        <AccordionPanel pb={2} pt={2}>
-          <Flex
-            h="2rem"
-            mb="4"
-            p="2"
-            borderRadius="md"
-            borderWidth="1.5px"
-            align="center"
-          >
-            <Input
-              name={"search" + title}
-              border="0"
-              h="full"
-              w="90%"
-              variant="unstyled"
-              onChange={onChange}
-              value={search}
-            />
+        <AccordionButton>
+          <Box flex="1" textAlign="left">
+            <Text fontSize="md" color="gray.800" fontWeight="bold">
+              {title}
+            </Text>
+          </Box>
+          <AccordionIcon />
+        </AccordionButton>
 
-            <Icon as={IoIosSearch} />
-          </Flex>
+        <AccordionPanel pb={2} pt={2}>
+          {data.length > 6 && (
+            <Flex
+              h="2rem"
+              mb="4"
+              p="2"
+              borderRadius="md"
+              borderWidth="1.5px"
+              align="center"
+            >
+              <Input
+                name={"search" + title}
+                border="0"
+                h="full"
+                w="90%"
+                variant="unstyled"
+                onChange={onChange}
+                value={search}
+              />
+
+              <Icon as={IoIosSearch} />
+            </Flex>
+          )}
 
           <Stack spacing={1} maxH="150" overflowY="scroll">
             {filteredList.map((item) => {

@@ -10,11 +10,13 @@ import {
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { memo } from "react";
-import { BsBookmark } from "react-icons/bs";
+import { BsBookmark, BsBookmarkFill } from "react-icons/bs";
+import { useProductCatalog } from "../../hooks/useProductCatalog";
 
-interface ProductProps {
+export interface ProductProps {
   cod: number;
   name: string;
+  descriptionAdditional: string;
   priceSale: string;
   reference: string;
   uri: string;
@@ -24,7 +26,26 @@ interface ProductComponentProps {
 }
 
 export function ProductComponent({ product }: ProductComponentProps) {
-  const { cod, name, reference, priceSale, uri } = product;
+  const {
+    isActivated: isActivatedProductCatalog,
+    productsSelected,
+    onRemoveProduct,
+    onSelectedProduct,
+  } = useProductCatalog();
+  const { cod, name, descriptionAdditional, reference, priceSale, uri } =
+    product;
+
+  const isProductSelectedCatalog = productsSelected.some(
+    (produto) => cod === produto.cod
+  );
+
+  function handleSelectedProductCatalog() {
+    if (isProductSelectedCatalog) {
+      onRemoveProduct(product);
+    } else {
+      onSelectedProduct(product);
+    }
+  }
 
   const MotionBox = motion(Box);
   return (
@@ -41,6 +62,7 @@ export function ProductComponent({ product }: ProductComponentProps) {
       whileHover={{ boxShadow: "0px 10px 15px 4px rgba(0,0,0,0.20)" }}
       viewport={{ once: true }}
       whileTap={{ scale: 0.95 }}
+
       // initial={{ opacity: 0.8 }}
       // whileInView={{ opacity: 1 }}
       // border="2px solid "
@@ -53,18 +75,24 @@ export function ProductComponent({ product }: ProductComponentProps) {
         alignItems="start"
         h="full"
       >
-        {/* <Box position="absolute" top="0" left="0">
-          <Checkbox defaultChecked size="lg" />
-        </Box> */}
-        <Box position="absolute" top="0" left="0">
-          <Button h="2.5rem" w="2.5rem" p="0" borderRadius="full">
-            <Icon
-              as={BsBookmark} //BsBookmarkFill
-              fontSize="20"
-              // color="blue.600"
-            />
-          </Button>
-        </Box>
+        {isActivatedProductCatalog && (
+          <Box position="absolute" top="0" left="0">
+            <Button
+              h="2.5rem"
+              w="2.5rem"
+              p="0"
+              borderRadius="full"
+              onClick={handleSelectedProductCatalog}
+            >
+              <Icon
+                as={isProductSelectedCatalog ? BsBookmarkFill : BsBookmark}
+                fontSize="20"
+                color={isProductSelectedCatalog ? "blue.600" : "gray.700"}
+              />
+            </Button>
+          </Box>
+        )}
+
         {/* 
         <Box position="absolute" top="0" right="0">
           <Button h="2.5rem" w="2.5rem" p="0" borderRadius="full">
@@ -75,7 +103,7 @@ export function ProductComponent({ product }: ProductComponentProps) {
           </Button> 
         </Box>*/}
         <Link href={`/produtos/${cod}`} passHref>
-          <ChakraLink _hover={{}}>
+          <ChakraLink _hover={{}} w="100%">
             <Flex w="full" flexDirection="column" align="center">
               <Image
                 height="10rem"
@@ -90,12 +118,12 @@ export function ProductComponent({ product }: ProductComponentProps) {
             </Flex>
 
             <Box>
-              <Text mt="4" mb="4" fontSize="md" fontWeight="light">
+              <Text mt="4" fontSize="md" fontWeight="light">
                 {name}
               </Text>
 
               <Flex flexDir="column" mb="1.5">
-                <Text
+                {/* <Text
                   as="span"
                   fontSize="smaller"
                   color="gray.600"
@@ -103,12 +131,13 @@ export function ProductComponent({ product }: ProductComponentProps) {
                   whiteSpace="nowrap"
                 >
                   Cód. Produto #{cod}
-                </Text>
+                </Text> */}
                 <Text
                   as="span"
                   fontSize="smaller"
                   color="gray.600"
                   fontWeight="light"
+                  mb="4"
                 >
                   Referência {reference}
                 </Text>

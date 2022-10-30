@@ -40,7 +40,7 @@ export function MainNavLink({ href, icon, children, ...rest }: NavLinkProps) {
         pb="0.50rem"
         position="relative"
         _hover={{ textDecoration: "none" }}
-        {...rest}
+        {...(rest as any)}
       >
         <Box
           h="14"
