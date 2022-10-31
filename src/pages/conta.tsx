@@ -1,6 +1,5 @@
-import { Box, Flex, Stack, Text } from "@chakra-ui/react";
+import { Box, Flex, Stack, Text, useDisclosure } from "@chakra-ui/react";
 import Head from "next/head";
-import { useState } from "react";
 import { InputFake } from "../components/Form/InputFake";
 import { HeaderNavigation } from "../components/HeaderNavigation";
 import { setupAPIClient } from "../service/api";
@@ -14,7 +13,11 @@ interface ContaProps {
 }
 
 export default function Conta(props: ContaProps) {
-  const [modalUpdatePassword, setModalUpdatePassword] = useState(false);
+  const {
+    isOpen: isOpenModalUpdatePassword,
+    onOpen: onOpenModalUpdatePassword,
+    onClose: onCloseModalUpdatePassword,
+  } = useDisclosure();
 
   return (
     <>
@@ -22,7 +25,7 @@ export default function Conta(props: ContaProps) {
         <title>Inicio - App Alpar do Brasil</title>
       </Head>
 
-      <HeaderNavigation isInativeEventScroll />
+      <HeaderNavigation isInativeEventScroll user={{ name: props.me.email }} />
 
       <Flex justify="center" pt="3rem" px="1.25rem">
         <Box bg="white" borderRadius="md" p="6" maxW="47.75rem" w="full">
@@ -37,7 +40,7 @@ export default function Conta(props: ContaProps) {
             <InputFake
               label="Password"
               value="************"
-              onUpdate={() => setModalUpdatePassword(true)}
+              onUpdate={onOpenModalUpdatePassword}
             />
           </Stack>
         </Box>

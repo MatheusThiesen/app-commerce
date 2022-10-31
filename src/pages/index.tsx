@@ -73,8 +73,8 @@ export default function SignIn() {
               label="Password"
               type="password"
               error={
-                !!errors?.email?.message
-                  ? String(errors?.email?.message)
+                !!errors?.password?.message
+                  ? String(errors?.password?.message)
                   : undefined
               }
               {...register("password")}

@@ -24,7 +24,7 @@ export function ProductListFilterComponent({
 }: ProductListFilterProps) {
   return (
     <Stack flexDirection="column" spacing="2">
-      {filters.map((filter, index) => (
+      {filters.map((filter) => (
         <FilterItem
           key={filter.name}
           AccordionItem={{

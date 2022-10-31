@@ -1,6 +1,8 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 import { ProductProps } from "../components/Product";
+import { SelectedFilter } from "../components/ProductListFilter";
 import { api } from "../service/apiClient";
+import { getProducts } from "./queries/useProducts";
 
 type ProductCatalogData = {
   productsSelected: ProductProps[];
@@ -9,6 +11,7 @@ type ProductCatalogData = {
   onRemoveProduct: (i: ProductProps) => void;
   onChangeActivated: React.Dispatch<React.SetStateAction<boolean>>;
   onRemoveAllProduct: () => void;
+  onSelectedAllProduct: (filters: SelectedFilter[]) => void;
   onGenerateCatalog: () => void;
 };
 
@@ -17,6 +20,8 @@ type ProductCatalogProviderProps = {
 };
 
 const ProductCatalogContext = createContext({} as ProductCatalogData);
+
+const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
 
 export function ProductCatalogProvider({
   children,
@@ -54,6 +59,27 @@ export function ProductCatalogProvider({
     }
   }
 
+  async function handleSelectedAllProduct(filters: SelectedFilter[]) {
+    const responseProducts = await getProducts({
+      page: 1,
+      filters: filters,
+      pagesize: 500,
+    });
+
+    const normalizedProducts = responseProducts.products.map((product) => ({
+      cod: product.codigo,
+      name: product.descricao,
+      descriptionAdditional: product.descricaoAdicional,
+      reference: product.referencia,
+      priceSale: product.precoVendaFormat,
+      uri: `${spaceImages}/Produtos/${product.referencia}_01`,
+    }));
+
+    setProductsSelected(
+      normalizedProducts.filter((f) => !productsSelected.includes(f))
+    );
+  }
+
   return (
     <ProductCatalogContext.Provider
       value={{
@@ -64,6 +90,7 @@ export function ProductCatalogProvider({
         onChangeActivated: setIsActivated,
         onRemoveAllProduct: handleRemoveAllProduct,
         onGenerateCatalog: handleGenerateCatalog,
+        onSelectedAllProduct: handleSelectedAllProduct,
       }}
     >
       {children}

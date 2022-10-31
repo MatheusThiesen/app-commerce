@@ -11,16 +11,15 @@ import {
   MenuGroup,
   MenuItem,
   MenuList,
+  Stack,
   Text,
-  useDisclosure,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import Router from "next/router";
 import { memo, ReactNode, useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
-import { IoMenu } from "react-icons/io5";
 import { useAuth } from "../../contexts/AuthContext";
-import { DrawerMenu } from "./DrawerMenu";
+import { NavLink } from "./NavLink";
 
 export interface HeaderProps {
   isInativeEventScroll?: boolean;
@@ -35,6 +34,10 @@ export interface HeaderProps {
 
   Left?: ReactNode;
   Right?: ReactNode;
+
+  user: {
+    name: string;
+  };
 }
 
 export function HeaderNavigationComponent({
@@ -47,8 +50,8 @@ export function HeaderNavigationComponent({
   isInativeEventScroll = false,
   isNotHideHeaderEventScroll = false,
   isGoBack = false,
+  user,
 }: HeaderProps) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const { signOut } = useAuth();
 
   const [show, setShow] = useState(true);
@@ -105,7 +108,6 @@ export function HeaderNavigationComponent({
 
   return (
     <>
-      <DrawerMenu isOpen={isOpen} onClose={onClose} />
       {/* MOBILE */}
       <Flex
         as="header"
@@ -131,19 +133,6 @@ export function HeaderNavigationComponent({
           align="center"
           px={["0", "0", "0", "30"]}
         >
-          <Button
-            display={["none", "none", "none", "flex"]}
-            variant="unstyled"
-            onClick={onOpen}
-          >
-            <Flex align="center" justify="center">
-              <IoMenu color="white" fontSize="32" />
-              <Text color="white" ml="2">
-                Menu
-              </Text>
-            </Flex>
-          </Button>
-
           <Flex flex={1}>{Left && Left}</Flex>
           {title ? (
             <Text color="white" fontSize={"medium"} fontWeight="bold">
@@ -188,28 +177,20 @@ export function HeaderNavigationComponent({
         }
         flexDir="column"
         display={["none", "none", "none", "flex"]}
+        bg="red.500"
       >
         <Flex
-          bg="red.500"
           w="full"
           h="full"
-          py="2"
           justifyContent="space-between"
           align="center"
           px={["30"]}
+          maxW="1120px"
         >
-          <Button variant="unstyled" onClick={onOpen}>
-            <Flex align="center" justify="center">
-              <IoMenu color="white" fontSize="32" />
-              <Text color="white" ml="2">
-                Menu
-              </Text>
-            </Flex>
-          </Button>
-
           <Link href=" /inicio">
             <CharkraLink h="full">
               <Image
+                py="1"
                 h="full"
                 objectFit="contain"
                 src="/assets/logo-white.png"
@@ -217,12 +198,17 @@ export function HeaderNavigationComponent({
             </CharkraLink>
           </Link>
 
+          <Stack direction="row" h="full" spacing="10">
+            <NavLink href="/inicio">Início</NavLink>
+            <NavLink href="/produtos">Produtos</NavLink>
+          </Stack>
+
           <Menu>
             <MenuButton>
               <Flex align={"center"}>
-                <Avatar size="md" name="Matheus Thiesen" bg="white" />
+                <Avatar size="md" name={user.name} bg="white" />
                 <Text fontSize="sm" fontWeight="bold" ml="2" color="white">
-                  Matheus Thiesen
+                  {user.name}
                 </Text>
               </Flex>
             </MenuButton>

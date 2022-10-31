@@ -1,22 +1,26 @@
 import { Box } from "@chakra-ui/react";
 import Head from "next/head";
-import { BannerCarousel } from "../components/BannerCarousel";
+import { Me } from "../@types/me";
 import { HeaderNavigation } from "../components/HeaderNavigation";
 import { setupAPIClient } from "../service/api";
 
 import { withSSRAuth } from "../utils/withSSRAuth";
 
-export default function Home() {
+interface HomeProps {
+  me: Me;
+}
+
+export default function Home({ me }: HomeProps) {
   return (
     <>
       <Head>
         <title>Inicio - App Alpar do Brasil</title>
       </Head>
 
-      <HeaderNavigation isInativeEventScroll />
+      <HeaderNavigation isInativeEventScroll user={{ name: me.email }} />
 
       <Box>
-        <BannerCarousel
+        {/* <BannerCarousel
           h="300"
           p="4"
           banners={[
@@ -31,7 +35,7 @@ export default function Home() {
               uri: "https://www.qualitare.com/wp-content/uploads/2021/01/nike-banner.png",
             },
           ]}
-        />
+        /> */}
       </Box>
     </>
   );
@@ -41,9 +45,9 @@ export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
   const response = await apiClient.get("/auth/me");
 
-  // console.log(response);
-
   return {
-    props: {},
+    props: {
+      me: response.data,
+    },
   };
 });

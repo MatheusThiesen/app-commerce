@@ -12,6 +12,11 @@ export type Product = {
   descricaoAdicional: string;
   precoVenda: number;
   precoVendaFormat: string;
+  locaisEstoque?: {
+    id: string;
+    descricao: string;
+    quantidade: number;
+  }[];
   marca: {
     codigo: number;
     descricao: string;
@@ -23,6 +28,12 @@ export type Product = {
   corPrimaria?: {
     codigo: number;
     descricao: string;
+  };
+  corSecundaria?: {
+    cor: {
+      codigo: number;
+      descricao: string;
+    };
   };
   variacoes?: {
     codigo: number;
@@ -69,7 +80,7 @@ interface UseProductsProps {
   filters?: ItemFilter[];
 }
 
-async function getProducts({
+export async function getProducts({
   page,
   pagesize,
   orderby,

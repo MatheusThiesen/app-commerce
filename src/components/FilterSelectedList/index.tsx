@@ -24,11 +24,7 @@ function FilterSelectedListComponent({
   function handleRemoveOneFilter(filter: SelectedFilter) {
     const removeFilter = filters.filter((f) => f !== filter);
 
-    if (filters.length <= 1) {
-      handleClearFilter();
-    } else {
-      setFilters(removeFilter);
-    }
+    setFilters(removeFilter);
   }
 
   function handleClearFilter() {

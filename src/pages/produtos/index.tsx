@@ -11,6 +11,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { IoBook } from "react-icons/io5";
+import { Me } from "../../@types/me";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ModalList } from "../../components/ModalList";
@@ -24,6 +25,12 @@ import {
 } from "../../components/ProductListFilter";
 import { useProducts } from "../../hooks/queries/useProducts";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
+import { setupAPIClient } from "../../service/api";
+import { withSSRAuth } from "../../utils/withSSRAuth";
+
+interface ProductsProps {
+  me: Me;
+}
 
 const OrderByItems = [
   {
@@ -54,13 +61,14 @@ const OrderByItems = [
 
 const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
 
-export default function Produtos() {
+export default function Produtos({ me }: ProductsProps) {
   const { query } = useRouter();
   const {
     onChangeActivated: onChangeActivatedProductCatalog,
     isActivated: isActivatedCatalog,
     productsSelected: productsSelectedCatalog,
     onRemoveAllProduct: onRemoveAllProductCatalog,
+    onSelectedAllProduct: onSelectedAllProductCatalog,
     onGenerateCatalog,
   } = useProductCatalog();
 
@@ -101,6 +109,7 @@ export default function Produtos() {
       </Head>
 
       <HeaderNavigation
+        user={{ name: me.email }}
         title="Produtos"
         Right={
           <Button
@@ -189,7 +198,7 @@ export default function Produtos() {
                   />
 
                   <ProductListFilter
-                    filters={data?.filters}
+                    filters={data?.filters.filter((f) => f.data.length > 0)}
                     selectedFilter={filters}
                     onChangeSelectedFilter={(a) => {
                       setPage(1);
@@ -263,7 +272,7 @@ export default function Produtos() {
 
               <Box p="6">
                 <ProductListFilter
-                  filters={data?.filters}
+                  filters={data?.filters.filter((f) => f.data.length > 0)}
                   selectedFilter={filters}
                   onChangeSelectedFilter={(a) => {
                     setPage(1);
@@ -302,14 +311,16 @@ export default function Produtos() {
           boxShadow="dark-lg"
         >
           <Flex maxW="900px" w="full" px="8" py="6" justify="space-between">
-            <Text fontSize="3xl" fontWeight="bold">
-              CATÁLOGO
-            </Text>
+            <Box>
+              <Text fontSize="3xl" fontWeight="bold">
+                CATÁLOGO
+              </Text>
+            </Box>
 
             <Stack>
-              <Text color="gray.500">{`${productsSelectedCatalog.length}/400 produtos selecionados`}</Text>
+              <Text color="gray.500">{`${productsSelectedCatalog.length}/500 produtos selecionados`}</Text>
 
-              <Stack direction="row" spacing="8">
+              <Stack direction="row" spacing="4">
                 <Button
                   type="button"
                   size="sm"
@@ -319,6 +330,17 @@ export default function Produtos() {
                 >
                   IMPRIMIR
                 </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="link"
+                  color="gray.800"
+                  onClick={() => onSelectedAllProductCatalog(filters)}
+                >
+                  MARCAR TODOS
+                </Button>
+
                 <Button
                   type="button"
                   size="sm"
@@ -336,3 +358,14 @@ export default function Produtos() {
     </>
   );
 }
+
+export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
+  const apiClient = setupAPIClient(ctx);
+  const response = await apiClient.get("/auth/me");
+
+  return {
+    props: {
+      me: response.data,
+    },
+  };
+});
