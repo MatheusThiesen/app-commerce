@@ -17,7 +17,7 @@ export function setupAPIClient(
   let cookies = parseCookies(ctx);
 
   const api = axios.create({
-    baseURL: "https://app.alpardobrasil.com.br/",
+    baseURL: "https://api-app.alpardobrasil.com.br/",
     headers: {
       Authorization: `Bearer ${cookies["nextauth.token"]}`,
     },
