@@ -72,7 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           authChannel.close();
           break;
         case "signIn":
-          window.location.replace("http://localhost:3000/inicio");
+          window.location.replace("https://app.alpardobrasil.com.br/produtos");
           break;
 
         default:
@@ -147,7 +147,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setUser(me.data);
 
-      Router.push("/inicio");
+      Router.push("/produtos");
       authChannel.postMessage("signIn");
     } catch (error) {
       const err = error as AxiosError;

@@ -45,7 +45,7 @@ export function withSSRAuth<P>(
         return {
           // notFound: true,
           redirect: {
-            destination: "/inicio",
+            destination: "/produtos",
             permanent: false,
           },
         };

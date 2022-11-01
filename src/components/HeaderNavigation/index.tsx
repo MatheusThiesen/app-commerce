@@ -199,7 +199,7 @@ export function HeaderNavigationComponent({
           </Link>
 
           <Stack direction="row" h="full" spacing="10">
-            <NavLink href="/inicio">Início</NavLink>
+            {/* <NavLink href="/inicio">Início</NavLink> */}
             <NavLink href="/produtos">Produtos</NavLink>
           </Stack>
 

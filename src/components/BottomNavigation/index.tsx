@@ -1,9 +1,6 @@
 import { Flex, List, ListItem } from "@chakra-ui/react";
-import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { BsBoxSeam } from "react-icons/bs";
-import { IoHomeOutline } from "react-icons/io5";
 import { MainNavLink } from "./MainNavLink";
-import { NavLink } from "./NavLink";
 
 interface BottomNavigationPros {
   height: string;
@@ -32,11 +29,11 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
           justifyContent="space-around"
           alignItems="center"
         >
-          <ListItem h="full">
+          {/* <ListItem h="full">
             <NavLink href="/inicio" icon={IoHomeOutline}>
               Inicio
             </NavLink>
-          </ListItem>
+          </ListItem> */}
           {/* <ListItem h="full">
             <NavLink href="/clientes" icon={FiUsers}>
               Clientes
@@ -57,11 +54,11 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
               Produtos
             </NavLink>
           </ListItem> */}
-          <ListItem h="full">
+          {/* <ListItem h="full">
             <NavLink href="/mais" icon={BiDotsHorizontalRounded}>
               mais
             </NavLink>
-          </ListItem>
+          </ListItem> */}
         </List>
       </Flex>
     </Flex>
