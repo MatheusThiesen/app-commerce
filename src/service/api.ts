@@ -1,4 +1,5 @@
-import axios, { AxiosError, HeadersDefaults } from "axios";
+import axios, { AxiosError } from "axios";
+import * as https from "https";
 import { GetServerSidePropsContext } from "next";
 import { parseCookies, setCookie } from "nookies";
 import { signOut } from "../contexts/AuthContext";
@@ -7,9 +8,9 @@ import { AuthTokenError } from "./errors/AuthTokenError";
 let isRefreshing = false;
 let failedRequestQueue: any[] = [];
 
-interface CommonHeaderProperties extends HeadersDefaults {
-  Authorization: string;
-}
+const agent = new https.Agent({
+  rejectUnauthorized: false,
+});
 
 export function setupAPIClient(
   ctx: GetServerSidePropsContext | undefined = undefined
@@ -18,9 +19,11 @@ export function setupAPIClient(
 
   const api = axios.create({
     baseURL: "https://api-app.alpardobrasil.com.br/",
+    // baseURL: "http://localhost:4444/",
     headers: {
       Authorization: `Bearer ${cookies["nextauth.token"]}`,
     },
+    httpsAgent: agent,
   });
 
   api.interceptors.response.use(
