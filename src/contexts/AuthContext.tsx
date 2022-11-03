@@ -45,6 +45,12 @@ type ReponseSignIn = {
 
 export const AuthContext = createContext({} as AuthContextData);
 
+const base_url =
+  process.env.NODE_ENV !== "development"
+    ? "https://app.alpardobrasil.com.br"
+    : "http://localhost:3000";
+const route_home = "/produtos";
+
 let authChannel: BroadcastChannel;
 
 export function signOut() {
@@ -72,7 +78,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           authChannel.close();
           break;
         case "signIn":
-          window.location.replace("https://app.alpardobrasil.com.br/produtos");
+          window.location.replace(`${base_url}${route_home}`);
           break;
 
         default:
@@ -147,7 +153,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setUser(me.data);
 
-      Router.push("/produtos");
+      Router.push(route_home);
       authChannel.postMessage("signIn");
     } catch (error) {
       const err = error as AxiosError;

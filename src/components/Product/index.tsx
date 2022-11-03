@@ -32,11 +32,10 @@ export function ProductComponent({ product }: ProductComponentProps) {
     onRemoveProduct,
     onSelectedProduct,
   } = useProductCatalog();
-  const { cod, name, descriptionAdditional, reference, priceSale, uri } =
-    product;
+  const { cod, name, reference, priceSale, uri } = product;
 
   const isProductSelectedCatalog = productsSelected.some(
-    (produto) => cod === produto.cod
+    (produto) => reference === produto.reference
   );
 
   function handleSelectedProductCatalog() {

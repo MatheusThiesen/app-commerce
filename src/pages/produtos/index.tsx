@@ -34,14 +34,6 @@ interface ProductsProps {
 
 const OrderByItems = [
   {
-    name: "Maior Cód. Produto",
-    value: "codigo.desc",
-  },
-  {
-    name: "Menor Cód. Produto",
-    value: "codigo.asc",
-  },
-  {
     name: "Maior Preços",
     value: "precoVenda.desc",
   },
@@ -91,7 +83,7 @@ export default function Produtos({ me }: ProductsProps) {
   const [orderBy, setOrderBy] = useState<string>(() => {
     if (query?.orderby) return String(query?.orderby);
 
-    return "codigo.desc";
+    return "precoVenda.desc";
   });
   const { data, isError, isLoading } = useProducts({
     page,
@@ -326,7 +318,7 @@ export default function Produtos({ me }: ProductsProps) {
                   size="sm"
                   variant="link"
                   color="gray.800"
-                  onClick={onGenerateCatalog}
+                  onClick={() => onGenerateCatalog({ orderBy: orderBy })}
                 >
                   IMPRIMIR
                 </Button>

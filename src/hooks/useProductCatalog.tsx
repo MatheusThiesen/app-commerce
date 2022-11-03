@@ -4,6 +4,10 @@ import { SelectedFilter } from "../components/ProductListFilter";
 import { api } from "../service/apiClient";
 import { getProducts } from "./queries/useProducts";
 
+type GenerateCatalogProps = {
+  orderBy: string;
+};
+
 type ProductCatalogData = {
   productsSelected: ProductProps[];
   isActivated: boolean;
@@ -12,7 +16,7 @@ type ProductCatalogData = {
   onChangeActivated: React.Dispatch<React.SetStateAction<boolean>>;
   onRemoveAllProduct: () => void;
   onSelectedAllProduct: (filters: SelectedFilter[]) => void;
-  onGenerateCatalog: () => void;
+  onGenerateCatalog: (t: GenerateCatalogProps) => void;
 };
 
 type ProductCatalogProviderProps = {
@@ -41,9 +45,10 @@ export function ProductCatalogProvider({
   function handleRemoveAllProduct() {
     setProductsSelected([]);
   }
-  async function handleGenerateCatalog() {
+  async function handleGenerateCatalog({ orderBy }: GenerateCatalogProps) {
     const response = await api.post("/products/catalog", {
       codProducts: productsSelected.map((product) => product.cod),
+      orderBy: orderBy,
     });
 
     const contentHtml = response.data;
