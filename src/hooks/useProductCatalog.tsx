@@ -58,9 +58,9 @@ export function ProductCatalogProvider({
     if (win) {
       win?.document.write(contentHtml);
       setTimeout(() => {
-        win?.print();
+        // win?.print();
         // win?.close();
-      }, 500);
+      }, 3000);
     }
   }
 

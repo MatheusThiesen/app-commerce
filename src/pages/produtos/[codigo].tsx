@@ -210,7 +210,7 @@ export default function Produto(props: ProdutoProps) {
                   <Thead>
                     <Tr>
                       <Th>Período</Th>
-                      <Th isNumeric>Qtd</Th>
+                      <Th>Meta</Th>
                     </Tr>
                   </Thead>
                   {
@@ -219,7 +219,11 @@ export default function Produto(props: ProdutoProps) {
                         <Tr key={localEstoque.id}>
                           <Td>{localEstoque.descricao}</Td>
 
-                          <Td isNumeric>{localEstoque.quantidade}</Td>
+                          <Td>
+                            {localEstoque.quantidade >= 1
+                              ? "Disponível"
+                              : "Indisponível"}
+                          </Td>
                         </Tr>
                       ))}
                     </Tbody>

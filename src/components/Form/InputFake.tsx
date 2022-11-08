@@ -28,7 +28,12 @@ export const InputFake = ({ label, value, onUpdate }: InputFakeProps) => {
         <Text as="span">{value}</Text>
 
         {onUpdate && (
-          <Button type="button" variant="unstyled" color="red.500">
+          <Button
+            type="button"
+            variant="unstyled"
+            color="red.500"
+            onClick={onUpdate}
+          >
             ALTERAR
           </Button>
         )}

@@ -1,5 +1,21 @@
-import { Box, Flex, Stack, Text, useDisclosure } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Stack,
+  Text,
+  useDisclosure,
+} from "@chakra-ui/react";
 import Head from "next/head";
+import { FaLock } from "react-icons/fa";
+import { Input } from "../components/Form/Input";
 import { InputFake } from "../components/Form/InputFake";
 import { HeaderNavigation } from "../components/HeaderNavigation";
 import { setupAPIClient } from "../service/api";
@@ -44,6 +60,53 @@ export default function Conta(props: ContaProps) {
             />
           </Stack>
         </Box>
+        <Modal
+          isCentered
+          isOpen={isOpenModalUpdatePassword}
+          onClose={onCloseModalUpdatePassword}
+        >
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader textAlign="center" mt="4" fontSize="2xl">
+              Alterar senha
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Stack>
+                <Input
+                  name="oldPassword"
+                  placeholder="Senha atual"
+                  iconLeft={FaLock}
+                  isPassword
+                />
+                <Input
+                  name="newPassword"
+                  placeholder="Nova senha"
+                  iconLeft={FaLock}
+                  isPassword
+                />
+                <Input
+                  name="confirmPassword"
+                  placeholder="Confirmar senha"
+                  iconLeft={FaLock}
+                  isPassword
+                />
+              </Stack>
+            </ModalBody>
+
+            <ModalFooter>
+              <Button
+                variant="solid"
+                w="full"
+                colorScheme="red"
+                bg="red.500"
+                size="lg"
+              >
+                Confirmar
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       </Flex>
     </>
   );

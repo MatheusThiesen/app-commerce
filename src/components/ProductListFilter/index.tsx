@@ -47,9 +47,4 @@ export function ProductListFilterComponent({
   );
 }
 
-export const ProductListFilter = memo(
-  ProductListFilterComponent,
-  (prevProps, nextProps) =>
-    Object.is(prevProps.filters, nextProps.filters) &&
-    Object.is(prevProps.selectedFilter, nextProps.selectedFilter)
-);
+export const ProductListFilter = memo(ProductListFilterComponent);

@@ -3,13 +3,13 @@ import {
   Button,
   Flex,
   SimpleGrid,
+  Spinner,
   Stack,
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
 import Head from "next/head";
-import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoBook } from "react-icons/io5";
 import { Me } from "../../@types/me";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
@@ -23,9 +23,10 @@ import {
   ProductListFilter,
   SelectedFilter,
 } from "../../components/ProductListFilter";
-import { useProducts } from "../../hooks/queries/useProducts";
+import { FilterList, useProducts } from "../../hooks/queries/useProducts";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
 import { setupAPIClient } from "../../service/api";
+import { api } from "../../service/apiClient";
 import { withSSRAuth } from "../../utils/withSSRAuth";
 
 interface ProductsProps {
@@ -54,7 +55,6 @@ const OrderByItems = [
 const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
 
 export default function Produtos({ me }: ProductsProps) {
-  const { query } = useRouter();
   const {
     onChangeActivated: onChangeActivatedProductCatalog,
     isActivated: isActivatedCatalog,
@@ -75,24 +75,30 @@ export default function Produtos({ me }: ProductsProps) {
     onClose: onCloseOrderBy,
   } = useDisclosure();
   const [filters, setFilters] = useState<SelectedFilter[]>([]);
+  const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
+  const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
   const [page, setPage] = useState(() => {
-    if (!isNaN(Number(query?.page))) return Number(query.page);
-
     return 1;
   });
   const [orderBy, setOrderBy] = useState<string>(() => {
-    if (query?.orderby) return String(query?.orderby);
-
     return "precoVenda.desc";
   });
-  const { data, isError, isLoading } = useProducts({
+
+  const { data, isLoading } = useProducts({
     page,
     pagesize: 40,
     orderby: orderBy,
     filters: filters,
   });
 
-  if (isError) return "Error";
+  useEffect(() => {
+    (async () => {
+      const { data } = await api.get<FilterList[]>("/products/filters");
+      setDataFilters(data);
+
+      setIsLoadingFilters(false);
+    })();
+  }, []);
 
   return (
     <>
@@ -154,8 +160,10 @@ export default function Produtos({ me }: ProductsProps) {
         }
       />
 
-      {!data || isLoading ? (
-        "Loading"
+      {isLoadingFilters ? (
+        <Flex h="100vh" w="100vw" justify="center" align="center">
+          <Spinner ml="4" size="xl" />
+        </Flex>
       ) : (
         <>
           <Flex
@@ -189,16 +197,18 @@ export default function Produtos({ me }: ProductsProps) {
                     setFilters={setFilters}
                   />
 
-                  <ProductListFilter
-                    filters={data?.filters.filter((f) => f.data.length > 0)}
-                    selectedFilter={filters}
-                    onChangeSelectedFilter={(a) => {
-                      setPage(1);
+                  {dataFilters && (
+                    <ProductListFilter
+                      filters={dataFilters}
+                      selectedFilter={filters}
+                      onChangeSelectedFilter={(a) => {
+                        setPage(1);
 
-                      setFilters(a);
-                    }}
-                    isOpen
-                  />
+                        setFilters(a);
+                      }}
+                      isOpen
+                    />
+                  )}
                 </Box>
               </Flex>
 
@@ -212,6 +222,7 @@ export default function Produtos({ me }: ProductsProps) {
                     lineHeight="2rem"
                   >
                     Produtos
+                    {isLoading && <Spinner ml="4" size="md" />}
                   </Text>
 
                   <Flex justifyContent="space-between" mt="1" mb="2">
@@ -263,14 +274,16 @@ export default function Produtos({ me }: ProductsProps) {
               <FilterSelectedList filters={filters} setFilters={setFilters} />
 
               <Box p="6">
-                <ProductListFilter
-                  filters={data?.filters.filter((f) => f.data.length > 0)}
-                  selectedFilter={filters}
-                  onChangeSelectedFilter={(a) => {
-                    setPage(1);
-                    setFilters(a);
-                  }}
-                />
+                {dataFilters && (
+                  <ProductListFilter
+                    filters={dataFilters}
+                    selectedFilter={filters}
+                    onChangeSelectedFilter={(a) => {
+                      setPage(1);
+                      setFilters(a);
+                    }}
+                  />
+                )}
               </Box>
             </Box>
           </ModalList>

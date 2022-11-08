@@ -71,7 +71,7 @@ export default function SignIn() {
             />
             <Input
               label="Password"
-              type="password"
+              isPassword
               error={
                 !!errors?.password?.message
                   ? String(errors?.password?.message)

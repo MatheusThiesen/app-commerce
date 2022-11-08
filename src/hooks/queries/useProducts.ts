@@ -58,7 +58,6 @@ type ProductApiResponse = {
   data: Product[];
   page: number;
   pagesize: number;
-  filters: FilterList[];
   total: number;
 };
 
@@ -67,8 +66,6 @@ type GetProductsResponse = {
   page: number;
   pagesize: number;
   total: number;
-  filters: FilterList[];
-
   productsStartShow: number;
   productsEndShow: number;
 };
@@ -109,7 +106,6 @@ export async function getProducts({
     pagesize: data.pagesize,
     total: data.total,
     page: data.page,
-    filters: data.filters,
     productsStartShow: data.pagesize * (data.page + 1) - data.pagesize,
     productsEndShow: data.pagesize * (data.page + 1),
   };
