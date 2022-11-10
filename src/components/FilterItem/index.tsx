@@ -189,7 +189,7 @@ export function FilterItem({
             <List
               height={150}
               itemCount={filteredList.length}
-              itemSize={["subGrupoId"].includes(name) ? 40 : 25}
+              itemSize={["subGrupoId", "grupoCodigo"].includes(name) ? 40 : 25}
               width={100}
               style={{
                 width: "100%",
