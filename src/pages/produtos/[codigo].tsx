@@ -75,15 +75,25 @@ export default function Produto(props: ProdutoProps) {
         </Flex>
       ) : (
         <>
-          <Flex flexDir="column" align="center" width="full" mt="8">
+          <Flex
+            flexDir="column"
+            align="center"
+            width="full"
+            mt={["0", "0", "0", "8"]}
+          >
             <Flex
               flexDir="column"
               width="full"
               maxW="1200px"
-              px="4"
+              px={["0", "0", "0", "4"]}
               align="center"
             >
-              <Flex w="full" mb="2" align="center">
+              <Flex
+                w="full"
+                mb="2"
+                align="center"
+                display={["none", "none", "none", "flex"]}
+              >
                 <Link href="/produtos">
                   <CharkraLink h="full" color="gray.600">
                     Voltar à listagem
@@ -112,14 +122,18 @@ export default function Produto(props: ProdutoProps) {
 
               <Flex
                 flexDir={["column", "column", "column", "row"]}
-                p="2"
+                pt="2"
+                pl="2"
                 w="full"
                 bg="white"
                 borderRadius="md"
                 shadow="md"
                 mb="5rem"
               >
-                <Box w={["100%", "100%", "100%", "60%"]} pr="8">
+                <Box
+                  w={["100%", "100%", "100%", "60%"]}
+                  pr={["0", "0", "0", "2"]}
+                >
                   {images.length <= 0 ? (
                     <Flex h="26rem" w="full" justify="center" align="center">
                       <Spinner ml="4" size="xl" />
@@ -198,7 +212,7 @@ export default function Produto(props: ProdutoProps) {
                   borderColor="gray.100"
                   borderWidth={[0, 0, 0, "1px"]}
                   borderRadius="lg"
-                  px="6"
+                  px="4"
                   pt="4"
                   pb="10"
                 >
