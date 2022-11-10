@@ -15,6 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { IoIosSearch } from "react-icons/io";
+import SelectMultiple, { MultiValue } from "react-select";
 import { SelectedFilter } from "../ProductListFilter";
 
 interface ItemProps {
@@ -51,7 +52,10 @@ export function FilterItem({
   }
 
   function onChecked(item: ItemProps): boolean | undefined {
-    const findOne = selectedFilter.some((f) => f.value === item.value);
+    const findOne = selectedFilter.some(
+      (f) => f.value === item.value && f.name === name
+    );
+
     return findOne ? true : false;
   }
 
@@ -76,6 +80,39 @@ export function FilterItem({
     }
   }
 
+  function handleSearchSelected(
+    e: MultiValue<{
+      value: string | number;
+      label: string;
+    }>
+  ) {
+    const date = selectedFilter;
+    const filtersName = selectedFilter.filter((f) => f.name === name);
+
+    //Remover filtros
+    const removeFilters = filtersName.filter(
+      (f) => !e.map((t) => t.value).includes(f.value)
+    );
+    console.log("removeFilters", removeFilters);
+
+    //Adicionar filtros
+    const addFilters = e.filter(
+      (f) => !filtersName.map((t) => t.value).includes(f.value)
+    );
+    console.log("addFilters", addFilters);
+
+    const newItems: ItemProps[] = addFilters.map((item) => ({
+      name: name,
+      value: item.value,
+      field: item.label,
+    }));
+
+    console.log("newItems", newItems);
+    console.log(date, "date");
+
+    onChangeSelectedFilter([...date, ...newItems]);
+  }
+
   const filteredList = data.filter((i) =>
     search
       ? i.name
@@ -85,6 +122,32 @@ export function FilterItem({
           .includes(search.toString().toLocaleLowerCase().trim())
       : data
   );
+
+  if (["-referencia"].includes(name)) {
+    return (
+      <Box bg="white" p="4" borderRadius="md">
+        <Box flex="1" textAlign="left">
+          <Text fontSize="md" color="gray.800" fontWeight="bold">
+            {title}
+          </Text>
+        </Box>
+
+        <Box mt="4">
+          <SelectMultiple
+            placeholder="Buscar..."
+            isMulti
+            onChange={handleSearchSelected}
+            name={name}
+            options={filteredList.map((filter) => ({
+              value: filter.value,
+              label: filter.name,
+            }))}
+          />
+        </Box>
+      </Box>
+    );
+  } else {
+  }
 
   return (
     <AccordionChakra

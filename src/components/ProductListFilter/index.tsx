@@ -28,16 +28,11 @@ export function ProductListFilterComponent({
         <FilterItem
           key={filter.name}
           AccordionItem={{
-            // border: index - 1 === filter.data.length ? 0 : undefined,
             border: 0,
           }}
           title={filter.label}
           name={filter.name}
-          data={filter.data.map((item) => ({
-            name: item.name,
-            value: item.value,
-            field: item.name,
-          }))}
+          data={filter.data}
           selectedFilter={selectedFilter}
           onChangeSelectedFilter={onChangeSelectedFilter}
           isOpen={isOpen}

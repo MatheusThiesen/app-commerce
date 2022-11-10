@@ -25,6 +25,22 @@ export type Product = {
     codigo: number;
     descricao: string;
   };
+  grupo?: {
+    codigo: number;
+    descricao: string;
+  };
+  subGrupo?: {
+    codigo: number;
+    descricao: string;
+  };
+  genero?: {
+    codigo: number;
+    descricao: string;
+  };
+  linha?: {
+    codigo: number;
+    descricao: string;
+  };
   corPrimaria?: {
     codigo: number;
     descricao: string;
@@ -40,6 +56,10 @@ export type Product = {
     codigoAlternativo: number;
     referencia: string;
     descricao: string;
+  }[];
+  grades?: {
+    codigo: number;
+    descricaoAdicional: string;
   }[];
 };
 

@@ -1,5 +1,11 @@
-import { createContext, ReactNode, useContext, useState } from "react";
-import { ProductProps } from "../components/Product";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
 import { SelectedFilter } from "../components/ProductListFilter";
 import { api } from "../service/apiClient";
 import { getProducts } from "./queries/useProducts";
@@ -8,11 +14,15 @@ type GenerateCatalogProps = {
   orderBy: string;
 };
 
+export type CatalogProductProps = {
+  reference: string;
+};
+
 type ProductCatalogData = {
-  productsSelected: ProductProps[];
+  productsSelected: CatalogProductProps[];
   isActivated: boolean;
-  onSelectedProduct: (i: ProductProps) => void;
-  onRemoveProduct: (i: ProductProps) => void;
+  onSelectedProduct: (i: CatalogProductProps) => void;
+  onRemoveProduct: (i: CatalogProductProps) => void;
   onChangeActivated: React.Dispatch<React.SetStateAction<boolean>>;
   onRemoveAllProduct: () => void;
   onSelectedAllProduct: (filters: SelectedFilter[]) => void;
@@ -30,15 +40,17 @@ const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
 export function ProductCatalogProvider({
   children,
 }: ProductCatalogProviderProps) {
-  const [productsSelected, setProductsSelected] = useState<ProductProps[]>([]);
+  const [productsSelected, setProductsSelected] = useState<
+    CatalogProductProps[]
+  >([]);
   const [isActivated, setIsActivated] = useState<boolean>(false);
 
-  function handleSelectedProduct(produto: ProductProps) {
+  function handleSelectedProduct(produto: CatalogProductProps) {
     setProductsSelected((stateDate) => [...stateDate, produto]);
   }
-  function handleRemoveProduct({ cod }: ProductProps) {
+  function handleRemoveProduct({ reference }: CatalogProductProps) {
     const removeProduct = productsSelected.filter(
-      (produto) => produto.cod !== cod
+      (produto) => produto.reference !== reference
     );
     setProductsSelected(removeProduct);
   }
@@ -47,7 +59,7 @@ export function ProductCatalogProvider({
   }
   async function handleGenerateCatalog({ orderBy }: GenerateCatalogProps) {
     const response = await api.post("/products/catalog", {
-      codProducts: productsSelected.map((product) => product.cod),
+      referencesProduct: productsSelected.map((product) => product.reference),
       orderBy: orderBy,
     });
 
@@ -63,27 +75,31 @@ export function ProductCatalogProvider({
       }, 3000);
     }
   }
-
   async function handleSelectedAllProduct(filters: SelectedFilter[]) {
     const responseProducts = await getProducts({
       page: 1,
       filters: filters,
-      pagesize: 500,
+      pagesize: 300,
     });
 
     const normalizedProducts = responseProducts.products.map((product) => ({
-      cod: product.codigo,
-      name: product.descricao,
-      descriptionAdditional: product.descricaoAdicional,
       reference: product.referencia,
-      priceSale: product.precoVendaFormat,
-      uri: `${spaceImages}/Produtos/${product.referencia}_01`,
     }));
 
     setProductsSelected(
       normalizedProducts.filter((f) => !productsSelected.includes(f))
     );
   }
+
+  useEffect(() => {
+    if (productsSelected.length >= 1) {
+      if (!isActivated) {
+        setIsActivated(true);
+      }
+    } else {
+      setIsActivated(false);
+    }
+  }, [productsSelected]);
 
   return (
     <ProductCatalogContext.Provider

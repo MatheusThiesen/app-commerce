@@ -323,7 +323,7 @@ export default function Produtos({ me }: ProductsProps) {
             </Box>
 
             <Stack>
-              <Text color="gray.500">{`${productsSelectedCatalog.length}/500 produtos selecionados`}</Text>
+              <Text color="gray.500">{`${productsSelectedCatalog.length}/300 produtos selecionados`}</Text>
 
               <Stack direction="row" spacing="4">
                 <Button

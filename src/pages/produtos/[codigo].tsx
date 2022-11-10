@@ -8,6 +8,7 @@ import {
   HStack,
   Image,
   Link as CharkraLink,
+  Spinner,
   Table,
   TableCaption,
   TableContainer,
@@ -18,42 +19,54 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import axios from "axios";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { IoChevronForwardSharp } from "react-icons/io5";
-import xml2js from "xml2js";
+import Select from "react-select";
 import { Me } from "../../@types/me";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductCarousel } from "../../components/ProductCarousel";
-import { getProductOne, Product } from "../../hooks/queries/useProducts";
+import { useProductOne } from "../../hooks/queries/useProducts";
+import { useImagesProduct } from "../../hooks/useImagesProduct";
 import { setupAPIClient } from "../../service/api";
 import { withSSRAuth } from "../../utils/withSSRAuth";
 
-type ResponseXmlToJson = {
-  ListBucketResult: {
-    Contents: {
-      Key: string[];
-    }[];
-  };
-};
-
 interface ProdutoProps {
-  product?: Product;
-  images?: string[];
   me: Me;
 }
 
 export default function Produto(props: ProdutoProps) {
   const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
-  const {} = useRouter();
-  if (!props) return "Loading";
+  const router = useRouter();
+  const { codigo } = router.query;
+  const [images, setImages] = useState<string[]>([]);
+
+  const { data: product, isLoading } = useProductOne(Number(codigo));
+
+  useEffect(() => {
+    (async () => {
+      if (product) {
+        const getImages = await useImagesProduct({
+          reference: product.referencia,
+        });
+        setImages(getImages);
+      }
+    })();
+  }, [product]);
+
+  if (isLoading)
+    return (
+      <Flex h="100vh" w="100vw" justify="center" align="center">
+        <Spinner ml="4" size="xl" />
+      </Flex>
+    );
 
   return (
     <>
       <Head>
-        <title>Produtos - App Alpar do Brasil</title>
+        <title> Produtos - App Alpar do Brasil</title>
       </Head>
 
       <HeaderNavigation
@@ -79,8 +92,8 @@ export default function Produto(props: ProdutoProps) {
               separator={<IoChevronForwardSharp color="gray.500" />}
             >
               <BreadcrumbItem>
-                <Link href={`/produtos/${props.product?.codigo}`}>
-                  <BreadcrumbLink>{props.product?.descricao}</BreadcrumbLink>
+                <Link href={`/produtos/${product?.codigo}`}>
+                  <BreadcrumbLink>{product?.descricao}</BreadcrumbLink>
                 </Link>
               </BreadcrumbItem>
 
@@ -99,27 +112,73 @@ export default function Produto(props: ProdutoProps) {
             bg="white"
             borderRadius="md"
             shadow="md"
+            mb="5rem"
           >
             <Box w={["100%", "100%", "100%", "60%"]} pr="8">
               <ProductCarousel
                 bg="white"
                 h="26rem"
                 banners={
-                  props.images?.map((image, index) => ({
+                  images?.map((image, index) => ({
                     id: index.toString(),
-                    name: props.product?.descricao ?? "-",
+                    name: product?.descricao ?? "-",
                     uri: image,
                   })) ?? []
                 }
               />
 
-              <Box>
+              <Box p="1rem">
                 <Divider />
-                <Text as="h2" mt="4" fontSize="2xl" fontWeight="light">
-                  Características do produto
-                </Text>
 
-                {props.product?.descricaoAdicional}
+                <Box p="1rem">
+                  <Text as="h2" mt="4" fontSize="3xl" fontWeight="light">
+                    Características do produto
+                  </Text>
+
+                  <Text
+                    mb="8"
+                    fontSize="sm"
+                    fontWeight="light"
+                    color="gray.600"
+                  >
+                    {product?.descricaoComplementar}
+                  </Text>
+
+                  <Box w={["100%", "100%", "100%", "60%"]}>
+                    <Text as="h2" mb="2" fontSize="lg" fontWeight="light">
+                      Características gerais
+                    </Text>
+
+                    <Table size="sm" variant="striped">
+                      <Tbody>
+                        <Tr>
+                          <Td>Marca</Td>
+                          <Td>{product?.marca.descricao}</Td>
+                        </Tr>
+                        <Tr>
+                          <Td>Coleção</Td>
+                          <Td>{product?.colecao?.descricao}</Td>
+                        </Tr>
+                        <Tr>
+                          <Td>Linha</Td>
+                          <Td>{product?.linha?.descricao}</Td>
+                        </Tr>
+                        <Tr>
+                          <Td>Grupo</Td>
+                          <Td>{product?.grupo?.descricao}</Td>
+                        </Tr>
+                        <Tr>
+                          <Td>Subgrupo</Td>
+                          <Td>{product?.subGrupo?.descricao}</Td>
+                        </Tr>
+                        <Tr>
+                          <Td>Gênero</Td>
+                          <Td>{product?.genero?.descricao}</Td>
+                        </Tr>
+                      </Tbody>
+                    </Table>
+                  </Box>
+                </Box>
               </Box>
             </Box>
 
@@ -133,27 +192,26 @@ export default function Produto(props: ProdutoProps) {
               borderRadius="lg"
             >
               <Text as="h1" fontSize="2xl" fontWeight="bold">
-                {props.product?.descricao}
+                {product?.descricao}
               </Text>
               <Text as="p" fontSize="sm" fontWeight="light" color="gray.600">
-                Referência {props.product?.referencia}
+                Referência {product?.referencia}
               </Text>
               <Text as="span" fontSize="2xl" fontWeight="medium">
-                PDV {props.product?.precoVendaFormat}
+                PDV {product?.precoVendaFormat}
               </Text>
               <Text as="p" fontSize="small" mt="2" fontWeight="light">
                 Cor:{" "}
                 <Text as="span" fontSize="small" mt="2" fontWeight="bold">
-                  {props.product?.corPrimaria?.descricao}
-                  {props.product?.corSecundaria?.cor.descricao
-                    ? ` e ${props.product?.corSecundaria?.cor.descricao}`
+                  {product?.corPrimaria?.descricao}
+                  {product?.corSecundaria?.cor.descricao
+                    ? ` e ${product?.corSecundaria?.cor.descricao}`
                     : ""}
                 </Text>
               </Text>
-
-              {props.product?.variacoes && (
+              {product?.variacoes && (
                 <HStack spacing={1}>
-                  {props.product?.variacoes?.map((variation) => (
+                  {product?.variacoes?.map((variation) => (
                     <Link
                       href={`/produtos/${variation.codigo}`}
                       key={variation.codigo}
@@ -165,17 +223,17 @@ export default function Produto(props: ProdutoProps) {
                         h="4rem"
                         borderRadius="md"
                         cursor={
-                          props.product?.referencia === variation.referencia
+                          product?.referencia === variation.referencia
                             ? "auto"
                             : "pointer"
                         }
                         borderWidth={
-                          props.product?.referencia === variation.referencia
+                          product?.referencia === variation.referencia
                             ? "2px"
                             : "1px"
                         }
                         borderColor={
-                          props.product?.referencia === variation.referencia
+                          product?.referencia === variation.referencia
                             ? "blue.500"
                             : "gray.200"
                         }
@@ -198,12 +256,27 @@ export default function Produto(props: ProdutoProps) {
                 </HStack>
               )}
 
+              <Box mt="4">
+                <Select
+                  className="basic-single"
+                  classNamePrefix="select"
+                  options={product?.grades?.map((grade) => ({
+                    value: grade.codigo,
+                    label: grade.descricaoAdicional,
+                  }))}
+                  defaultValue={{
+                    value: product?.codigo,
+                    label: product?.descricaoAdicional,
+                  }}
+                  onChange={(e) => router.push(`/produtos/${e?.value}`)}
+                />
+              </Box>
               <TableContainer mt="6" w="60%">
                 <Text mb="3" fontSize="lg">
-                  Estoque
+                  Metas
                 </Text>
                 <Table size="sm" variant="simple">
-                  {(props.product?.locaisEstoque?.length ?? 0) <= 0 && (
+                  {(product?.locaisEstoque?.length ?? 0) <= 0 && (
                     <TableCaption>Sem dados</TableCaption>
                   )}
 
@@ -215,7 +288,7 @@ export default function Produto(props: ProdutoProps) {
                   </Thead>
                   {
                     <Tbody>
-                      {props.product?.locaisEstoque?.map((localEstoque) => (
+                      {product?.locaisEstoque?.map((localEstoque) => (
                         <Tr key={localEstoque.id}>
                           <Td>{localEstoque.descricao}</Td>
 
@@ -242,32 +315,8 @@ export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
   const response = await apiClient.get("/auth/me");
 
-  const product = await getProductOne(Number(ctx.query.codigo), ctx);
-  var images: string[] = [];
-  if (product) {
-    const response = await axios(
-      `https://alpar.sfo3.digitaloceanspaces.com/?prefix=Produtos%2F${product.referencia}&max-keys=10`,
-      {
-        method: "GET",
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "*",
-          "Access-Control-Allow-Credentials": "true",
-        },
-      }
-    );
-    const xmlToJson = (await xml2js.parseStringPromise(
-      response.data
-    )) as ResponseXmlToJson;
-    images = xmlToJson?.ListBucketResult?.Contents?.map(
-      (key) => "https://alpar.sfo3.digitaloceanspaces.com" + "/" + key?.Key[0]
-    );
-  }
-
   return {
     props: {
-      product,
-      images,
       me: response.data,
     },
   };
