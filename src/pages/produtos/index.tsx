@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   SimpleGrid,
+  Slide,
   Spinner,
   Stack,
   Text,
@@ -74,6 +75,7 @@ export default function Produtos({ me }: ProductsProps) {
     onOpen: onOpenOrderBy,
     onClose: onCloseOrderBy,
   } = useDisclosure();
+  const { isOpen, onToggle } = useDisclosure();
   const [filters, setFilters] = useState<SelectedFilter[]>([]);
   const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
   const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
@@ -99,6 +101,15 @@ export default function Produtos({ me }: ProductsProps) {
       setIsLoadingFilters(false);
     })();
   }, []);
+
+  useEffect(() => {
+    if (isActivatedCatalog && !isOpen) {
+      onToggle();
+    }
+    if (!isActivatedCatalog && isOpen) {
+      onToggle();
+    }
+  }, [isActivatedCatalog]);
 
   return (
     <>
@@ -179,19 +190,7 @@ export default function Produtos({ me }: ProductsProps) {
                 display={["none", "none", "none", "flex"]}
                 flexDirection="column"
               >
-                <Button
-                  leftIcon={<IoBook fontSize={"20"} />}
-                  colorScheme="blue"
-                  // variant="outline"
-                  mb="1rem"
-                  onClick={() => {
-                    onChangeActivatedProductCatalog((oldDate) => !oldDate);
-                  }}
-                >
-                  <Text>CATÁLOGO</Text>
-                </Button>
-
-                <Box borderRadius="md" p="6">
+                <Box borderRadius="md">
                   <FilterSelectedList
                     filters={filters}
                     setFilters={setFilters}
@@ -305,61 +304,65 @@ export default function Produtos({ me }: ProductsProps) {
         </>
       )}
 
-      {isActivatedCatalog && (
-        <Flex
-          bg="white"
-          position="fixed"
-          bottom="0"
-          left="0"
-          w="full"
-          justify={"center"}
-          boxShadow="dark-lg"
-        >
-          <Flex maxW="900px" w="full" px="8" py="6" justify="space-between">
-            <Box>
-              <Text fontSize="3xl" fontWeight="bold">
-                CATÁLOGO
-              </Text>
-            </Box>
+      <Slide direction="bottom" in={isOpen} style={{ zIndex: 10 }}>
+        <Box p="50px">
+          <Flex
+            bg="white"
+            position="fixed"
+            bottom="0"
+            left="0"
+            w="full"
+            justify={"center"}
+            boxShadow="dark-lg"
+          >
+            <Flex maxW="900px" w="full" px="8" py="6" justify="space-between">
+              <Box>
+                <Text fontSize="3xl" fontWeight="bold">
+                  CATÁLOGO
+                </Text>
+              </Box>
 
-            <Stack>
-              <Text color="gray.500">{`${productsSelectedCatalog.length}/300 produtos selecionados`}</Text>
+              <Stack>
+                <Text color="gray.500">{`${productsSelectedCatalog.length}/300 produtos selecionados`}</Text>
 
-              <Stack direction="row" spacing="4">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="link"
-                  color="gray.800"
-                  onClick={() => onGenerateCatalog({ orderBy: orderBy })}
-                >
-                  IMPRIMIR
-                </Button>
+                <Stack direction="row" spacing="4">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="link"
+                    color="gray.800"
+                    onClick={() => onGenerateCatalog({ orderBy: orderBy })}
+                  >
+                    IMPRIMIR
+                  </Button>
 
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="link"
-                  color="gray.800"
-                  onClick={() => onSelectedAllProductCatalog(filters, orderBy)}
-                >
-                  MARCAR TODOS
-                </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="link"
+                    color="gray.800"
+                    onClick={() =>
+                      onSelectedAllProductCatalog(filters, orderBy)
+                    }
+                  >
+                    MARCAR TODOS
+                  </Button>
 
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="link"
-                  color="gray.800"
-                  onClick={onRemoveAllProductCatalog}
-                >
-                  DESMARCAR TODOS
-                </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="link"
+                    color="gray.800"
+                    onClick={onRemoveAllProductCatalog}
+                  >
+                    DESMARCAR TODOS
+                  </Button>
+                </Stack>
               </Stack>
-            </Stack>
+            </Flex>
           </Flex>
-        </Flex>
-      )}
+        </Box>
+      </Slide>
     </>
   );
 }

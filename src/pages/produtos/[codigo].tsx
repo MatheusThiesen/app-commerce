@@ -84,9 +84,9 @@ export default function Produto(props: ProdutoProps) {
             <Flex
               flexDir="column"
               width="full"
+              align="center"
               maxW="1200px"
               px={["0", "0", "0", "4"]}
-              align="center"
             >
               <Flex
                 w="full"
@@ -122,8 +122,9 @@ export default function Produto(props: ProdutoProps) {
 
               <Flex
                 flexDir={["column", "column", "column", "row"]}
-                pt="2"
-                pl="2"
+                pt={["0", "0", "0", "2"]}
+                pl={["0", "0", "0", "2"]}
+                pr={["0", "0", "0", "2"]}
                 w="full"
                 bg="white"
                 borderRadius="md"
@@ -136,7 +137,7 @@ export default function Produto(props: ProdutoProps) {
                 >
                   {images.length <= 0 ? (
                     <Flex h="26rem" w="full" justify="center" align="center">
-                      <Spinner ml="4" size="xl" />
+                      <Spinner ml={["0", "0", "0", "4"]} size="xl" />
                     </Flex>
                   ) : (
                     <ProductCarousel

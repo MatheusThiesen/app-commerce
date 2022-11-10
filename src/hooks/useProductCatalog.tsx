@@ -1,10 +1,13 @@
+import { Box, Icon, Spinner, Text, useToast } from "@chakra-ui/react";
 import {
   createContext,
   ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
+import { IoBook } from "react-icons/io5";
 
 import { SelectedFilter } from "../components/ProductListFilter";
 import { api } from "../service/apiClient";
@@ -40,6 +43,9 @@ const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
 export function ProductCatalogProvider({
   children,
 }: ProductCatalogProviderProps) {
+  const toast = useToast();
+  const toastIdRef = useRef();
+
   const [productsSelected, setProductsSelected] = useState<
     CatalogProductProps[]
   >([]);
@@ -58,21 +64,68 @@ export function ProductCatalogProvider({
     setProductsSelected([]);
   }
   async function handleGenerateCatalog({ orderBy }: GenerateCatalogProps) {
-    const response = await api.post("/products/catalog", {
-      referencesProduct: productsSelected.map((product) => product.reference),
-      orderBy: orderBy,
+    //@ts-ignore
+    toastIdRef.current = toast({
+      position: "top-right",
+      duration: 100000,
+      render: () => (
+        <Box
+          bg="blue.400"
+          p="3"
+          borderRadius="md"
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Box display="flex" alignItems="center" justifyContent="start">
+            <Icon as={IoBook} color="white" mr="3" fontSize="20px" />
+            <Text as="span" color="white" fontSize="md">
+              Gerando catálogo
+            </Text>
+          </Box>
+          <Spinner ml="3" size="md" color="white" />
+        </Box>
+      ),
     });
 
-    const contentHtml = response.data;
+    try {
+      const response = await api.post("/products/catalog", {
+        referencesProduct: productsSelected.map((product) => product.reference),
+        orderBy: orderBy,
+      });
 
-    var win = window.open();
+      if (toastIdRef.current) {
+        toast.update(toastIdRef.current, {
+          description: "Catálogo gerado!",
+          status: "success",
+          isClosable: true,
+        });
+        setTimeout(() => {
+          if (toastIdRef.current) {
+            toast.close(toastIdRef.current);
+          }
+        }, 3000);
+      }
 
-    if (win) {
-      win?.document.write(contentHtml);
-      setTimeout(() => {
-        // win?.print();
-        // win?.close();
-      }, 3000);
+      const contentHtml = response.data;
+
+      var win = window.open();
+
+      if (win) {
+        win?.document.write(contentHtml);
+        setTimeout(() => {
+          // win?.print();
+          // win?.close();
+        }, 3000);
+      }
+    } catch (error) {
+      if (toastIdRef.current) {
+        toast.update(toastIdRef.current, {
+          description: "Ocorreu um erro ao gerar Catálogo.",
+          status: "error",
+          isClosable: true,
+        });
+      }
     }
   }
   async function handleSelectedAllProduct(
@@ -83,7 +136,7 @@ export function ProductCatalogProvider({
       page: 1,
       filters: filters,
       orderby: orderby,
-      pagesize: 300,
+      pagesize: 5000,
     });
 
     const normalizedProducts = responseProducts.products.map((product) => ({
