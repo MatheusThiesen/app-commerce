@@ -13,9 +13,9 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { IoIosSearch } from "react-icons/io";
-import SelectMultiple, { MultiValue } from "react-select";
+import { FixedSizeList as List, ListChildComponentProps } from "react-window";
 import { SelectedFilter } from "../ProductListFilter";
 
 interface ItemProps {
@@ -80,39 +80,6 @@ export function FilterItem({
     }
   }
 
-  function handleSearchSelected(
-    e: MultiValue<{
-      value: string | number;
-      label: string;
-    }>
-  ) {
-    const date = selectedFilter;
-    const filtersName = selectedFilter.filter((f) => f.name === name);
-
-    //Remover filtros
-    const removeFilters = filtersName.filter(
-      (f) => !e.map((t) => t.value).includes(f.value)
-    );
-    console.log("removeFilters", removeFilters);
-
-    //Adicionar filtros
-    const addFilters = e.filter(
-      (f) => !filtersName.map((t) => t.value).includes(f.value)
-    );
-    console.log("addFilters", addFilters);
-
-    const newItems: ItemProps[] = addFilters.map((item) => ({
-      name: name,
-      value: item.value,
-      field: item.label,
-    }));
-
-    console.log("newItems", newItems);
-    console.log(date, "date");
-
-    onChangeSelectedFilter([...date, ...newItems]);
-  }
-
   const filteredList = data.filter((i) =>
     search
       ? i.name
@@ -123,31 +90,34 @@ export function FilterItem({
       : data
   );
 
-  if (["-referencia"].includes(name)) {
-    return (
-      <Box bg="white" p="4" borderRadius="md">
-        <Box flex="1" textAlign="left">
-          <Text fontSize="md" color="gray.800" fontWeight="bold">
-            {title}
-          </Text>
-        </Box>
+  const RenderRow = useCallback(
+    ({ index, style }: ListChildComponentProps) => {
+      const item = filteredList[index];
+      const isChecked = onChecked(item);
 
-        <Box mt="4">
-          <SelectMultiple
-            placeholder="Buscar..."
-            isMulti
-            onChange={handleSearchSelected}
-            name={name}
-            options={filteredList.map((filter) => ({
-              value: filter.value,
-              label: filter.name,
-            }))}
-          />
-        </Box>
-      </Box>
-    );
-  } else {
-  }
+      if (!item) return null;
+
+      return (
+        <Checkbox
+          style={style}
+          key={item.value}
+          isChecked={isChecked}
+          value={item.value}
+          onChange={(e) =>
+            handleSelectedFilter({
+              item: item,
+              checked: e.target.checked,
+            })
+          }
+        >
+          <Text fontSize="sm" color="gray.600">
+            {item.name}
+          </Text>
+        </Checkbox>
+      );
+    },
+    [filteredList]
+  );
 
   return (
     <AccordionChakra
@@ -192,28 +162,42 @@ export function FilterItem({
             </Flex>
           )}
 
-          <Stack spacing={1} maxH="150" overflowY="scroll">
-            {filteredList.map((item) => {
-              const isChecked = onChecked(item);
-              return (
-                <Checkbox
-                  key={item.value}
-                  isChecked={isChecked}
-                  value={item.value}
-                  onChange={(e) =>
-                    handleSelectedFilter({
-                      item: item,
-                      checked: e.target.checked,
-                    })
-                  }
-                >
-                  <Text fontSize="sm" color="gray.600">
-                    {item.name}
-                  </Text>
-                </Checkbox>
-              );
-            })}
-          </Stack>
+          {filteredList.length <= 8 ? (
+            <Stack spacing={1} maxH="150" overflowY="scroll">
+              {filteredList.map((item) => {
+                const isChecked = onChecked(item);
+                return (
+                  <Checkbox
+                    key={item.value}
+                    isChecked={isChecked}
+                    value={item.value}
+                    onChange={(e) =>
+                      handleSelectedFilter({
+                        item: item,
+                        checked: e.target.checked,
+                      })
+                    }
+                  >
+                    <Text fontSize="sm" color="gray.600">
+                      {item.name}
+                    </Text>
+                  </Checkbox>
+                );
+              })}
+            </Stack>
+          ) : (
+            <List
+              height={150}
+              itemCount={filteredList.length}
+              itemSize={25}
+              width={100}
+              style={{
+                width: "100%",
+              }}
+            >
+              {RenderRow}
+            </List>
+          )}
         </AccordionPanel>
       </AccordionItem>
     </AccordionChakra>

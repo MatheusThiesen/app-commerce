@@ -195,131 +195,133 @@ export default function Produto(props: ProdutoProps) {
 
                 <Box
                   w={["100%", "100%", "100%", "40%"]}
-                  px="6"
-                  pt="4"
-                  pb="10"
                   borderColor="gray.100"
                   borderWidth={[0, 0, 0, "1px"]}
                   borderRadius="lg"
+                  px="6"
+                  pt="4"
+                  pb="10"
                 >
-                  <Text as="h1" fontSize="2xl" fontWeight="bold">
-                    {product?.descricao}
-                  </Text>
-                  <Text
-                    as="p"
-                    fontSize="sm"
-                    fontWeight="light"
-                    color="gray.600"
-                  >
-                    Referência {product?.referencia}
-                  </Text>
-                  <Text as="span" fontSize="2xl" fontWeight="medium">
-                    PDV {product?.precoVendaFormat}
-                  </Text>
-                  <Text as="p" fontSize="small" mt="2" fontWeight="light">
-                    Cor:{" "}
-                    <Text as="span" fontSize="small" mt="2" fontWeight="bold">
-                      {product?.corPrimaria?.descricao}
-                      {product?.corSecundaria?.cor.descricao
-                        ? ` e ${product?.corSecundaria?.cor.descricao}`
-                        : ""}
+                  <Box position="sticky" top="4">
+                    <Text as="h1" fontSize="2xl" fontWeight="bold">
+                      {product?.descricao}
                     </Text>
-                  </Text>
-                  {product?.variacoes && (
-                    <HStack spacing={1}>
-                      {product?.variacoes?.map((variation) => (
-                        <Link
-                          href={`/produtos/${variation.codigo}`}
-                          key={variation.codigo}
-                          passHref
-                        >
-                          <Box
-                            as="a"
-                            w="4rem"
-                            h="4rem"
-                            borderRadius="md"
-                            onClick={() => setImages([])}
-                            cursor={
-                              product?.referencia === variation.referencia
-                                ? "auto"
-                                : "pointer"
-                            }
-                            borderWidth={
-                              product?.referencia === variation.referencia
-                                ? "2px"
-                                : "1px"
-                            }
-                            borderColor={
-                              product?.referencia === variation.referencia
-                                ? "blue.500"
-                                : "gray.200"
-                            }
+                    <Text
+                      as="p"
+                      fontSize="sm"
+                      fontWeight="light"
+                      color="gray.600"
+                    >
+                      Referência {product?.referencia}
+                    </Text>
+                    <Text as="span" fontSize="2xl" fontWeight="medium">
+                      PDV {product?.precoVendaFormat}
+                    </Text>
+                    <Text as="p" fontSize="small" mt="2" fontWeight="light">
+                      Cor:{" "}
+                      <Text as="span" fontSize="small" mt="2" fontWeight="bold">
+                        {product?.corPrimaria?.descricao}
+                        {product?.corSecundaria?.cor.descricao
+                          ? ` e ${product?.corSecundaria?.cor.descricao}`
+                          : ""}
+                      </Text>
+                    </Text>
+                    {product?.variacoes && (
+                      <HStack spacing={1}>
+                        {product?.variacoes?.map((variation) => (
+                          <Link
+                            href={`/produtos/${variation.codigo}`}
+                            key={variation.codigo}
+                            passHref
                           >
-                            <Image
-                              w="full"
-                              h="full"
-                              objectFit="contain"
-                              src={`${spaceImages}/Produtos/${variation.referencia}_01`}
-                              alt={variation.descricao}
-                              onError={({ currentTarget }) => {
-                                currentTarget.onerror = null; // prevents looping
-                                currentTarget.src =
-                                  "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
-                              }}
-                            />
-                          </Box>
-                        </Link>
-                      ))}
-                    </HStack>
-                  )}
+                            <Box
+                              as="a"
+                              w="4rem"
+                              h="4rem"
+                              borderRadius="md"
+                              // onClick={() => setImages([])}
+                              cursor={
+                                product?.referencia === variation.referencia
+                                  ? "auto"
+                                  : "pointer"
+                              }
+                              borderWidth={
+                                product?.referencia === variation.referencia
+                                  ? "2px"
+                                  : "1px"
+                              }
+                              borderColor={
+                                product?.referencia === variation.referencia
+                                  ? "blue.500"
+                                  : "gray.200"
+                              }
+                            >
+                              <Image
+                                w="full"
+                                h="full"
+                                objectFit="contain"
+                                src={`${spaceImages}/Produtos/${variation.referencia}_01`}
+                                alt={variation.descricao}
+                                onError={({ currentTarget }) => {
+                                  currentTarget.onerror = null; // prevents looping
+                                  currentTarget.src =
+                                    "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
+                                }}
+                              />
+                            </Box>
+                          </Link>
+                        ))}
+                      </HStack>
+                    )}
 
-                  <Box mt="4">
-                    <Select
-                      className="basic-single"
-                      classNamePrefix="select"
-                      options={product?.grades?.map((grade) => ({
-                        value: grade.codigo,
-                        label: grade.descricaoAdicional,
-                      }))}
-                      defaultValue={{
-                        value: product?.codigo,
-                        label: product?.descricaoAdicional,
-                      }}
-                      onChange={(e) => router.push(`/produtos/${e?.value}`)}
-                    />
+                    <Box mt="4">
+                      <Select
+                        className="basic-single"
+                        classNamePrefix="select"
+                        options={product?.grades?.map((grade) => ({
+                          value: grade.codigo,
+                          label: grade.descricaoAdicional,
+                        }))}
+                        defaultValue={{
+                          value: product?.codigo,
+                          label: product?.descricaoAdicional,
+                        }}
+                        onChange={(e) => router.push(`/produtos/${e?.value}`)}
+                      />
+                    </Box>
+                    <TableContainer mt="6" w="70%">
+                      <Text mb="3" fontSize="lg">
+                        Metas
+                      </Text>
+                      <Table size="sm" variant="simple">
+                        {(product?.locaisEstoque?.length ?? 0) <= 0 && (
+                          <TableCaption>Sem dados</TableCaption>
+                        )}
+
+                        <Thead>
+                          <Tr>
+                            <Th>Período</Th>
+                            <Th>Meta</Th>
+                          </Tr>
+                        </Thead>
+                        {
+                          <Tbody>
+                            {product?.locaisEstoque?.map((localEstoque) => (
+                              <Tr key={localEstoque.id}>
+                                <Td>{localEstoque.descricao}</Td>
+
+                                <Td>
+                                  {localEstoque.quantidade >= 1
+                                    ? "Disponível"
+                                    : "Indisponível"}
+                                </Td>
+                              </Tr>
+                            ))}
+                          </Tbody>
+                        }
+                      </Table>
+                    </TableContainer>
                   </Box>
-                  <TableContainer mt="6" w="60%">
-                    <Text mb="3" fontSize="lg">
-                      Metas
-                    </Text>
-                    <Table size="sm" variant="simple">
-                      {(product?.locaisEstoque?.length ?? 0) <= 0 && (
-                        <TableCaption>Sem dados</TableCaption>
-                      )}
-
-                      <Thead>
-                        <Tr>
-                          <Th>Período</Th>
-                          <Th>Meta</Th>
-                        </Tr>
-                      </Thead>
-                      {
-                        <Tbody>
-                          {product?.locaisEstoque?.map((localEstoque) => (
-                            <Tr key={localEstoque.id}>
-                              <Td>{localEstoque.descricao}</Td>
-
-                              <Td>
-                                {localEstoque.quantidade >= 1
-                                  ? "Disponível"
-                                  : "Indisponível"}
-                              </Td>
-                            </Tr>
-                          ))}
-                        </Tbody>
-                      }
-                    </Table>
-                  </TableContainer>
                 </Box>
               </Flex>
             </Flex>
