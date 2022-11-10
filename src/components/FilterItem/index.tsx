@@ -189,7 +189,7 @@ export function FilterItem({
             <List
               height={150}
               itemCount={filteredList.length}
-              itemSize={25}
+              itemSize={30}
               width={100}
               style={{
                 width: "100%",
