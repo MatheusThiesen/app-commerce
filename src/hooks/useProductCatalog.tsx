@@ -25,7 +25,7 @@ type ProductCatalogData = {
   onRemoveProduct: (i: CatalogProductProps) => void;
   onChangeActivated: React.Dispatch<React.SetStateAction<boolean>>;
   onRemoveAllProduct: () => void;
-  onSelectedAllProduct: (filters: SelectedFilter[]) => void;
+  onSelectedAllProduct: (filters: SelectedFilter[], orderby: string) => void;
   onGenerateCatalog: (t: GenerateCatalogProps) => void;
 };
 
@@ -75,10 +75,14 @@ export function ProductCatalogProvider({
       }, 3000);
     }
   }
-  async function handleSelectedAllProduct(filters: SelectedFilter[]) {
+  async function handleSelectedAllProduct(
+    filters: SelectedFilter[],
+    orderby: string
+  ) {
     const responseProducts = await getProducts({
       page: 1,
       filters: filters,
+      orderby: orderby,
       pagesize: 300,
     });
 

@@ -341,7 +341,7 @@ export default function Produtos({ me }: ProductsProps) {
                   size="sm"
                   variant="link"
                   color="gray.800"
-                  onClick={() => onSelectedAllProductCatalog(filters)}
+                  onClick={() => onSelectedAllProductCatalog(filters, orderBy)}
                 >
                   MARCAR TODOS
                 </Button>
