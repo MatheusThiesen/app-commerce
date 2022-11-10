@@ -222,6 +222,7 @@ export default function Produto(props: ProdutoProps) {
                         w="4rem"
                         h="4rem"
                         borderRadius="md"
+                        onClick={() => setImages([])}
                         cursor={
                           product?.referencia === variation.referencia
                             ? "auto"
