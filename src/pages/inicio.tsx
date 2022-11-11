@@ -14,7 +14,7 @@ export default function Home({ me }: HomeProps) {
   return (
     <>
       <Head>
-        <title>Inicio - App Alpar do Brasil</title>
+        <title>Inicio | App Alpar do Brasil</title>
       </Head>
 
       <HeaderNavigation isInativeEventScroll user={{ name: me.email }} />

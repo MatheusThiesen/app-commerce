@@ -44,7 +44,7 @@ export default function SignIn() {
   return (
     <>
       <Head>
-        <title>Sign in</title>
+        <title>Sign in | App Alpar do Brasil</title>
       </Head>
 
       <Flex w="100vw" h="100vh" align="center" justify="center">
