@@ -9,9 +9,15 @@ export default class MyDocument extends Document {
         <Head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link
-            href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
-            rel="stylesheet"
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossOrigin="true"
           />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+            rel="stylesheet"
+          ></link>
+          <meta name="theme-color" content="#E5122A" />
         </Head>
         <body style={{ overflow: "auto" }}>
           <ColorModeScript initialColorMode={theme.initialColorMode} />

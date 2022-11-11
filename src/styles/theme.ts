@@ -24,8 +24,8 @@ export const theme: ThemeConfig = extendTheme({
     },
   },
   fonts: {
-    heaing: "Roboto",
-    body: "Roboto",
+    heaing: "'Roboto', sans-serif",
+    body: "'Roboto', sans-serif",
   },
   styles: {
     global: (props: GlobalStyleProps) => ({
