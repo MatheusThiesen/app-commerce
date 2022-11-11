@@ -7,6 +7,8 @@ export default class MyDocument extends Document {
     return (
       <Html>
         <Head>
+          <meta charSet="UTF-8" />
+
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link
             rel="preconnect"
@@ -17,15 +19,8 @@ export default class MyDocument extends Document {
             href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
             rel="stylesheet"
           />
-
-          <meta
-            name="viewport"
-            content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, user-scalable=no, viewport-fit=cover"
-          />
-          <meta name="theme-color" content="#E5122A" />
-          <link rel="manifest" href="/manifest.json" />
-          <link rel="shortcut icon" href="/appe-icon.png" />
           <link rel="icon" href="/favicon.png" />
+          <meta name="theme-color" content="#E5122A" />
         </Head>
         <body style={{ overflow: "auto" }}>
           <ColorModeScript initialColorMode={theme.initialColorMode} />

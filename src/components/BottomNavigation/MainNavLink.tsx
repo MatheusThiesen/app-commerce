@@ -63,7 +63,7 @@ export function MainNavLink({ href, icon, children, ...rest }: NavLinkProps) {
         </Box>
         <Text
           fontSize="sm"
-          fontWeight="light"
+          fontWeight="400"
           color={isActiveLink ? "red.500" : "gray.800"}
           transition="color 0.3s"
         >

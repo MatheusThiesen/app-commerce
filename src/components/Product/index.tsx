@@ -101,7 +101,7 @@ export function ProductComponent({ product }: ProductComponentProps) {
             </Flex>
 
             <Box>
-              <Text mt="4" fontSize="md" fontWeight="light">
+              <Text mt="4" fontSize="md" fontWeight="400">
                 {name}
               </Text>
 

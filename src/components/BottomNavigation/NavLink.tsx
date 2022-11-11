@@ -27,7 +27,7 @@ export function NavLink({ href, icon, children, ...rest }: NavLinkProps) {
         {...(rest as any)}
       >
         <Icon as={icon} fontSize="20" />
-        <Text fontSize="sm" fontWeight="light">
+        <Text fontSize="sm" fontWeight="400">
           {children}
         </Text>
       </CharkraLink>

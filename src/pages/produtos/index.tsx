@@ -305,30 +305,46 @@ export default function Produtos({ me }: ProductsProps) {
       )}
 
       <Slide direction="bottom" in={isOpen} style={{ zIndex: 10 }}>
-        <Box p="50px">
+        <Box p={["100px", "100px", "100px", "50px"]}>
           <Flex
             bg="white"
             position="fixed"
-            bottom="0"
+            bottom={["3.5rem", "3.5rem", "3.5rem", 0]}
             left="0"
             w="full"
             justify={"center"}
             boxShadow="dark-lg"
           >
-            <Flex maxW="900px" w="full" px="8" py="6" justify="space-between">
+            <Flex
+              maxW="900px"
+              w="full"
+              px={["4", "4", "4", "8"]}
+              py={["4", "4", "4", "6"]}
+              justify="space-between"
+            >
               <Box>
-                <Text fontSize="3xl" fontWeight="bold">
+                <Text fontSize={["lg", "lg", "lg", "3xl"]} fontWeight="bold">
                   CATÁLOGO
                 </Text>
+                <Text
+                  display={["block", "block", "block", "none"]}
+                  color="gray.500"
+                >{`${productsSelectedCatalog.length}/300 produtos selecionados`}</Text>
               </Box>
 
               <Stack>
-                <Text color="gray.500">{`${productsSelectedCatalog.length}/300 produtos selecionados`}</Text>
+                <Text
+                  display={["none", "none", "none", "block"]}
+                  color="gray.500"
+                >{`${productsSelectedCatalog.length}/300 produtos selecionados`}</Text>
 
-                <Stack direction="row" spacing="4">
+                <Stack
+                  direction={["column", "column", "column", "row"]}
+                  spacing="4"
+                >
                   <Button
                     type="button"
-                    size="sm"
+                    size={"sm"}
                     variant="link"
                     color="gray.800"
                     onClick={() => onGenerateCatalog({ orderBy: orderBy })}
