@@ -51,17 +51,19 @@ export type Product = {
       descricao: string;
     };
   };
-  variacoes?: {
-    codigo: number;
-    codigoAlternativo: number;
-    referencia: string;
-    descricao: string;
-  }[];
+  variacoes?: VariationsProduct[];
   grades?: {
     codigo: number;
     descricaoAdicional: string;
   }[];
 };
+
+export interface VariationsProduct {
+  codigo: number;
+  codigoAlternativo: number;
+  referencia: string;
+  descricao: string;
+}
 
 export type FilterList = {
   label: string;

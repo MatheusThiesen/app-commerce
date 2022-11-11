@@ -5,8 +5,6 @@ import {
   BreadcrumbLink,
   Divider,
   Flex,
-  HStack,
-  Image,
   Link as CharkraLink,
   Spinner,
   Table,
@@ -28,6 +26,7 @@ import Select from "react-select";
 import { Me } from "../../@types/me";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductCarousel } from "../../components/ProductCarousel";
+import { VariationsProduct } from "../../components/VariationsProduct";
 import { useProductOne } from "../../hooks/queries/useProducts";
 import { useImagesProduct } from "../../hooks/useImagesProduct";
 import { setupAPIClient } from "../../service/api";
@@ -57,13 +56,7 @@ export default function Produto(props: ProdutoProps) {
   }, [product]);
 
   const InfoProduct = () => (
-    <Box position="sticky" top="4">
-      <Text as="h1" fontSize="2xl" fontWeight="bold">
-        {product?.descricao}
-      </Text>
-      <Text as="p" fontSize="sm" fontWeight="light" color="gray.600">
-        Referência {product?.referencia}
-      </Text>
+    <>
       <Text as="span" fontSize="2xl" fontWeight="medium">
         PDV {product?.precoVendaFormat}
       </Text>
@@ -76,50 +69,12 @@ export default function Produto(props: ProdutoProps) {
             : ""}
         </Text>
       </Text>
-      {product?.variacoes && (
-        <HStack spacing={1}>
-          {product?.variacoes?.map((variation) => (
-            <Link
-              href={`/produtos/${variation.codigo}`}
-              key={variation.codigo}
-              passHref
-            >
-              <Box
-                as="a"
-                w="4rem"
-                h="4rem"
-                borderRadius="md"
-                // onClick={() => setImages([])}
-                cursor={
-                  product?.referencia === variation.referencia
-                    ? "auto"
-                    : "pointer"
-                }
-                borderWidth={
-                  product?.referencia === variation.referencia ? "2px" : "1px"
-                }
-                borderColor={
-                  product?.referencia === variation.referencia
-                    ? "blue.500"
-                    : "gray.200"
-                }
-              >
-                <Image
-                  w="full"
-                  h="full"
-                  objectFit="contain"
-                  src={`${spaceImages}/Produtos/${variation.referencia}_01`}
-                  alt={variation.descricao}
-                  onError={({ currentTarget }) => {
-                    currentTarget.onerror = null; // prevents looping
-                    currentTarget.src =
-                      "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
-                  }}
-                />
-              </Box>
-            </Link>
-          ))}
-        </HStack>
+
+      {product?.variacoes && product?.variacoes?.length >= 1 && (
+        <VariationsProduct
+          variationsProduct={product.variacoes}
+          currentReference={product?.referencia ?? ""}
+        />
       )}
 
       <Box mt="4">
@@ -169,7 +124,7 @@ export default function Produto(props: ProdutoProps) {
           }
         </Table>
       </TableContainer>
-    </Box>
+    </>
   );
 
   return (
@@ -185,7 +140,7 @@ export default function Produto(props: ProdutoProps) {
         user={{ name: props.me.email }}
       />
 
-      {isLoading ? (
+      {isLoading && product ? (
         <Flex h="100vh" w="100vw" justify="center" align="center">
           <Spinner ml="4" size="xl" />
         </Flex>
@@ -274,6 +229,10 @@ export default function Produto(props: ProdutoProps) {
                     />
                   )}
 
+                  <Box display={["block", "block", "block", "none"]} p="2rem">
+                    <InfoProduct />
+                  </Box>
+
                   <Box p="1rem">
                     <Divider />
 
@@ -336,9 +295,35 @@ export default function Produto(props: ProdutoProps) {
                   borderRadius="lg"
                   px="4"
                   pt="4"
-                  pb="10"
+                  pb={["0", "0", "0", "10"]}
                 >
-                  <InfoProduct />
+                  <Box position="sticky" top="4">
+                    <Text
+                      as="p"
+                      fontSize="sm"
+                      fontWeight="light"
+                      color="gray.600"
+                      display={["block", "block", "block", "none"]}
+                    >
+                      Referência {product?.referencia}
+                    </Text>
+                    <Text as="h1" fontSize="2xl" fontWeight="bold">
+                      {product?.descricao}
+                    </Text>
+                    <Text
+                      as="p"
+                      fontSize="sm"
+                      fontWeight="light"
+                      color="gray.600"
+                      display={["none", "none", "none", "block"]}
+                    >
+                      Referência {product?.referencia}
+                    </Text>
+
+                    <Box display={["none", "none", "none", "block"]}>
+                      <InfoProduct />
+                    </Box>
+                  </Box>
                 </Box>
               </Flex>
             </Flex>

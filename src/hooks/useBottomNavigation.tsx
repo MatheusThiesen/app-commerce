@@ -1,4 +1,5 @@
 import { Box } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 import { createContext, ReactNode, useContext } from "react";
 import { BottomNavigation as Bottom } from "../components/BottomNavigation";
 import { useAuth } from "../contexts/AuthContext";
@@ -17,14 +18,21 @@ export function BottomNavigationProvider({
   children,
 }: BottomNavigationProviderProps) {
   const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const isActive = !["/produtos/[codigo]"].includes(router.pathname);
 
   return (
     <BottomNavigationContext.Provider value={{}}>
-      <Box pb={["5.5rem", "5.5rem", "5.5rem", "0"]} h="full" w="full">
+      <Box
+        pb={isActive ? ["5.5rem", "5.5rem", "5.5rem", "0"] : 0}
+        h="full"
+        w="full"
+      >
         {children}
       </Box>
 
-      {isAuthenticated && <Bottom height="4rem" />}
+      {isAuthenticated && isActive && <Bottom height="4rem" />}
     </BottomNavigationContext.Provider>
   );
 }
