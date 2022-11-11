@@ -50,9 +50,12 @@ export function Pagination({
 
   return (
     <Flex w="full" justify="center">
-      <Flex align="center">
+      <Flex align="center" flexDirection={["column", "row", "row", "row"]}>
         {previousPages.length > 0 && (
           <Button
+            w="full"
+            bg="white"
+            mb={["4", 0, 0, 0]}
             fontWeight="light"
             leftIcon={<IoIosArrowBack />}
             colorScheme="blackAlpha"
@@ -65,71 +68,76 @@ export function Pagination({
           </Button>
         )}
 
-        {currentPage > 1 + siblingsCount && (
-          <>
-            <PaginationItem onPageChange={onPageChange} number={1} />
-            {currentPage > 2 + siblingsCount && (
-              <Box
-                style={{
-                  alignItems: "center",
-                  marginLeft: "2",
-                  textAlign: "center",
-                  height: 32,
-                  width: 32,
-                }}
-              >
-                ...
-              </Box>
-            )}
-          </>
-        )}
+        <Flex align="center">
+          {currentPage > 1 + siblingsCount && (
+            <>
+              <PaginationItem onPageChange={onPageChange} number={1} />
+              {currentPage > 2 + siblingsCount && (
+                <Box
+                  style={{
+                    alignItems: "center",
+                    marginLeft: "2",
+                    textAlign: "center",
+                    height: 32,
+                    width: 32,
+                  }}
+                >
+                  ...
+                </Box>
+              )}
+            </>
+          )}
 
-        {previousPages.length > 0 &&
-          previousPages.map((page) => (
-            <PaginationItem
-              onPageChange={onPageChange}
-              number={page}
-              key={page}
-            />
-          ))}
+          {previousPages.length > 0 &&
+            previousPages.map((page) => (
+              <PaginationItem
+                onPageChange={onPageChange}
+                number={page}
+                key={page}
+              />
+            ))}
 
-        <PaginationItem
-          number={currentPage}
-          isCurrent
-          onPageChange={onPageChange}
-        />
+          <PaginationItem
+            number={currentPage}
+            isCurrent
+            onPageChange={onPageChange}
+          />
 
-        {nextPages.length > 0 &&
-          nextPages.map((page) => (
-            <PaginationItem
-              onPageChange={onPageChange}
-              number={page}
-              key={page}
-            />
-          ))}
+          {nextPages.length > 0 &&
+            nextPages.map((page) => (
+              <PaginationItem
+                onPageChange={onPageChange}
+                number={page}
+                key={page}
+              />
+            ))}
 
-        {currentPage + siblingsCount < lastPage && (
-          <>
-            {currentPage + 1 + siblingsCount < lastPage && (
-              <Box
-                style={{
-                  alignItems: "center",
-                  marginLeft: "2",
-                  textAlign: "center",
-                  height: 32,
-                  width: 32,
-                }}
-              >
-                ...
-              </Box>
-            )}
+          {currentPage + siblingsCount < lastPage && (
+            <>
+              {currentPage + 1 + siblingsCount < lastPage && (
+                <Box
+                  style={{
+                    alignItems: "center",
+                    marginLeft: "2",
+                    textAlign: "center",
+                    height: 32,
+                    width: 32,
+                  }}
+                >
+                  ...
+                </Box>
+              )}
 
-            <PaginationItem onPageChange={onPageChange} number={lastPage} />
-          </>
-        )}
+              <PaginationItem onPageChange={onPageChange} number={lastPage} />
+            </>
+          )}
+        </Flex>
 
         {nextPages.length > 0 && (
           <Button
+            w="full"
+            bg="white"
+            mt={["4", 0, 0, 0]}
             fontWeight="light"
             rightIcon={<IoIosArrowForward />}
             colorScheme="blackAlpha"

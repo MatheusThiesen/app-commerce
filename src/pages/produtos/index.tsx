@@ -185,7 +185,7 @@ export default function Produtos({ me }: ProductsProps) {
           >
             <Flex w="full" maxW="1200px">
               <Flex
-                w="25rem"
+                w="22rem"
                 mr="3rem"
                 display={["none", "none", "none", "flex"]}
                 flexDirection="column"
