@@ -20,11 +20,11 @@ export function BottomNavigationProvider({
 
   return (
     <BottomNavigationContext.Provider value={{}}>
-      <Box pb={["5rem", "5rem", "5rem", "0"]} h="full" w="full">
+      <Box pb={["5.5rem", "5.5rem", "5.5rem", "0"]} h="full" w="full">
         {children}
       </Box>
 
-      {isAuthenticated && <Bottom height="3.5rem" />}
+      {isAuthenticated && <Bottom height="4rem" />}
     </BottomNavigationContext.Provider>
   );
 }
