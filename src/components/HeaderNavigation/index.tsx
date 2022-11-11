@@ -80,7 +80,7 @@ export function HeaderNavigationComponent({
 
   const controlNavbar = () => {
     if (typeof window !== "undefined" && !isInativeEventScroll) {
-      if (window.scrollY <= 50) {
+      if (window.scrollY <= 100) {
         setShow(true);
       } else {
         if (window.scrollY > lastScrollY) {
