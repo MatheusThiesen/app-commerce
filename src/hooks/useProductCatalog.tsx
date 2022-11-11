@@ -38,8 +38,6 @@ type ProductCatalogProviderProps = {
 
 const ProductCatalogContext = createContext({} as ProductCatalogData);
 
-const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
-
 export function ProductCatalogProvider({
   children,
 }: ProductCatalogProviderProps) {
@@ -114,7 +112,7 @@ export function ProductCatalogProvider({
       if (win) {
         win?.document.write(contentHtml);
         setTimeout(() => {
-          // win?.print();
+          win?.print();
           // win?.close();
         }, 3000);
       }

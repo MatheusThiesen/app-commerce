@@ -47,10 +47,9 @@ export function ProductComponent({ product }: ProductComponentProps) {
       }}
       whileHover={{ boxShadow: "0px 10px 15px 4px rgba(0,0,0,0.20)" }}
       viewport={{ once: true }}
-      // whileTap={{ scale: 0.96 }}
-
+      whileTap={{ scale: 0.98 }}
       // transition="box-shadow .2s ease-in-out,-webkit-box-shadow .2s ease-in-out;"
-      // border="2px solid "
+      // border="2px solid"
       // borderColor="blue.600"
     >
       <Flex

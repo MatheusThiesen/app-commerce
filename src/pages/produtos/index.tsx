@@ -114,7 +114,7 @@ export default function Produtos({ me }: ProductsProps) {
   return (
     <>
       <Head>
-        <title>Produtos - App Alpar do Brasil</title>
+        <title>Produtos | App Alpar do Brasil</title>
       </Head>
 
       <HeaderNavigation

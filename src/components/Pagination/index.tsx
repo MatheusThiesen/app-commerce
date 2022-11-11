@@ -56,11 +56,11 @@ export function Pagination({
             w="full"
             bg="white"
             mb={["4", 0, 0, 0]}
-            fontWeight="light"
+            fontWeight="400"
             leftIcon={<IoIosArrowBack />}
-            colorScheme="blackAlpha"
+            colorScheme="red"
             variant="ghost"
-            color="blue.600"
+            color="red.500"
             onClick={handlePreviousPage}
             disabled={previousPages.length <= 0}
           >
@@ -138,11 +138,11 @@ export function Pagination({
             w="full"
             bg="white"
             mt={["4", 0, 0, 0]}
-            fontWeight="light"
+            fontWeight="400"
             rightIcon={<IoIosArrowForward />}
-            colorScheme="blackAlpha"
+            colorScheme="red"
             variant="ghost"
-            color="blue.600"
+            color="red.500"
             onClick={handleNextPage}
             disabled={nextPages.length <= 0}
           >

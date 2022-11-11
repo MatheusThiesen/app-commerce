@@ -59,7 +59,7 @@ export default function Produto(props: ProdutoProps) {
   return (
     <>
       <Head>
-        <title> Produtos - App Alpar do Brasil</title>
+        <title> Produto | App Alpar do Brasil</title>
       </Head>
 
       <HeaderNavigation

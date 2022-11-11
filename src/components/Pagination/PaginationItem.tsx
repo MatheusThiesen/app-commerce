@@ -13,7 +13,12 @@ export function PaginationItem({
 }: PaginationItemProps) {
   if (isCurrent) {
     return (
-      <Button _hover={{ cursor: "auto" }} colorScheme="blue" variant="solid">
+      <Button
+        _hover={{ cursor: "auto" }}
+        colorScheme="blue"
+        bg="red.500"
+        variant="solid"
+      >
         {number}
       </Button>
     );
