@@ -52,21 +52,19 @@ export function setupAPIClient(
                 }
               )
               .then((response) => {
-                const { access_token: token } = response.data;
+                const {
+                  access_token: token,
+                  refresh_token: refresh_token_new,
+                } = response.data;
 
                 setCookie(ctx, "nextauth.token", token, {
                   maxAge: 60 * 60 * 24 * 30, //30 Days
                   path: "/",
                 });
-                setCookie(
-                  ctx,
-                  "nextauth.refreshToken",
-                  response.data["refresh_token"],
-                  {
-                    maxAge: 60 * 60 * 24 * 30, //30 Days
-                    path: "/",
-                  }
-                );
+                setCookie(ctx, "nextauth.refreshToken", refresh_token_new, {
+                  maxAge: 60 * 60 * 24 * 30, //30 Days
+                  path: "/",
+                });
 
                 //@ts-ignore
                 api?.defaults?.headers["Authorization"] = `Bearer ${token}`;
@@ -87,8 +85,6 @@ export function setupAPIClient(
               .finally(() => {
                 isRefreshing = false;
               });
-          } else {
-            signOut();
           }
 
           return new Promise((resolve, reject) => {
@@ -110,6 +106,8 @@ export function setupAPIClient(
           }
         }
       }
+
+      return Promise.reject(error);
     }
   );
 
