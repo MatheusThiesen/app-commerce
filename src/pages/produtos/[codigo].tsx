@@ -141,7 +141,7 @@ export default function Produto(props: ProdutoProps) {
       />
 
       {isLoading && product ? (
-        <Flex h="100vh" w="100vw" justify="center" align="center">
+        <Flex h="100vh" w="100%" justify="center" align="center">
           <Spinner ml="4" size="xl" />
         </Flex>
       ) : (
@@ -208,7 +208,7 @@ export default function Produto(props: ProdutoProps) {
                 mb="5rem"
               >
                 <Box
-                  w={["100%", "100%", "100%", "60%"]}
+                  w={["100%", "100%", "100%", "65%"]}
                   pr={["0", "0", "0", "2"]}
                 >
                   {images.length <= 0 ? (
@@ -229,15 +229,20 @@ export default function Produto(props: ProdutoProps) {
                     />
                   )}
 
-                  <Box display={["block", "block", "block", "none"]} p="2rem">
+                  <Box display={["block", "block", "block", "none"]} p="1rem">
                     <InfoProduct />
                   </Box>
 
                   <Box p="1rem">
                     <Divider />
 
-                    <Box p="1rem">
-                      <Text as="h2" mt="4" fontSize="3xl" fontWeight="light">
+                    <Box>
+                      <Text
+                        as="h2"
+                        mt="4"
+                        fontSize={["2xl", "2xl", "3xl"]}
+                        fontWeight="light"
+                      >
                         Características do produto
                       </Text>
 
@@ -289,7 +294,7 @@ export default function Produto(props: ProdutoProps) {
                 </Box>
 
                 <Box
-                  w={["100%", "100%", "100%", "40%"]}
+                  w={["100%", "100%", "100%", "35%"]}
                   borderColor="gray.100"
                   borderWidth={[0, 0, 0, "1px"]}
                   borderRadius="lg"

@@ -40,15 +40,18 @@ export const InputBase: ForwardRefRenderFunction<
 
       <Box position="relative">
         {iconLeft && (
-          <Button
+          <Flex
+            w="40px"
+            h="34px"
+            align="center"
+            justify="center"
             position="absolute"
             top="1.5"
             left="0"
             zIndex={1}
-            variant="unstyled"
           >
-            <Icon as={iconLeft} color="gray.600" />
-          </Button>
+            <Icon as={iconLeft} color="gray.500" />
+          </Flex>
         )}
 
         <ChakraInput
@@ -57,6 +60,7 @@ export const InputBase: ForwardRefRenderFunction<
           pl={iconLeft ? "2.5rem" : undefined}
           pr={isPassword || iconRight ? "2.5rem" : undefined}
           focusBorderColor="gray.900"
+          borderColor="gray.100"
           bgColor="gray.50"
           variant="filled"
           _hover={{
@@ -79,7 +83,7 @@ export const InputBase: ForwardRefRenderFunction<
             zIndex={1}
             variant="unstyled"
           >
-            <Icon as={iconRight} color="gray.600" />
+            <Icon as={iconRight} color="gray.500" />
           </Button>
         )}
 
@@ -92,9 +96,9 @@ export const InputBase: ForwardRefRenderFunction<
               alignItems="center"
             >
               {hidePassword ? (
-                <Icon as={IoMdEye} fontSize="22" color="gray.600" />
+                <Icon as={IoMdEye} fontSize="22" color="gray.500" />
               ) : (
-                <Icon as={IoMdEyeOff} fontSize="22" color="gray.600" />
+                <Icon as={IoMdEyeOff} fontSize="22" color="gray.500" />
               )}
             </Button>
           </Flex>

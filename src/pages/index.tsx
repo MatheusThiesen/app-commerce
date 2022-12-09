@@ -1,7 +1,20 @@
-import { Button, Flex, Stack, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Image,
+  Link as ChakraLink,
+  Stack,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Head from "next/head";
+import Link from "next/link";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { FaLock } from "react-icons/fa";
+import { IoMdMail } from "react-icons/io";
+
 import * as Yup from "yup";
 import { Input } from "../components/Form/Input";
 import { useAuth } from "../contexts/AuthContext";
@@ -44,23 +57,42 @@ export default function SignIn() {
   return (
     <>
       <Head>
-        <title>Sign in | App Alpar do Brasil</title>
+        <title>Login | App Alpar do Brasil</title>
       </Head>
 
-      <Flex w="100vw" h="100vh" align="center" justify="center">
+      <Flex
+        w="100vw"
+        h="100vh"
+        align="center"
+        justify="center"
+        flexDirection={["column", "column", "column", "row"]}
+      >
+        <Box
+          w={["95%", "80%", "80%", "full"]}
+          maxW={[480, 480, 480, 380]}
+          mb={["8", "8", "8", "0"]}
+        >
+          <Box mb="6">
+            <Image w="12rem" objectFit="contain" src="/assets/logo-red.png" />
+          </Box>
+          <Text as="h1" fontSize="4xl" fontWeight="bold" lineHeight={"54px"}>
+            Faça seu login na plataforma
+          </Text>
+        </Box>
         <Flex
           as="form"
-          w="100%"
-          maxW={360}
+          w={["95%", "80%", "80%", "full"]}
+          maxW={480}
           bg="white"
-          p="8"
+          p={["2rem", "2rem", "2rem", "4rem"]}
           borderRadius={8}
           flexDir="column"
           onSubmit={handleSubmit(HandleSignIn as any)}
         >
-          <Stack spacing="4">
+          <Stack spacing="2">
             <Input
-              label="E-mail"
+              iconLeft={IoMdMail}
+              placeholder="E-mail"
               type="email"
               error={
                 !!errors?.email?.message
@@ -70,7 +102,8 @@ export default function SignIn() {
               {...register("email")}
             />
             <Input
-              label="Password"
+              iconLeft={FaLock}
+              placeholder="Senha"
               isPassword
               error={
                 !!errors?.password?.message
@@ -80,6 +113,10 @@ export default function SignIn() {
               {...register("password")}
             />
           </Stack>
+
+          <Link href="/esquecido" passHref>
+            <ChakraLink mt="2">Esqueci minha senha</ChakraLink>
+          </Link>
 
           <Button
             type="submit"

@@ -50,7 +50,7 @@ export function Pagination({
 
   return (
     <Flex w="full" justify="center">
-      <Flex align="center" flexDirection={["column", "row", "row", "row"]}>
+      <Flex align="center" flexDirection={["column", "column", "row", "row"]}>
         {previousPages.length > 0 && (
           <Button
             w="full"

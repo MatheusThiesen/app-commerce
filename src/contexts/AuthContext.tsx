@@ -30,6 +30,7 @@ type SignCredentials = {
 type AuthContextData = {
   signIn(creandentials: SignCredentials): Promise<ReponseSignIn | void>;
   signOut: () => void;
+  reset(p: ResetProps): Promise<ReponseSignIn | void>;
   user?: User;
   isAuthenticated: boolean;
 };
@@ -40,7 +41,12 @@ type AuthProviderProps = {
 
 type ReponseSignIn = {
   title: string;
-  status: "warning" | "success";
+  status: "warning" | "success" | "error";
+};
+
+type ResetProps = {
+  password: string;
+  token: string;
 };
 
 export const AuthContext = createContext({} as AuthContextData);
@@ -124,6 +130,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+  async function authenticate(data: { token: string; refreshToken: string }) {
+    setCookie(undefined, "nextauth.token", data.token, {
+      maxAge: 60 * 60 * 24 * 30, //30 Days
+      path: "/",
+    });
+    setCookie(undefined, "nextauth.refreshToken", data.refreshToken, {
+      maxAge: 60 * 60 * 24 * 30, //30 Days
+      path: "/",
+    });
+
+    //@ts-ignore
+    api.defaults.headers["Authorization"] = `Bearer ${token}`;
+
+    const me = await api.get("/auth/me");
+
+    setUser(me.data);
+
+    Router.push(route_home);
+    authChannel.postMessage("signIn");
+  }
+
   async function signIn({
     email,
     password,
@@ -137,24 +164,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const { access_token: token, refresh_token: refreshToken } =
         response.data;
 
-      setCookie(undefined, "nextauth.token", token, {
-        maxAge: 60 * 60 * 24 * 30, //30 Days
-        path: "/",
-      });
-      setCookie(undefined, "nextauth.refreshToken", refreshToken, {
-        maxAge: 60 * 60 * 24 * 30, //30 Days
-        path: "/",
-      });
-
-      //@ts-ignore
-      api.defaults.headers["Authorization"] = `Bearer ${token}`;
-
-      const me = await api.get("/auth/me");
-
-      setUser(me.data);
-
-      Router.push(route_home);
-      authChannel.postMessage("signIn");
+      await authenticate({ token, refreshToken });
     } catch (error) {
       const err = error as AxiosError;
 
@@ -165,8 +175,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  async function reset({
+    password,
+    token: tokenReset,
+  }: ResetProps): Promise<ReponseSignIn | void> {
+    try {
+      const response = await api.post("/auth/reset", {
+        senha: password,
+        token: tokenReset,
+      });
+
+      const { access_token: token, refresh_token: refreshToken } =
+        response.data;
+
+      await authenticate({ token, refreshToken });
+    } catch (err) {
+      const error = err as AxiosError;
+
+      if (error.response?.status === 400) {
+        return {
+          title: error.response?.data?.message,
+          status: "warning",
+        };
+      }
+
+      return {
+        title: "Desculpe, ocorreu um erro interno, Tente novamente mais tarde",
+        status: "error",
+      };
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ signIn, isAuthenticated, user, signOut }}>
+    <AuthContext.Provider
+      value={{ signIn, isAuthenticated, user, signOut, reset }}
+    >
       {children}
     </AuthContext.Provider>
   );

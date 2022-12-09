@@ -172,7 +172,7 @@ export default function Produtos({ me }: ProductsProps) {
       />
 
       {isLoadingFilters ? (
-        <Flex h="100vh" w="100vw" justify="center" align="center">
+        <Flex h="100vh" w="100%" justify="center" align="center">
           <Spinner ml="4" size="xl" />
         </Flex>
       ) : (
