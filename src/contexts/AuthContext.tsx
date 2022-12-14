@@ -147,8 +147,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setUser(me.data);
 
-    Router.push(route_home);
     authChannel.postMessage("signIn");
+    Router.push(route_home);
   }
 
   async function signIn({
