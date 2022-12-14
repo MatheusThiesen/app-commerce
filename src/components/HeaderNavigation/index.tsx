@@ -63,7 +63,7 @@ export function HeaderNavigationComponent({
         <Button
           p="0"
           bg="transparent"
-          d="flex"
+          display="flex"
           _hover={{ bg: "transparent" }}
           alignItems="center"
           justifyContent="center"

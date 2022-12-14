@@ -122,7 +122,6 @@ export function FilterItem({
   return (
     <AccordionChakra
       defaultIndex={isOpen ? [0] : [1]}
-      allowMultiple
       allowToggle
       w="full"
       bg="white"

@@ -15,6 +15,7 @@ import { getProducts } from "./queries/useProducts";
 
 type GenerateCatalogProps = {
   orderBy: string;
+  groupProduct?: boolean;
 };
 
 export type CatalogProductProps = {
@@ -61,7 +62,10 @@ export function ProductCatalogProvider({
   function handleRemoveAllProduct() {
     setProductsSelected([]);
   }
-  async function handleGenerateCatalog({ orderBy }: GenerateCatalogProps) {
+  async function handleGenerateCatalog({
+    orderBy,
+    groupProduct,
+  }: GenerateCatalogProps) {
     //@ts-ignore
     toastIdRef.current = toast({
       position: "top-right",
@@ -90,6 +94,7 @@ export function ProductCatalogProvider({
       const response = await api.post("/products/catalog", {
         referencesProduct: productsSelected.map((product) => product.reference),
         orderBy: orderBy,
+        groupProduct: groupProduct,
       });
 
       if (toastIdRef.current) {

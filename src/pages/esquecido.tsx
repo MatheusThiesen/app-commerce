@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Center,
   Flex,
@@ -83,53 +84,62 @@ export default function Forgot() {
       <Head>
         <title>Recuperar senha | App Alpar do Brasil</title>
       </Head>
-
-      <Stack w="100vw" h="100vh" bg="white" align="center" justify="center">
-        <Text as="h1" fontSize="2xl" fontWeight="bold">
-          Recuperar senha
-        </Text>
-        <Flex
-          as="form"
-          w="100%"
-          maxW={480}
+      <Box bg="white" w="100vw" h="100vh" overflow="hidden">
+        <Box
+          display="flex"
+          w="100vw"
+          h="100vh"
           bg="white"
-          p={["2rem", "2rem", "2rem", "4rem"]}
-          borderRadius={8}
-          flexDir="column"
-          onSubmit={handleSubmit(HandleForgot as any)}
+          alignItems="center"
+          justifyContent="center"
+          flexDirection="column"
         >
-          <Stack spacing="4">
-            <Input
-              iconLeft={IoMdMail}
-              // label="E-mail"
-              placeholder="Digite seu e-mail"
-              type="email"
-              error={
-                !!errors?.email?.message
-                  ? String(errors?.email?.message)
-                  : undefined
-              }
-              {...register("email")}
-            />
-          </Stack>
-
-          <Button
-            type="submit"
-            mt="6"
-            colorScheme="red"
-            size="lg"
-            isLoading={formState.isSubmitting}
+          <Text as="h1" fontSize="2xl" fontWeight="bold">
+            Recuperar senha
+          </Text>
+          <Flex
+            as="form"
+            w="100%"
+            maxW={480}
+            bg="white"
+            p={["2rem", "2rem", "2rem", "4rem"]}
+            borderRadius={8}
+            flexDir="column"
+            onSubmit={handleSubmit(HandleForgot as any)}
           >
-            Entrar
-          </Button>
+            <Stack spacing="4">
+              <Input
+                iconLeft={IoMdMail}
+                // label="E-mail"
+                placeholder="Digite seu e-mail"
+                type="email"
+                error={
+                  !!errors?.email?.message
+                    ? String(errors?.email?.message)
+                    : undefined
+                }
+                {...register("email")}
+              />
+            </Stack>
 
-          <Center pt="20px">
-            <Link href="/" passHref>
-              <ChakraLink>Voltar</ChakraLink>
-            </Link>
-          </Center>
-        </Flex>
-      </Stack>
+            <Button
+              type="submit"
+              mt="6"
+              colorScheme="red"
+              size="lg"
+              isLoading={formState.isSubmitting}
+            >
+              Entrar
+            </Button>
+
+            <Center pt="20px">
+              <Link href="/" passHref>
+                <ChakraLink>Voltar</ChakraLink>
+              </Link>
+            </Center>
+          </Flex>
+        </Box>
+      </Box>
     </>
   );
 }

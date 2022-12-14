@@ -6,6 +6,7 @@ import {
   Slide,
   Spinner,
   Stack,
+  Switch,
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -77,6 +78,9 @@ export default function Produtos({ me }: ProductsProps) {
   } = useDisclosure();
   const { isOpen, onToggle } = useDisclosure();
   const [filters, setFilters] = useState<SelectedFilter[]>([]);
+  const [groupProduct, setGroupProduct] = useState<
+    undefined | "codigoAlternativo"
+  >("codigoAlternativo");
   const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
   const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
   const [page, setPage] = useState(() => {
@@ -91,6 +95,7 @@ export default function Produtos({ me }: ProductsProps) {
     pagesize: 40,
     orderby: orderBy,
     filters: filters,
+    distinct: groupProduct ? "codigoAlternativo" : undefined,
   });
 
   useEffect(() => {
@@ -190,6 +195,26 @@ export default function Produtos({ me }: ProductsProps) {
                 display={["none", "none", "none", "flex"]}
                 flexDirection="column"
               >
+                <Flex
+                  justify="space-between"
+                  bg="white"
+                  p="4"
+                  mb="4"
+                  borderRadius="md"
+                >
+                  <Text fontWeight="bold">Agrupar produtos</Text>
+                  <Switch
+                    isChecked={!!groupProduct}
+                    onChange={(e) =>
+                      setGroupProduct(
+                        e.target.checked ? "codigoAlternativo" : undefined
+                      )
+                    }
+                    size="lg"
+                    colorScheme="red"
+                  />
+                </Flex>
+
                 <Box borderRadius="md">
                   <FilterSelectedList
                     filters={filters}
@@ -347,7 +372,12 @@ export default function Produtos({ me }: ProductsProps) {
                     size={"sm"}
                     variant="link"
                     color="gray.800"
-                    onClick={() => onGenerateCatalog({ orderBy: orderBy })}
+                    onClick={() =>
+                      onGenerateCatalog({
+                        orderBy: orderBy,
+                        groupProduct: groupProduct !== undefined,
+                      })
+                    }
                   >
                     IMPRIMIR
                   </Button>

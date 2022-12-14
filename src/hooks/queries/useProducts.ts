@@ -96,6 +96,7 @@ interface UseProductsProps {
   page: number;
   pagesize?: number;
   orderby?: string;
+  distinct?: "codigoAlternativo" | "referencia";
   filters?: ItemFilter[];
 }
 
@@ -104,12 +105,14 @@ export async function getProducts({
   pagesize,
   orderby,
   filters,
+  distinct,
 }: UseProductsProps): Promise<GetProductsResponse> {
   const { data } = await api.get<ProductApiResponse>("/products", {
     params: {
       page: page - 1,
       pagesize,
       orderby,
+      distinct,
       filters: filters?.map((filter) => ({
         name: filter.name,
         value: filter.value,
@@ -163,10 +166,11 @@ export function useProducts({
   pagesize,
   orderby,
   filters,
+  distinct,
 }: UseProductsProps) {
   return useQuery(
-    ["products", page, pagesize, orderby, filters],
-    () => getProducts({ page, pagesize, orderby, filters }),
+    ["products", page, pagesize, orderby, filters, distinct],
+    () => getProducts({ page, pagesize, orderby, filters, distinct }),
     {}
   );
 }

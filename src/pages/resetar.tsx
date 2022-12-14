@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Center,
   Flex,
@@ -89,62 +90,72 @@ export default function Reset() {
         <title>Redefinir senha | App Alpar do Brasil</title>
       </Head>
 
-      <Stack w="100vw" h="100vh" bg="white" align="center" justify="center">
-        <Text as="h1" fontSize="2xl" fontWeight="bold">
-          Resetar senha
-        </Text>
-        <Flex
-          as="form"
-          w="100%"
-          maxW={480}
+      <Box bg="white" w="100vw" h="100vh" overflow="hidden">
+        <Box
+          display="flex"
+          w="100vw"
+          h="100vh"
           bg="white"
-          p={["2rem", "2rem", "2rem", "4rem"]}
-          borderRadius={8}
-          flexDir="column"
-          onSubmit={handleSubmit(HandleReset as any)}
+          alignItems="center"
+          justifyContent="center"
+          flexDirection="column"
         >
-          <Stack spacing="4">
-            <Input
-              placeholder="Nova senha"
-              iconLeft={FaLock}
-              isPassword
-              {...register("newPassword")}
-              error={
-                !!errors?.newPassword
-                  ? String(errors?.newPassword.message)
-                  : undefined
-              }
-            />
-            <Input
-              placeholder="Confirme senha"
-              iconLeft={FaLock}
-              isPassword
-              {...register("confirmPassword")}
-              error={
-                !!errors?.confirmPassword
-                  ? String(errors?.confirmPassword.message)
-                  : undefined
-              }
-            />
-          </Stack>
-
-          <Button
-            type="submit"
-            mt="6"
-            colorScheme="red"
-            size="lg"
-            isLoading={formState.isSubmitting}
+          <Text as="h1" fontSize="2xl" fontWeight="bold">
+            Resetar senha
+          </Text>
+          <Flex
+            as="form"
+            w="100%"
+            maxW={480}
+            bg="white"
+            p={["2rem", "2rem", "2rem", "4rem"]}
+            borderRadius={8}
+            flexDir="column"
+            onSubmit={handleSubmit(HandleReset as any)}
           >
-            Alterar senha
-          </Button>
+            <Stack spacing="4">
+              <Input
+                placeholder="Nova senha"
+                iconLeft={FaLock}
+                isPassword
+                {...register("newPassword")}
+                error={
+                  !!errors?.newPassword
+                    ? String(errors?.newPassword.message)
+                    : undefined
+                }
+              />
+              <Input
+                placeholder="Confirme senha"
+                iconLeft={FaLock}
+                isPassword
+                {...register("confirmPassword")}
+                error={
+                  !!errors?.confirmPassword
+                    ? String(errors?.confirmPassword.message)
+                    : undefined
+                }
+              />
+            </Stack>
 
-          <Center pt="20px">
-            <Link href="/" passHref>
-              <ChakraLink>Voltar</ChakraLink>
-            </Link>
-          </Center>
-        </Flex>
-      </Stack>
+            <Button
+              type="submit"
+              mt="6"
+              colorScheme="red"
+              size="lg"
+              isLoading={formState.isSubmitting}
+            >
+              Alterar senha
+            </Button>
+
+            <Center pt="20px">
+              <Link href="/" passHref>
+                <ChakraLink>Voltar</ChakraLink>
+              </Link>
+            </Center>
+          </Flex>
+        </Box>
+      </Box>
     </>
   );
 }
