@@ -388,7 +388,11 @@ export default function Produtos({ me }: ProductsProps) {
                     variant="link"
                     color="gray.800"
                     onClick={() =>
-                      onSelectedAllProductCatalog(filters, orderBy)
+                      onSelectedAllProductCatalog(
+                        filters,
+                        orderBy,
+                        groupProduct === "codigoAlternativo"
+                      )
                     }
                   >
                     MARCAR TODOS

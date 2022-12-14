@@ -29,7 +29,11 @@ type ProductCatalogData = {
   onRemoveProduct: (i: CatalogProductProps) => void;
   onChangeActivated: React.Dispatch<React.SetStateAction<boolean>>;
   onRemoveAllProduct: () => void;
-  onSelectedAllProduct: (filters: SelectedFilter[], orderby: string) => void;
+  onSelectedAllProduct: (
+    filters: SelectedFilter[],
+    orderby: string,
+    groupProduct: boolean
+  ) => void;
   onGenerateCatalog: (t: GenerateCatalogProps) => void;
 };
 
@@ -133,13 +137,15 @@ export function ProductCatalogProvider({
   }
   async function handleSelectedAllProduct(
     filters: SelectedFilter[],
-    orderby: string
+    orderby: string,
+    groupProduct: boolean
   ) {
     const responseProducts = await getProducts({
       page: 1,
       filters: filters,
       orderby: orderby,
       pagesize: 5000,
+      distinct: groupProduct ? "codigoAlternativo" : "referencia",
     });
 
     const normalizedProducts = responseProducts.products.map((product) => ({
