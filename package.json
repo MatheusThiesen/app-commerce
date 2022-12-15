@@ -36,6 +36,7 @@
     "swiper": "^8.1.0",
     "three": "^0.139.2",
     "valtio": "0.4.8",
+    "xlsx": "^0.18.5",
     "xml2js": "^0.4.23",
     "yup": "^0.32.11"
   },
@@ -48,6 +49,7 @@
     "@types/react-virtualized-auto-sizer": "^1.0.1",
     "@types/react-window": "^1.8.5",
     "@types/three": "^0.139.0",
+    "@types/xlsx": "^0.0.36",
     "@types/xml2js": "^0.4.11",
     "eslint": "8.13.0",
     "eslint-config-next": "12.1.5",

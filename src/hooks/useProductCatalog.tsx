@@ -106,12 +106,8 @@ export function ProductCatalogProvider({
           description: "Catálogo gerado!",
           status: "success",
           isClosable: true,
+          duration: 3000,
         });
-        setTimeout(() => {
-          if (toastIdRef.current) {
-            toast.close(toastIdRef.current);
-          }
-        }, 3000);
       }
 
       const contentHtml = response.data;
@@ -144,7 +140,7 @@ export function ProductCatalogProvider({
       page: 1,
       filters: filters,
       orderby: orderby,
-      pagesize: 5000,
+      pagesize: 100000,
       distinct: groupProduct ? "codigoAlternativo" : "referencia",
     });
 

@@ -84,7 +84,7 @@ type ProductApiResponse = {
 };
 
 type GetProductsResponse = {
-  products: Omit<Product, "colecao" | "variacoes">[];
+  products: Omit<Product, "variacoes">[];
   page: number;
   pagesize: number;
   total: number;
@@ -98,6 +98,7 @@ interface UseProductsProps {
   orderby?: string;
   distinct?: "codigoAlternativo" | "referencia";
   filters?: ItemFilter[];
+  isReport?: boolean;
 }
 
 export async function getProducts({
@@ -106,6 +107,7 @@ export async function getProducts({
   orderby,
   filters,
   distinct,
+  isReport,
 }: UseProductsProps): Promise<GetProductsResponse> {
   const { data } = await api.get<ProductApiResponse>("/products", {
     params: {
@@ -113,6 +115,7 @@ export async function getProducts({
       pagesize,
       orderby,
       distinct,
+      isReport,
       filters: filters?.map((filter) => ({
         name: filter.name,
         value: filter.value,

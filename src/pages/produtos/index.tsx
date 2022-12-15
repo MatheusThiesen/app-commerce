@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Flex,
+  Icon,
   SimpleGrid,
   Slide,
   Spinner,
@@ -9,10 +10,12 @@ import {
   Switch,
   Text,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IoBook } from "react-icons/io5";
+import { SiMicrosoftexcel } from "react-icons/si";
 import { Me } from "../../@types/me";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
@@ -25,10 +28,15 @@ import {
   ProductListFilter,
   SelectedFilter,
 } from "../../components/ProductListFilter";
-import { FilterList, useProducts } from "../../hooks/queries/useProducts";
+import {
+  FilterList,
+  getProducts,
+  useProducts,
+} from "../../hooks/queries/useProducts";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
 import { setupAPIClient } from "../../service/api";
 import { api } from "../../service/apiClient";
+import { exportXlsx } from "../../utils/exportXlsx";
 import { withSSRAuth } from "../../utils/withSSRAuth";
 
 interface ProductsProps {
@@ -57,6 +65,9 @@ const OrderByItems = [
 const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
 
 export default function Produtos({ me }: ProductsProps) {
+  const toast = useToast();
+  const toastIdRef = useRef();
+
   const {
     onChangeActivated: onChangeActivatedProductCatalog,
     isActivated: isActivatedCatalog,
@@ -115,6 +126,89 @@ export default function Produtos({ me }: ProductsProps) {
       onToggle();
     }
   }, [isActivatedCatalog]);
+
+  async function handleExportList() {
+    //@ts-ignore
+    toastIdRef.current = toast({
+      position: "top-right",
+      duration: 100000,
+      render: () => (
+        <Box
+          bg="blue.400"
+          p="3"
+          borderRadius="md"
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Box display="flex" alignItems="center" justifyContent="start">
+            <Icon as={IoBook} color="white" mr="3" fontSize="20px" />
+            <Text as="span" color="white" fontSize="md">
+              Gerando relatório
+            </Text>
+          </Box>
+          <Spinner ml="3" size="md" color="white" />
+        </Box>
+      ),
+    });
+
+    try {
+      const responseProducts = await getProducts({
+        page: 1,
+        filters: filters,
+        orderby: orderBy,
+        pagesize: 100000,
+        isReport: true,
+      });
+
+      const normalizedProducts = responseProducts.products.map((product) => ({
+        "Cód. Produto": product.codigo ?? "-",
+        "Cód. Agrupador": product.codigoAlternativo ?? "-",
+        Referência: product.referencia ?? "-",
+        Descrição: product.descricao ?? "-",
+        PDV: product.precoVenda ?? "-",
+        Grade: product.descricaoAdicional ?? "-",
+        Marca: product.marca.descricao ?? "-",
+        Coleção: product.colecao?.descricao ?? "-",
+        Linha: product.linha?.descricao ?? "-",
+        Grupo: product.grupo?.descricao ?? "-",
+        Subgrupo: product.subGrupo?.descricao ?? "-",
+        Gênero: product.genero?.descricao ?? "-",
+        "Locais Estoque disponíveis":
+          product.locaisEstoque?.map((estoque) => estoque.descricao)?.join() ??
+          "-",
+      }));
+
+      const now = new Date().toLocaleString("pt-br", {
+        dateStyle: "short",
+      });
+
+      await exportXlsx({
+        filename: `Produtos-${now}`,
+        data: normalizedProducts,
+      });
+
+      if (toastIdRef.current) {
+        toast.update(toastIdRef.current, {
+          description: "relatório gerado!",
+          status: "success",
+          isClosable: true,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+
+      if (toastIdRef.current) {
+        toast.update(toastIdRef.current, {
+          description: "Ocorreu um erro ao gerar Catálogo.",
+          status: "error",
+          isClosable: true,
+          duration: 3000,
+        });
+      }
+    }
+  }
 
   return (
     <>
@@ -247,6 +341,14 @@ export default function Produtos({ me }: ProductsProps) {
                   >
                     Produtos
                     {isLoading && <Spinner ml="4" size="md" />}
+                    <Button type="button" ml="2" onClick={handleExportList}>
+                      <Icon
+                        as={SiMicrosoftexcel}
+                        fontSize="1.5rem"
+                        color="#147b45"
+                        ml="-1"
+                      />
+                    </Button>
                   </Text>
 
                   <Flex justifyContent="space-between" mt="1" mb="2">
