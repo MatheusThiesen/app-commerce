@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-// import * as https from "https";
+import * as https from "https";
 import { GetServerSidePropsContext } from "next";
 import { parseCookies, setCookie } from "nookies";
 import { signOut } from "../contexts/AuthContext";
@@ -8,9 +8,9 @@ import { AuthTokenError } from "./errors/AuthTokenError";
 let isRefreshing = false;
 let failedRequestQueue: any[] = [];
 
-// const agent = new https.Agent({
-//   rejectUnauthorized: false,
-// });
+const agent = new https.Agent({
+  rejectUnauthorized: false,
+});
 
 export function setupAPIClient(
   ctx: GetServerSidePropsContext | undefined = undefined
@@ -25,7 +25,7 @@ export function setupAPIClient(
     headers: {
       Authorization: `Bearer ${cookies["nextauth.token"]}`,
     },
-    // httpsAgent: agent,
+    httpsAgent: agent,
   });
 
   api.interceptors.response.use(
