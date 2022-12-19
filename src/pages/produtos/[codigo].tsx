@@ -60,6 +60,12 @@ export default function Produto(props: ProdutoProps) {
       <Text as="span" fontSize="2xl" fontWeight="medium">
         PDV {product?.precoVendaFormat}
       </Text>
+      <Text as="p" fontSize="sm" fontWeight="light">
+        Preço venda {product?.precoVendaEmpresaFormat}
+      </Text>
+      <Text as="p" fontSize="sm" fontWeight="light">
+        tabela 42 {product?.precoTabela42Format}
+      </Text>
       <Text as="p" fontSize="small" mt="2" fontWeight="light">
         Cor:{" "}
         <Text as="span" fontSize="small" mt="2" fontWeight="bold">

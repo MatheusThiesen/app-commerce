@@ -12,6 +12,10 @@ export type Product = {
   descricaoAdicional: string;
   precoVenda: number;
   precoVendaFormat: string;
+  precoVendaEmpresa: number;
+  precoVendaEmpresaFormat: string;
+  precoTabela42: number;
+  precoTabela42Format: string;
   locaisEstoque?: {
     id: string;
     descricao: string;
@@ -130,6 +134,21 @@ export async function getProducts({
         style: "currency",
         currency: "BRL",
       }),
+      precoVendaEmpresaFormat: product?.precoVendaEmpresa
+        ? product?.precoVendaEmpresa.toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          })
+        : "R$ -",
+      precoTabela42: product?.precoVendaEmpresa
+        ? product.precoVendaEmpresa + product.precoVendaEmpresa * 0.0191
+        : 0,
+      precoTabela42Format: product?.precoTabela42
+        ? product.precoTabela42.toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          })
+        : "R$ -",
     })),
     pagesize: data.pagesize,
     total: data.total,
@@ -159,6 +178,21 @@ export async function getProductOne(
       style: "currency",
       currency: "BRL",
     }),
+    precoVendaEmpresaFormat: data.precoVendaEmpresa
+      ? data.precoVendaEmpresa.toLocaleString("pt-br", {
+          style: "currency",
+          currency: "BRL",
+        })
+      : "R$ -",
+    precoTabela42: data?.precoVendaEmpresa
+      ? data.precoVendaEmpresa + data.precoVendaEmpresa * 0.0191
+      : 0,
+    precoTabela42Format: data?.precoTabela42
+      ? data.precoTabela42.toLocaleString("pt-br", {
+          style: "currency",
+          currency: "BRL",
+        })
+      : "R$ -",
   };
 
   return product;

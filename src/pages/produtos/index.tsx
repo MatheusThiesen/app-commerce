@@ -167,6 +167,7 @@ export default function Produtos({ me }: ProductsProps) {
         Referência: product.referencia ?? "-",
         Descrição: product.descricao ?? "-",
         PDV: product.precoVenda ?? "-",
+        "Preço Venda": product?.precoVendaEmpresa ?? "-",
         Grade: product.descricaoAdicional ?? "-",
         Marca: product.marca.descricao ?? "-",
         Coleção: product.colecao?.descricao ?? "-",
