@@ -190,8 +190,11 @@ export async function getProductOne(
     precoTabela42: data?.precoVendaEmpresa
       ? data.precoVendaEmpresa + data.precoVendaEmpresa * 0.0191
       : 0,
-    precoTabela42Format: data?.precoTabela42
-      ? data.precoTabela42.toLocaleString("pt-br", {
+    precoTabela42Format: data?.precoVendaEmpresa
+      ? (
+          data.precoVendaEmpresa +
+          data.precoVendaEmpresa * 0.0191
+        ).toLocaleString("pt-br", {
           style: "currency",
           currency: "BRL",
         })
