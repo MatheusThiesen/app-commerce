@@ -143,8 +143,11 @@ export async function getProducts({
       precoTabela42: product?.precoVendaEmpresa
         ? product.precoVendaEmpresa + product.precoVendaEmpresa * 0.0191
         : 0,
-      precoTabela42Format: product?.precoTabela42
-        ? product.precoTabela42.toLocaleString("pt-br", {
+      precoTabela42Format: product?.precoVendaEmpresa
+        ? (
+            product.precoVendaEmpresa +
+            product.precoVendaEmpresa * 0.0191
+          ).toLocaleString("pt-br", {
             style: "currency",
             currency: "BRL",
           })
