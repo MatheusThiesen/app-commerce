@@ -91,7 +91,7 @@ export default function Produtos({ me }: ProductsProps) {
   const [filters, setFilters] = useState<SelectedFilter[]>([]);
   const [groupProduct, setGroupProduct] = useState<
     undefined | "codigoAlternativo"
-  >("codigoAlternativo");
+  >();
   const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
   const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
   const [page, setPage] = useState(() => {
@@ -167,8 +167,6 @@ export default function Produtos({ me }: ProductsProps) {
         Referência: product.referencia ?? "-",
         Descrição: product.descricao ?? "-",
         PDV: product.precoVenda ?? "-",
-        "Preço Venda": product?.precoVendaEmpresa ?? "-",
-        "Tabela 42": product?.precoTabela42 ?? "-",
         Grade: product.descricaoAdicional ?? "-",
         Marca: product.marca.descricao ?? "-",
         Coleção: product.colecao?.descricao ?? "-",

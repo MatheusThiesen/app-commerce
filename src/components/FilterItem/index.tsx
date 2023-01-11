@@ -110,7 +110,7 @@ export function FilterItem({
             })
           }
         >
-          <Text fontSize="sm" color="gray.600">
+          <Text fontSize="sm" color="gray.600" whiteSpace="nowrap">
             {item.name}
           </Text>
         </Checkbox>
@@ -161,7 +161,7 @@ export function FilterItem({
             </Flex>
           )}
 
-          {filteredList.length <= 8 ? (
+          {filteredList.length <= 6 ? (
             <Stack spacing={1} maxH="150" overflowY="scroll">
               {filteredList.map((item) => {
                 const isChecked = onChecked(item);
@@ -188,7 +188,12 @@ export function FilterItem({
             <List
               height={150}
               itemCount={filteredList.length}
-              itemSize={["subGrupoId", "grupoCodigo"].includes(name) ? 40 : 25}
+              itemSize={25}
+              // itemSize={
+              //   ["subGrupoId", "grupoCodigo", "concept"].includes(name)
+              //     ? 40
+              //     : 25
+              // }
               width={100}
               style={{
                 width: "100%",
