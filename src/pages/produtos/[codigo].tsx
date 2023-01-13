@@ -115,9 +115,10 @@ export default function Produto(props: ProdutoProps) {
                   <Td>{localEstoque.descricao}</Td>
 
                   <Td>
-                    {localEstoque.quantidade >= 1
+                    {/* {localEstoque.quantidade >= 1
                       ? "Disponível"
-                      : "Indisponível"}
+                      : "Indisponível"} */}
+                    {localEstoque.quantidade}
                   </Td>
                 </Tr>
               ))}
