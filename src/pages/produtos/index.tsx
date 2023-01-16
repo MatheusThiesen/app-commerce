@@ -161,23 +161,34 @@ export default function Produtos({ me }: ProductsProps) {
         isReport: true,
       });
 
-      const normalizedProducts = responseProducts.products.map((product) => ({
-        "Cód. Produto": product.codigo ?? "-",
-        "Cód. Agrupador": product.codigoAlternativo ?? "-",
-        Referência: product.referencia ?? "-",
-        Descrição: product.descricao ?? "-",
-        PDV: product.precoVenda ?? "-",
-        Grade: product.descricaoAdicional ?? "-",
-        Marca: product.marca.descricao ?? "-",
-        Coleção: product.colecao?.descricao ?? "-",
-        Linha: product.linha?.descricao ?? "-",
-        Grupo: product.grupo?.descricao ?? "-",
-        Subgrupo: product.subGrupo?.descricao ?? "-",
-        Gênero: product.genero?.descricao ?? "-",
-        "Locais Estoque disponíveis":
-          product.locaisEstoque?.map((estoque) => estoque.descricao)?.join() ??
-          "-",
-      }));
+      const normalizedProducts = responseProducts.products.map((product) => {
+        let data = {};
+
+        if (product.locaisEstoque) {
+          for (let index = 0; index < product.locaisEstoque?.length; index++) {
+            data = {
+              [product.locaisEstoque[0].descricao]:
+                product.locaisEstoque[0].quantidade,
+            };
+          }
+        }
+
+        return {
+          "Cód. Produto": product.codigo ?? "-",
+          "Cód. Agrupador": product.codigoAlternativo ?? "-",
+          Referência: product.referencia ?? "-",
+          Descrição: product.descricao ?? "-",
+          PDV: product.precoVenda ?? "-",
+          Grade: product.descricaoAdicional ?? "-",
+          Marca: product.marca.descricao ?? "-",
+          Coleção: product.colecao?.descricao ?? "-",
+          Linha: product.linha?.descricao ?? "-",
+          Grupo: product.grupo?.descricao ?? "-",
+          Subgrupo: product.subGrupo?.descricao ?? "-",
+          Gênero: product.genero?.descricao ?? "-",
+          ...data,
+        };
+      });
 
       const now = new Date().toLocaleString("pt-br", {
         dateStyle: "short",
