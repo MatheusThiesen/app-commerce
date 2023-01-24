@@ -101,7 +101,7 @@ export function ProductCatalogProvider({
         groupProduct: groupProduct,
       });
 
-      // window.open(response.data);
+      window.open(response.data);
 
       if (toastIdRef.current) {
         toast.update(toastIdRef.current, {
@@ -118,10 +118,10 @@ export function ProductCatalogProvider({
 
       if (win) {
         win?.document.write(contentHtml);
-        setTimeout(() => {
-          win?.print();
-          // win?.close();
-        }, 3000);
+        // setTimeout(() => {
+        //   win?.print();
+        //   // win?.close();
+        // }, 3000);
       }
     } catch (error) {
       if (toastIdRef.current) {
