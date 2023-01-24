@@ -91,7 +91,7 @@ export function ProductCatalogProvider({
           <Spinner ml="3" size="md" color="white" />
         </Box>
       ),
-      duration: 99999999999999999,
+      duration: 999999,
     });
 
     try {
