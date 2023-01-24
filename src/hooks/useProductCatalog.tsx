@@ -73,7 +73,6 @@ export function ProductCatalogProvider({
     //@ts-ignore
     toastIdRef.current = toast({
       position: "top-right",
-      duration: 100000,
       render: () => (
         <Box
           bg="blue.400"
@@ -92,6 +91,7 @@ export function ProductCatalogProvider({
           <Spinner ml="3" size="md" color="white" />
         </Box>
       ),
+      duration: 99999999999999999,
     });
 
     try {
@@ -100,6 +100,8 @@ export function ProductCatalogProvider({
         orderBy: orderBy,
         groupProduct: groupProduct,
       });
+
+      window.open(response.data);
 
       if (toastIdRef.current) {
         toast.update(toastIdRef.current, {
@@ -110,17 +112,17 @@ export function ProductCatalogProvider({
         });
       }
 
-      const contentHtml = response.data;
+      // const contentHtml = response.data;
 
-      var win = window.open();
+      // var win = window.open();
 
-      if (win) {
-        win?.document.write(contentHtml);
-        setTimeout(() => {
-          win?.print();
-          // win?.close();
-        }, 3000);
-      }
+      // if (win) {
+      //   win?.document.write(contentHtml);
+      //   setTimeout(() => {
+      //     win?.print();
+      //     // win?.close();
+      //   }, 3000);
+      // }
     } catch (error) {
       if (toastIdRef.current) {
         toast.update(toastIdRef.current, {
@@ -140,7 +142,7 @@ export function ProductCatalogProvider({
       page: 1,
       filters: filters,
       orderby: orderby,
-      pagesize: 100000,
+      pagesize: 500,
       distinct: groupProduct ? "codigoAlternativo" : "referencia",
     });
 

@@ -105,7 +105,7 @@ export default function Produto(props: ProdutoProps) {
           <Thead>
             <Tr>
               <Th>Período</Th>
-              <Th>Meta</Th>
+              <Th>Estoque</Th>
             </Tr>
           </Thead>
           {
