@@ -101,7 +101,7 @@ export function ProductCatalogProvider({
         groupProduct: groupProduct,
       });
 
-      window.open(response.data);
+      // window.open(response.data);
 
       if (toastIdRef.current) {
         toast.update(toastIdRef.current, {
@@ -112,17 +112,17 @@ export function ProductCatalogProvider({
         });
       }
 
-      // const contentHtml = response.data;
+      const contentHtml = response.data;
 
-      // var win = window.open();
+      var win = window.open();
 
-      // if (win) {
-      //   win?.document.write(contentHtml);
-      //   setTimeout(() => {
-      //     win?.print();
-      //     // win?.close();
-      //   }, 3000);
-      // }
+      if (win) {
+        win?.document.write(contentHtml);
+        setTimeout(() => {
+          win?.print();
+          // win?.close();
+        }, 3000);
+      }
     } catch (error) {
       if (toastIdRef.current) {
         toast.update(toastIdRef.current, {
