@@ -95,7 +95,7 @@ export default function Produto(props: ProdutoProps) {
       </Box>
       <TableContainer mt="6" w="70%">
         <Text mb="3" fontSize="lg">
-          Metas
+          Locais de estoque
         </Text>
         <Table size="sm" variant="simple">
           {(product?.locaisEstoque?.length ?? 0) <= 0 && (
