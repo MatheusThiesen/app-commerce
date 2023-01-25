@@ -109,7 +109,7 @@ export async function getProducts({
   orderby,
   filters,
   distinct,
-  isReport,
+  isReport = false,
 }: UseProductsProps): Promise<GetProductsResponse> {
   const { data } = await api.get<ProductApiResponse>("/products", {
     params: {
