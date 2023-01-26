@@ -101,8 +101,6 @@ export function ProductCatalogProvider({
         groupProduct: groupProduct,
       });
 
-      window.open(response.data);
-
       if (toastIdRef.current) {
         toast.update(toastIdRef.current, {
           description: "Catálogo gerado!",
@@ -111,6 +109,8 @@ export function ProductCatalogProvider({
           duration: 3000,
         });
       }
+
+      handleRemoveAllProduct();
 
       const contentHtml = response.data;
 
