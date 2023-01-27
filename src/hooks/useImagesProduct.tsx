@@ -28,12 +28,17 @@ export const useImagesProduct = async ({
       },
     }
   );
-  const xmlToJson = (await xml2js.parseStringPromise(
-    response.data
-  )) as ResponseXmlToJson;
-  images = xmlToJson?.ListBucketResult?.Contents?.map(
-    (key) => "https://alpar.sfo3.digitaloceanspaces.com" + "/" + key?.Key[0]
-  );
 
-  return images;
+  try {
+    const xmlToJson = (await xml2js.parseStringPromise(
+      response.data
+    )) as ResponseXmlToJson;
+    images = xmlToJson?.ListBucketResult?.Contents?.map(
+      (key) => "https://alpar.sfo3.digitaloceanspaces.com" + "/" + key?.Key[0]
+    );
+
+    return images;
+  } catch (error) {
+    return [""];
+  }
 };
