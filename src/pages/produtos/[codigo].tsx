@@ -37,7 +37,6 @@ interface ProdutoProps {
 }
 
 export default function Produto(props: ProdutoProps) {
-  const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
   const router = useRouter();
   const { codigo } = router.query;
   const [images, setImages] = useState<string[]>([]);
@@ -50,7 +49,8 @@ export default function Produto(props: ProdutoProps) {
         const getImages = await useImagesProduct({
           reference: product.referencia,
         });
-        setImages(getImages);
+
+        setImages(getImages ?? [""]);
       }
     })();
   }, [product]);

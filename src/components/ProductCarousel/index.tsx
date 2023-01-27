@@ -36,6 +36,11 @@ export function ProductCarousel({ banners, ...rest }: BannerCarouselProps) {
               objectFit="contain"
               alt={banner.name}
               src={banner.uri}
+              onError={({ currentTarget }) => {
+                currentTarget.onerror = null; // prevents looping
+                currentTarget.src =
+                  "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
+              }}
             />
           </SwiperSlide>
         ))}
