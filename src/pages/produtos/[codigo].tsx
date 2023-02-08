@@ -126,6 +126,34 @@ export default function Produto(props: ProdutoProps) {
           }
         </Table>
       </TableContainer>
+      <TableContainer mt="6">
+        <Text mb="3" fontSize="lg">
+          Lista de preço
+        </Text>
+        <Table size="sm" variant="simple">
+          {(product?.listaPreco?.length ?? 0) <= 0 && (
+            <TableCaption>Sem dados</TableCaption>
+          )}
+
+          <Thead>
+            <Tr>
+              <Th>Lista</Th>
+              <Th>Preço</Th>
+            </Tr>
+          </Thead>
+          {
+            <Tbody>
+              {product?.listaPreco?.map((localEstoque) => (
+                <Tr key={localEstoque.id}>
+                  <Td>{localEstoque.descricao}</Td>
+
+                  <Td>{localEstoque.valorFormat}</Td>
+                </Tr>
+              ))}
+            </Tbody>
+          }
+        </Table>
+      </TableContainer>
     </>
   );
 

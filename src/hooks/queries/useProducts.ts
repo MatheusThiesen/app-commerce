@@ -58,6 +58,12 @@ export type Product = {
     codigo: number;
     descricaoAdicional: string;
   }[];
+  listaPreco?: {
+    id: string;
+    descricao: string;
+    valor: number;
+    valorFormat: string;
+  }[];
 };
 
 export interface VariationsProduct {
@@ -173,6 +179,13 @@ export async function getProductOne(
           currency: "BRL",
         })
       : "R$ -",
+    listaPreco: data.listaPreco?.map((list) => ({
+      ...list,
+      valorFormat: list.valor.toLocaleString("pt-br", {
+        style: "currency",
+        currency: "BRL",
+      }),
+    })),
   };
 
   return product;
