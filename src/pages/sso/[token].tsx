@@ -1,7 +1,35 @@
-import { Flex, Spinner } from "@chakra-ui/react";
+import { Flex, Spinner, useToast } from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { useAuth } from "../../contexts/AuthContext";
 
-export default function Sso() {
+interface SsoProps {
+  token: string;
+}
+
+export default function Sso({ token }: SsoProps) {
+  const { sso } = useAuth();
+  const toast = useToast();
+  const history = useRouter();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await sso(token);
+      } catch (error) {
+        toast({
+          title: "Ocorreu erro com seu acesso direto, realize seu login!",
+          status: "error",
+          position: "top",
+          isClosable: true,
+        });
+        history.push("/");
+      }
+    })();
+  }, []);
+
   return (
     <>
       <Head>
@@ -14,8 +42,19 @@ export default function Sso() {
   );
 }
 
-export const getServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps<any> = async (ctx) => {
+  if (!ctx.query?.token) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
   return {
-    props: {},
+    props: {
+      token: ctx.query?.token,
+    },
   };
 };

@@ -30,6 +30,7 @@ type SignCredentials = {
 type AuthContextData = {
   signIn(creandentials: SignCredentials): Promise<ReponseSignIn | void>;
   signOut: () => void;
+  sso: (token: string) => Promise<void>;
   reset(p: ResetProps): Promise<ReponseSignIn | void>;
   user?: User;
   isAuthenticated: boolean;
@@ -206,9 +207,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  async function sso(token: string) {
+    const response = await api({
+      method: "post",
+      url: "/auth/sso",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const { access_token: accessToken, refresh_token: refreshToken } =
+      response.data;
+
+    await authenticate({ token: accessToken, refreshToken });
+  }
+
   return (
     <AuthContext.Provider
-      value={{ signIn, isAuthenticated, user, signOut, reset }}
+      value={{ signIn, isAuthenticated, user, signOut, reset, sso }}
     >
       {children}
     </AuthContext.Provider>

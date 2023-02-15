@@ -55,9 +55,11 @@ export function withSSRAuth<P>(
     try {
       return await fn(ctx);
     } catch (err) {
+      const error = err as any;
+
       console.log(err instanceof AuthTokenError);
 
-      if (err instanceof AuthTokenError) {
+      if (err instanceof AuthTokenError || error?.response === undefined) {
         destroyCookie(ctx, "nextauth.token");
         destroyCookie(ctx, "nextauth.refreshToken");
 
