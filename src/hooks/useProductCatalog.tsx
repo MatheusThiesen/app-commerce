@@ -16,6 +16,7 @@ import { getProducts } from "./queries/useProducts";
 type GenerateCatalogProps = {
   orderBy: string;
   groupProduct?: boolean;
+  stockLocation?: boolean;
 };
 
 export type CatalogProductProps = {
@@ -69,6 +70,7 @@ export function ProductCatalogProvider({
   async function handleGenerateCatalog({
     orderBy,
     groupProduct,
+    stockLocation,
   }: GenerateCatalogProps) {
     //@ts-ignore
     toastIdRef.current = toast({
@@ -99,6 +101,7 @@ export function ProductCatalogProvider({
         referencesProduct: productsSelected.map((product) => product.reference),
         orderBy: orderBy,
         groupProduct: groupProduct,
+        stockLocation: stockLocation,
       });
 
       if (toastIdRef.current) {

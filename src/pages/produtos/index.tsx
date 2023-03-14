@@ -92,6 +92,7 @@ export default function Produtos({ me }: ProductsProps) {
   const [groupProduct, setGroupProduct] = useState<
     undefined | "codigoAlternativo"
   >();
+  const [stockLocation, setStockLocation] = useState(false);
   const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
   const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
   const [page, setPage] = useState(() => {
@@ -464,11 +465,24 @@ export default function Produtos({ me }: ProductsProps) {
                 <Text fontSize={["lg", "lg", "lg", "3xl"]} fontWeight="bold">
                   CATÁLOGO
                 </Text>
+
                 <Text
                   display={["block", "block", "block", "none"]}
                   color="gray.500"
                 >{`${productsSelectedCatalog.length}/500 produtos selecionados`}</Text>
               </Box>
+
+              <Flex justify="center" align="center" columnGap="2">
+                <Text fontWeight="light" fontSize="md">
+                  Mostrar estoque
+                </Text>
+                <Switch
+                  isChecked={!!stockLocation}
+                  onChange={(e) => setStockLocation(e.target.checked)}
+                  size="sm"
+                  colorScheme="red"
+                />
+              </Flex>
 
               <Stack>
                 <Text
@@ -489,6 +503,7 @@ export default function Produtos({ me }: ProductsProps) {
                       onGenerateCatalog({
                         orderBy: orderBy,
                         groupProduct: groupProduct !== undefined,
+                        stockLocation: stockLocation,
                       })
                     }
                   >
