@@ -1,7 +1,7 @@
 import { Box, Icon, Spinner, Text, useToast } from "@chakra-ui/react";
 import {
-  createContext,
   ReactNode,
+  createContext,
   useContext,
   useEffect,
   useRef,
@@ -145,7 +145,7 @@ export function ProductCatalogProvider({
       page: 1,
       filters: filters,
       orderby: orderby,
-      pagesize: 500,
+      pagesize: 200,
       distinct: groupProduct ? "codigoAlternativo" : "referencia",
     });
 
