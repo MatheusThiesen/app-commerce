@@ -166,11 +166,8 @@ export default function Produtos({ me }: ProductsProps) {
         let data = {};
 
         if (product.locaisEstoque) {
-          for (let index = 0; index < product.locaisEstoque?.length; index++) {
-            data = {
-              [product.locaisEstoque[0].descricao]:
-                product.locaisEstoque[0].quantidade,
-            };
+          for (const stock of product.locaisEstoque) {
+            data = { ...data, [stock.descricao]: stock.quantidade };
           }
         }
 
