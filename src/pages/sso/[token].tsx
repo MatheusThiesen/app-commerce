@@ -18,7 +18,7 @@ export default function Sso({ token }: SsoProps) {
     (async () => {
       try {
         await sso(token);
-        window.location.reload();
+        history.push("/produtos");
       } catch (error) {
         toast({
           title: "Ocorreu erro com seu acesso direto, realize seu login!",
