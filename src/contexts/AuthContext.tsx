@@ -2,8 +2,8 @@ import { AxiosError } from "axios";
 import Router from "next/router";
 import { destroyCookie, parseCookies, setCookie } from "nookies";
 import {
-  createContext,
   ReactNode,
+  createContext,
   useContext,
   useEffect,
   useState,
@@ -64,7 +64,9 @@ export function signOut() {
   destroyCookie(undefined, "nextauth.token");
   destroyCookie(undefined, "nextauth.refreshToken");
 
-  // authChannel.postMessage("signOut");
+  window.location.reload();
+
+  authChannel.postMessage("signOut");
 
   Router.push("/");
 }
