@@ -152,6 +152,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     authChannel.postMessage("signIn");
     Router.push(route_home);
+    window.location.reload();
   }
 
   async function signIn({
