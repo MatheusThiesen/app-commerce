@@ -4,6 +4,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { withSSRGuest } from "../../utils/withSSRGuest";
 
 interface SsoProps {
   token: string;
@@ -43,19 +44,21 @@ export default function Sso({ token }: SsoProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<any> = async (ctx) => {
-  if (!ctx.query?.token) {
+export const getServerSideProps: GetServerSideProps<any> = withSSRGuest<{}>(
+  async (ctx) => {
+    if (!ctx.query?.token) {
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
+    }
+
     return {
-      redirect: {
-        destination: "/",
-        permanent: false,
+      props: {
+        token: ctx.query?.token,
       },
     };
   }
-
-  return {
-    props: {
-      token: ctx.query?.token,
-    },
-  };
-};
+);
