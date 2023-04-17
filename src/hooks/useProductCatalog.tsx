@@ -115,9 +115,12 @@ export function ProductCatalogProvider({
 
       handleRemoveAllProduct();
 
-      const contentHtml = response.data;
-
       var win = window.open();
+
+      const contentHtml = response.data;
+      setTimeout(() => {
+        win = window.open();
+      });
 
       if (win) {
         win?.document.write(contentHtml);

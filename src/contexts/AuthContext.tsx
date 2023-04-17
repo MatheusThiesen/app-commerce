@@ -66,7 +66,7 @@ export function signOut() {
 
   window.location.reload();
 
-  authChannel.postMessage("signOut");
+  // authChannel.postMessage("signOut");
 
   Router.push("/");
 }
