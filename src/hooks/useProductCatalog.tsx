@@ -115,20 +115,17 @@ export function ProductCatalogProvider({
 
       handleRemoveAllProduct();
 
-      var win = window.open();
-
       const contentHtml = response.data;
       setTimeout(() => {
-        win = window.open();
+        const win = window.open();
+        if (win) {
+          win?.document.write(contentHtml);
+          // setTimeout(() => {
+          //   win?.print();
+          //   // win?.close();
+          // }, 3000);
+        }
       });
-
-      if (win) {
-        win?.document.write(contentHtml);
-        // setTimeout(() => {
-        //   win?.print();
-        //   // win?.close();
-        // }, 3000);
-      }
     } catch (error) {
       if (toastIdRef.current) {
         toast.update(toastIdRef.current, {
