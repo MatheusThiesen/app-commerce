@@ -3,9 +3,9 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
+  Link as CharkraLink,
   Divider,
   Flex,
-  Link as CharkraLink,
   Spinner,
   Table,
   TableCaption,
@@ -371,11 +371,15 @@ export default function Produto(props: ProdutoProps) {
 
 export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
-  const response = await apiClient.get("/auth/me");
+  var me = {};
+  try {
+    const response = await apiClient.get("/auth/me");
+    me = response.data;
+  } catch (error) {}
 
   return {
     props: {
-      me: response.data,
+      me: me,
     },
   };
 });

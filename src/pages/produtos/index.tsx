@@ -226,7 +226,7 @@ export default function Produtos({ me }: ProductsProps) {
       </Head>
 
       <HeaderNavigation
-        user={{ name: me.email }}
+        user={{ name: me?.email }}
         title="Produtos"
         Right={
           <Button
@@ -544,11 +544,15 @@ export default function Produtos({ me }: ProductsProps) {
 
 export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
-  const response = await apiClient.get("/auth/me");
+  var me = {};
+  try {
+    const response = await apiClient.get("/auth/me");
+    me = response.data;
+  } catch (error) {}
 
   return {
     props: {
-      me: response.data,
+      me: me,
     },
   };
 });
