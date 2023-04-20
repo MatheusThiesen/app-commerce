@@ -21,7 +21,7 @@ export function setupAPIClient(
     baseURL:
       process.env.NODE_ENV !== "development"
         ? "https://api-app.alpardobrasil.com.br/"
-        : "http://192.168.0.155:4444/",
+        : "http://localhost:4444/",
     // : "http://localhost:4444/",
     headers: {
       Authorization: `Bearer ${cookies["nextauth.token"]}`,
@@ -32,8 +32,14 @@ export function setupAPIClient(
   api.interceptors.response.use(
     (success) => success,
     (error: AxiosError) => {
-      if (error.response?.status === 401) {
-        if (error.response.data?.message === "Unauthorized") {
+      if (
+        error.response?.status === 401 ||
+        Number(error.response?.status) >= 500
+      ) {
+        if (
+          // error.response?.data?.message === "Unauthorized" || true
+          !isRefreshing
+        ) {
           cookies = parseCookies(ctx);
 
           const { "nextauth.refreshToken": refreshToken } = cookies;
@@ -45,7 +51,7 @@ export function setupAPIClient(
             api
               .post(
                 "/auth/refresh",
-                {},
+                { refreshToken },
                 {
                   headers: {
                     ["Authorization"]: `Bearer ${refreshToken}`,
@@ -107,6 +113,8 @@ export function setupAPIClient(
           }
         }
       }
+
+      signOut();
 
       return Promise.reject(error);
     }

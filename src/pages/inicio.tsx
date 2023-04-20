@@ -43,15 +43,12 @@ export default function Home({ me }: HomeProps) {
 
 export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
-  var me = {};
-  try {
-    const response = await apiClient.get("/auth/me");
-    me = response.data;
-  } catch (error) {}
+
+  const response = await apiClient.get("/auth/me");
 
   return {
     props: {
-      me: me,
+      me: response.data,
     },
   };
 });

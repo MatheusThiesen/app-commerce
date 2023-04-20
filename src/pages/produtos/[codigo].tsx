@@ -372,10 +372,9 @@ export default function Produto(props: ProdutoProps) {
 export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
   var me = {};
-  try {
-    const response = await apiClient.get("/auth/me");
-    me = response.data;
-  } catch (error) {}
+
+  const response = await apiClient.get("/auth/me");
+  me = response.data;
 
   return {
     props: {
