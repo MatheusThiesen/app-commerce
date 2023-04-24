@@ -2,9 +2,9 @@ import {
   Avatar,
   Box,
   Button,
+  Link as CharkraLink,
   Flex,
   Image,
-  Link as CharkraLink,
   Menu,
   MenuButton,
   MenuDivider,
@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import Router from "next/router";
-import { memo, ReactNode, useEffect, useState } from "react";
+import { ReactNode, memo, useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import { useAuth } from "../../contexts/AuthContext";
 import { NavLink } from "./NavLink";
@@ -35,7 +35,7 @@ export interface HeaderProps {
   Left?: ReactNode;
   Right?: ReactNode;
 
-  user: {
+  user?: {
     name: string;
   };
 }
@@ -52,7 +52,7 @@ export function HeaderNavigationComponent({
   isGoBack = false,
   user,
 }: HeaderProps) {
-  const { signOut } = useAuth();
+  const { signOut, isAuthenticated } = useAuth();
 
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -187,45 +187,58 @@ export function HeaderNavigationComponent({
           px={["30"]}
           maxW="1120px"
         >
-          <Link href=" /inicio">
-            <CharkraLink h="full">
-              <Image
-                py="1"
-                h="full"
-                objectFit="contain"
-                src="/assets/logo-white.png"
-              />
-            </CharkraLink>
-          </Link>
+          {isAuthenticated ? (
+            <Link href="/inicio">
+              <CharkraLink h="full">
+                <Image
+                  py="1"
+                  h="full"
+                  objectFit="contain"
+                  src="/assets/logo-white.png"
+                />
+              </CharkraLink>
+            </Link>
+          ) : (
+            <Image
+              py="1"
+              h="full"
+              objectFit="contain"
+              src="/assets/logo-white.png"
+            />
+          )}
 
-          <Stack direction="row" h="full" spacing="10">
-            <NavLink href="/inicio">Início</NavLink>
-            <NavLink href="/produtos">Produtos</NavLink>
-          </Stack>
+          {isAuthenticated && (
+            <Stack direction="row" h="full" spacing="10">
+              <NavLink href="/inicio">Início</NavLink>
+              <NavLink href="/produtos">Produtos</NavLink>
+            </Stack>
+          )}
 
-          <Menu>
-            <MenuButton>
-              <Flex align={"center"}>
-                <Avatar size="md" name={user.name} bg="white" />
-                <Text fontSize="sm" fontWeight="bold" ml="2" color="white">
-                  {user.name}
-                </Text>
-              </Flex>
-            </MenuButton>
-            <MenuList zIndex="1000">
-              <MenuGroup title="Perfil">
-                <MenuItem>
-                  <Link href="/conta" passHref>
-                    <CharkraLink _hover={{ textDecoration: "none" }}>
-                      Minha conta
-                    </CharkraLink>
-                  </Link>
-                </MenuItem>
-                <MenuDivider />
-                <MenuItem onClick={signOut}>Sair </MenuItem>
-              </MenuGroup>
-            </MenuList>
-          </Menu>
+          {user && (
+            <Menu>
+              <MenuButton>
+                <Flex align={"center"}>
+                  <Avatar size="md" name={user?.name} bg="white" />
+                  <Text fontSize="sm" fontWeight="bold" ml="2" color="white">
+                    {user?.name}
+                  </Text>
+                </Flex>
+              </MenuButton>
+              <MenuList zIndex="1000">
+                <MenuGroup title="Perfil">
+                  <MenuItem>
+                    <Link href="/conta" passHref>
+                      <CharkraLink _hover={{ textDecoration: "none" }}>
+                        Minha conta
+                      </CharkraLink>
+                    </Link>
+                  </MenuItem>
+                  <MenuDivider />
+                  <MenuItem onClick={signOut}>Sair </MenuItem>
+                </MenuGroup>
+              </MenuList>
+            </Menu>
+          )}
         </Flex>
       </Flex>
     </>

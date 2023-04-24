@@ -1,4 +1,21 @@
-import { Box, Icon, Spinner, Text, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Link as CharkraLink,
+  Icon,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Spinner,
+  Text,
+  useDisclosure,
+  useToast,
+} from "@chakra-ui/react";
+import copy from "copy-to-clipboard";
 import {
   ReactNode,
   createContext,
@@ -7,7 +24,10 @@ import {
   useRef,
   useState,
 } from "react";
+import { FiExternalLink } from "react-icons/fi";
+import { IoIosShareAlt } from "react-icons/io";
 import { IoBook } from "react-icons/io5";
+import { RxClipboardCopy } from "react-icons/rx";
 
 import { SelectedFilter } from "../components/ProductListFilter";
 import { api } from "../service/apiClient";
@@ -49,11 +69,13 @@ export function ProductCatalogProvider({
 }: ProductCatalogProviderProps) {
   const toast = useToast();
   const toastIdRef = useRef();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [productsSelected, setProductsSelected] = useState<
     CatalogProductProps[]
   >([]);
   const [isActivated, setIsActivated] = useState<boolean>(false);
+  const [catalogLink, setCatalogLink] = useState<string>("");
 
   function handleSelectedProduct(produto: CatalogProductProps) {
     setProductsSelected((stateDate) => [...stateDate, produto]);
@@ -67,6 +89,7 @@ export function ProductCatalogProvider({
   function handleRemoveAllProduct() {
     setProductsSelected([]);
   }
+
   async function handleGenerateCatalog({
     orderBy,
     groupProduct,
@@ -113,19 +136,11 @@ export function ProductCatalogProvider({
         });
       }
 
+      setCatalogLink(
+        `${window.location.protocol}//${window.location.host}/catalogo/${response.data}`
+      );
+      onOpen();
       handleRemoveAllProduct();
-
-      const contentHtml = response.data;
-      setTimeout(() => {
-        const win = window.open();
-        if (win) {
-          win?.document.write(contentHtml);
-          // setTimeout(() => {
-          //   win?.print();
-          //   // win?.close();
-          // }, 3000);
-        }
-      });
     } catch (error) {
       if (toastIdRef.current) {
         toast.update(toastIdRef.current, {
@@ -158,6 +173,33 @@ export function ProductCatalogProvider({
     );
   }
 
+  function handleCopyClipboard() {
+    copy(catalogLink);
+
+    toast({
+      title: "Link copiado",
+      status: "info",
+      position: "top",
+      isClosable: true,
+    });
+  }
+
+  async function handleShare() {
+    try {
+      await navigator.share({
+        title: "Catálogo",
+        url: catalogLink,
+      });
+    } catch (err) {
+      toast({
+        description: "Ocorreu um erro ao gerar Catálogo.",
+        status: "error",
+        isClosable: true,
+        position: "top",
+      });
+    }
+  }
+
   useEffect(() => {
     if (productsSelected.length >= 1) {
       if (!isActivated) {
@@ -182,6 +224,45 @@ export function ProductCatalogProvider({
       }}
     >
       {children}
+
+      {catalogLink && (
+        <Modal isOpen={isOpen} onClose={onClose} size="lg">
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Catálogo</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Box borderRadius={"md"} bg="gray.50" p="2">
+                <CharkraLink h="full" isExternal href={catalogLink}>
+                  {catalogLink}
+                </CharkraLink>
+              </Box>
+            </ModalBody>
+
+            <ModalFooter>
+              {(navigator.share !== undefined || true) && (
+                <Button mr={3} onClick={handleShare}>
+                  <Text display={["none", "none", "none", "flex"]}>
+                    Compartilhar
+                  </Text>
+                  <Icon as={IoIosShareAlt} ml={[0, 0, 0, 3]} />
+                </Button>
+              )}
+
+              <Button mr={3} onClick={handleCopyClipboard}>
+                Copiar
+                <Icon as={RxClipboardCopy} ml={3} />
+              </Button>
+              <CharkraLink h="full" isExternal href={catalogLink}>
+                <Button colorScheme="red">
+                  Abrir Catálogo
+                  <Icon as={FiExternalLink} ml={3} />
+                </Button>
+              </CharkraLink>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
     </ProductCatalogContext.Provider>
   );
 }
