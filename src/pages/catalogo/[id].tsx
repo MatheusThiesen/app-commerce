@@ -127,6 +127,10 @@ export default function Catalog({ me }: CatalogProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  return {
+    props: {},
+  };
+
   const apiClient = setupAPIClient(ctx);
 
   try {
@@ -142,8 +146,4 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       props: {},
     };
   }
-
-  return {
-    props: {},
-  };
 };
