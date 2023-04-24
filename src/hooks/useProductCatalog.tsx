@@ -240,7 +240,7 @@ export function ProductCatalogProvider({
             </ModalBody>
 
             <ModalFooter>
-              {(navigator.share !== undefined || true) && (
+              {navigator.share !== undefined && (
                 <Button mr={3} onClick={handleShare}>
                   <Text display={["none", "none", "none", "flex"]}>
                     Compartilhar
