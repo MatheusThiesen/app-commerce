@@ -14,7 +14,7 @@ export function PageCatalog({ product, date }: PageCatalogProps) {
       maxW={["none", "none", "100%", "100%"]}
       // maxH="100%"
       w="297mm"
-      h="209mm"
+      h="200mm"
       bg="white"
       px="4"
       py="4"
