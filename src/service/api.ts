@@ -32,8 +32,8 @@ export function setupAPIClient(
   api.interceptors.response.use(
     (success) => success,
     (error: AxiosError) => {
-      if (error.response?.status === 401) {
-        if (error.response.data?.message === "Unauthorized") {
+      if (error?.response?.status === 401) {
+        if (error?.response?.data?.message === "Unauthorized" || false) {
           cookies = parseCookies(ctx);
 
           const { "nextauth.refreshToken": refreshToken } = cookies;

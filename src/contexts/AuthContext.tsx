@@ -64,9 +64,9 @@ export function signOut() {
   destroyCookie(undefined, "nextauth.token");
   destroyCookie(undefined, "nextauth.refreshToken");
 
-  window.location.reload();
+  // window.location.reload();
 
-  // authChannel.postMessage("signOut");
+  authChannel.postMessage("signOut");
 
   Router.push("/");
 }
