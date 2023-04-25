@@ -87,7 +87,7 @@ export default function Catalog({ me }: CatalogProps) {
             h="3.4rem"
             position="fixed"
             bottom="6.5rem"
-            right={"5"}
+            right={"2rem"}
             colorScheme="red"
             borderRadius="full"
             onClick={handlePrint}

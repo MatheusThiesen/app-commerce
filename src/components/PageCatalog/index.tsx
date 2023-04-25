@@ -1,4 +1,11 @@
-import { Box, Flex, Image, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Image,
+  ListItem,
+  Text,
+  UnorderedList,
+} from "@chakra-ui/react";
 import { memo } from "react";
 import { ProductPage } from "../../hooks/queries/useCatalog";
 
@@ -38,25 +45,70 @@ export function PageCatalog({ product, date }: PageCatalogProps) {
 
         <Flex w="40%" flexDir={"column"} pl="2rem">
           <Box>
-            <Text color="#555" fontSize="1rem">
-              Referência: {product.reference}
-            </Text>
+            {product.isGroupProduct ? (
+              <Text color="#555" fontSize="1rem">
+                Cód. Agrupador: {product.alternativeCode}
+              </Text>
+            ) : (
+              <Text color="#555" fontSize="1rem">
+                Referência: {product.reference}
+              </Text>
+            )}
+
             <Text fontSize="2.5rem" lineHeight="2.8rem">
               {product.description}
             </Text>
-            <Text color="#555" fontSize="0.875rem" mt="0.5rem">
-              Cor: {product.colors}
-            </Text>
+
+            {!product.isGroupProduct && (
+              <Text color="#555" fontSize="0.875rem" mt="0.5rem">
+                Cor: {product.colors}
+              </Text>
+            )}
           </Box>
 
-          <Box mt="1rem">
-            <Text fontSize="1.5rem">GRADES</Text>
-            {product.grids.map((grid) => (
-              <Text color="#444" fontSize={"0.855rem"}>
-                {grid.name}
-              </Text>
-            ))}
-          </Box>
+          {product.isGroupProduct && (
+            <Flex columnGap="1" rowGap="1" flexWrap="wrap">
+              {product.variations?.map((variation) => (
+                <Box
+                  key={variation.reference}
+                  borderRadius="md"
+                  border="1.5px solid black"
+                  p="1.5px"
+                >
+                  <Image
+                    src={variation.imageMain}
+                    height="75px"
+                    maxWidth="75px"
+                    objectFit="contain"
+                    onError={({ currentTarget }) => {
+                      currentTarget.onerror = null; // prevents looping
+                      currentTarget.src =
+                        "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
+                    }}
+                  />
+                </Box>
+              ))}
+            </Flex>
+          )}
+
+          {!product.isGroupProduct && (
+            <Box mt="1rem">
+              <Text fontSize="1.5rem">GRADES</Text>
+              {product.grids.map((grid) => (
+                <Text color="#444" fontSize={"0.855rem"}>
+                  {grid.name}
+
+                  {product.isStockLocation && (
+                    <UnorderedList ml="2rem">
+                      {grid.stocks?.map((stock) => (
+                        <ListItem>{`${stock.description} : ${stock.qtd} qtd`}</ListItem>
+                      ))}
+                    </UnorderedList>
+                  )}
+                </Text>
+              ))}
+            </Box>
+          )}
 
           <Box mt="1rem">
             <Text fontSize="1.5rem">CARACTERÍSTICAS GERAIS</Text>
