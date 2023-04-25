@@ -16,18 +16,15 @@ import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { IoBook } from "react-icons/io5";
 import { SiMicrosoftexcel } from "react-icons/si";
+import { useInView } from "react-intersection-observer";
 import { Me } from "../../@types/me";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
+import { ListFilter, SelectedFilter } from "../../components/ListFilter";
 import { ModalList } from "../../components/ModalList";
 import { OrderBy } from "../../components/OrderBy";
 import { OrderByMobile } from "../../components/OrderByMobile";
-import { Pagination } from "../../components/Pagination";
 import { Product } from "../../components/Product";
-import {
-  ProductListFilter,
-  SelectedFilter,
-} from "../../components/ProductListFilter";
 import {
   FilterList,
   getProducts,
@@ -65,11 +62,11 @@ const OrderByItems = [
 const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
 
 export default function Produtos({ me }: ProductsProps) {
+  const { ref, inView } = useInView();
   const toast = useToast();
   const toastIdRef = useRef();
 
   const {
-    onChangeActivated: onChangeActivatedProductCatalog,
     isActivated: isActivatedCatalog,
     productsSelected: productsSelectedCatalog,
     onRemoveAllProduct: onRemoveAllProductCatalog,
@@ -102,13 +99,14 @@ export default function Produtos({ me }: ProductsProps) {
     return "precoVenda.desc";
   });
 
-  const { data, isLoading } = useProducts({
-    page,
-    pagesize: 40,
-    orderby: orderBy,
-    filters: filters,
-    distinct: groupProduct ? "codigoAlternativo" : undefined,
-  });
+  const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useProducts({
+      page,
+      pagesize: 40,
+      orderby: orderBy,
+      filters: filters,
+      distinct: groupProduct ? "codigoAlternativo" : undefined,
+    });
 
   useEffect(() => {
     (async () => {
@@ -127,6 +125,12 @@ export default function Produtos({ me }: ProductsProps) {
       onToggle();
     }
   }, [isActivatedCatalog]);
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage]);
 
   async function handleExportList() {
     //@ts-ignore
@@ -228,18 +232,6 @@ export default function Produtos({ me }: ProductsProps) {
       <HeaderNavigation
         user={{ name: me?.email }}
         title="Produtos"
-        Right={
-          <Button
-            colorScheme="none"
-            display="flex"
-            alignItems="center"
-            onClick={() =>
-              onChangeActivatedProductCatalog((oldDate) => !oldDate)
-            }
-          >
-            <IoBook fontSize={"20"} color="white" />
-          </Button>
-        }
         contentHeight={2.5}
         content={
           <Flex w="full" justify="space-around">
@@ -325,7 +317,7 @@ export default function Produtos({ me }: ProductsProps) {
                   />
 
                   {dataFilters && (
-                    <ProductListFilter
+                    <ListFilter
                       filters={dataFilters}
                       selectedFilter={filters}
                       onChangeSelectedFilter={(a) => {
@@ -362,8 +354,8 @@ export default function Produtos({ me }: ProductsProps) {
 
                   <Flex justifyContent="space-between" mt="1" mb="2">
                     <Text fontSize="md" color="gray.600">
-                      Exibindo: {data?.productsStartShow} -{" "}
-                      {data?.productsEndShow} de {data?.total} resultados
+                      Total {data?.pages[data?.pages.length - 1].total}{" "}
+                      resultados
                     </Text>
 
                     <OrderBy
@@ -374,28 +366,54 @@ export default function Produtos({ me }: ProductsProps) {
                   </Flex>
                 </Flex>
 
-                <SimpleGrid columns={[2, 2, 3, 4]} spacing="1" mb="1rem">
-                  {data?.products.map((product) => (
-                    <Product
-                      key={product.codigo}
-                      product={{
-                        cod: product.codigo,
-                        name: product.descricao,
-                        descriptionAdditional: product.descricaoAdicional,
-                        reference: product.referencia,
-                        priceSale: product.precoVendaFormat,
-                        uri: `${spaceImages}/Produtos/${product.referencia}_01`,
-                      }}
-                    />
-                  ))}
-                </SimpleGrid>
+                {isLoading ? (
+                  <Flex h="50vh" w="100%" justify="center" align="center">
+                    <Spinner ml="4" size="xl" />
+                  </Flex>
+                ) : (
+                  <>
+                    <SimpleGrid columns={[2, 2, 3, 4]} spacing="1" mb="1rem">
+                      {data?.pages.map((page) =>
+                        page?.products.map((product, i) =>
+                          i === page?.products.length - 4 ? (
+                            <Box key={product.codigo} ref={ref}>
+                              <Product
+                                product={{
+                                  cod: product.codigo,
+                                  name: product.descricao,
+                                  descriptionAdditional:
+                                    product.descricaoAdicional,
+                                  reference: product.referencia,
+                                  priceSale: product.precoVendaFormat,
+                                  uri: `${spaceImages}/Produtos/${product.referencia}_01`,
+                                }}
+                              />
+                            </Box>
+                          ) : (
+                            <Product
+                              key={product.codigo}
+                              product={{
+                                cod: product.codigo,
+                                name: product.descricao,
+                                descriptionAdditional:
+                                  product.descricaoAdicional,
+                                reference: product.referencia,
+                                priceSale: product.precoVendaFormat,
+                                uri: `${spaceImages}/Produtos/${product.referencia}_01`,
+                              }}
+                            />
+                          )
+                        )
+                      )}
+                    </SimpleGrid>
 
-                <Pagination
-                  currentPage={(data?.page ?? 0) + 1}
-                  pageSize={data?.pagesize}
-                  onPageChange={setPage}
-                  totalRegisters={data?.total ?? 0}
-                />
+                    {isFetchingNextPage && (
+                      <Flex w="100%" justify="center" align="center">
+                        <Spinner mt="4" ml="4" size="lg" />
+                      </Flex>
+                    )}
+                  </>
+                )}
               </Box>
             </Flex>
           </Flex>
@@ -410,7 +428,7 @@ export default function Produtos({ me }: ProductsProps) {
 
               <Box p="6">
                 {dataFilters && (
-                  <ProductListFilter
+                  <ListFilter
                     filters={dataFilters}
                     selectedFilter={filters}
                     onChangeSelectedFilter={(a) => {
@@ -466,7 +484,7 @@ export default function Produtos({ me }: ProductsProps) {
                 <Text
                   display={["block", "block", "block", "none"]}
                   color="gray.500"
-                >{`${productsSelectedCatalog.length}/500 produtos selecionados`}</Text>
+                >{`${productsSelectedCatalog.length}/200 produtos selecionados`}</Text>
               </Box>
 
               <Flex justify="center" align="center" columnGap="2">

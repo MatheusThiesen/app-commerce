@@ -29,7 +29,7 @@ import { IoIosShareAlt } from "react-icons/io";
 import { IoBook } from "react-icons/io5";
 import { RxClipboardCopy } from "react-icons/rx";
 
-import { SelectedFilter } from "../components/ProductListFilter";
+import { SelectedFilter } from "../components/ListFilter";
 import { api } from "../service/apiClient";
 import { getProducts } from "./queries/useProducts";
 

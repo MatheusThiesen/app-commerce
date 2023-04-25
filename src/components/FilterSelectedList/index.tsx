@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { memo } from "react";
 import { TiDelete } from "react-icons/ti";
-import { SelectedFilter } from "../ProductListFilter";
+import { SelectedFilter } from "../ListFilter";
 
 interface FilterSelectedListProps {
   filters: SelectedFilter[];

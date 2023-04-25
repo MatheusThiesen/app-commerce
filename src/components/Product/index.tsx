@@ -37,6 +37,7 @@ export function ProductComponent({ product }: ProductComponentProps) {
   const MotionBox = motion(Box);
   return (
     <MotionBox
+      h="full"
       bg="white"
       px="4"
       py="4"
@@ -75,15 +76,14 @@ export function ProductComponent({ product }: ProductComponentProps) {
           </Button>
         </Box>
 
-        {/* 
-        <Box position="absolute" top="0" right="0">
+        {/* <Box position="absolute" top="0" right="0">
           <Button h="2.5rem" w="2.5rem" p="0" borderRadius="full">
             <Icon
               as={IoMdHeartEmpty} //IoIosHeart
               fontSize="20"
             />
-          </Button> 
-        </Box>*/}
+          </Button>
+        </Box> */}
         <Link href={`/produtos/${cod}`} passHref>
           <Box as="a" w="100%">
             <Flex w="full" flexDirection="column" align="center">

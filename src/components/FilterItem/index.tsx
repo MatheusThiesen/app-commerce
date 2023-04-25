@@ -1,6 +1,6 @@
 import {
-  Accordion as AccordionChakra,
   AccordionButton,
+  Accordion as AccordionChakra,
   AccordionIcon,
   AccordionItem,
   AccordionItemProps,
@@ -16,7 +16,7 @@ import {
 import { useCallback, useState } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { FixedSizeList as List, ListChildComponentProps } from "react-window";
-import { SelectedFilter } from "../ProductListFilter";
+import { SelectedFilter } from "../ListFilter";
 
 interface ItemProps {
   name: string;

@@ -1,5 +1,5 @@
 import { GetServerSidePropsContext } from "next";
-import { useQuery } from "react-query";
+import { useInfiniteQuery, useQuery } from "react-query";
 import { setupAPIClient } from "../../service/api";
 import { api } from "../../service/apiClient";
 
@@ -192,16 +192,33 @@ export async function getProductOne(
 }
 
 export function useProducts({
-  page,
   pagesize,
   orderby,
   filters,
   distinct,
 }: UseProductsProps) {
-  return useQuery(
-    ["products", page, pagesize, orderby, filters, distinct],
-    () => getProducts({ page, pagesize, orderby, filters, distinct }),
-    {}
+  return useInfiniteQuery(
+    ["products", pagesize, orderby, filters, distinct],
+
+    ({ pageParam = 1 }) => {
+      return getProducts({
+        page: pageParam,
+        pagesize,
+        orderby,
+        filters,
+        distinct,
+      });
+    },
+    {
+      // getPreviousPageParam: (firstPage, allPages) => undefined,
+      getNextPageParam: (lastPage) => {
+        const totalCount = lastPage.page * lastPage.pagesize;
+
+        if (totalCount >= lastPage.total) return undefined;
+
+        return lastPage.page + 2;
+      },
+    }
   );
 }
 export function useProductOne(

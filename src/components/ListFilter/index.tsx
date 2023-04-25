@@ -3,7 +3,7 @@ import { memo } from "react";
 import { FilterList } from "../../hooks/queries/useProducts";
 import { FilterItem } from "../FilterItem";
 
-interface ProductListFilterProps {
+interface ListFilterProps {
   filters: FilterList[];
   selectedFilter: SelectedFilter[];
   onChangeSelectedFilter: (a: SelectedFilter[]) => void;
@@ -16,12 +16,12 @@ export interface SelectedFilter {
   field: string | number;
 }
 
-export function ProductListFilterComponent({
+export function ListFilterComponent({
   filters,
   onChangeSelectedFilter,
   selectedFilter,
   isOpen,
-}: ProductListFilterProps) {
+}: ListFilterProps) {
   return (
     <Stack flexDirection="column" spacing="2">
       {filters.map((filter) => (
@@ -42,4 +42,4 @@ export function ProductListFilterComponent({
   );
 }
 
-export const ProductListFilter = memo(ProductListFilterComponent);
+export const ListFilter = memo(ListFilterComponent);
