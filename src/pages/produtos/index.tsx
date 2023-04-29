@@ -494,7 +494,7 @@ export default function Produtos({ me }: ProductsProps) {
                 <Text
                   display={["none", "none", "none", "block"]}
                   color="gray.500"
-                >{`${productsSelectedCatalog.length}/200 produtos selecionados`}</Text>
+                >{`${productsSelectedCatalog.length} produtos selecionados`}</Text>
 
                 <Stack
                   direction={["column", "column", "column", "row"]}
