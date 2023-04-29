@@ -160,7 +160,7 @@ export function ProductCatalogProvider({
       page: 1,
       filters: filters,
       orderby: orderby,
-      pagesize: 200,
+      pagesize: 9999999,
       distinct: groupProduct ? "codigoAlternativo" : "referencia",
     });
 

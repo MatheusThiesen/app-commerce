@@ -475,7 +475,7 @@ export default function Produtos({ me }: ProductsProps) {
                 <Text
                   display={["block", "block", "block", "none"]}
                   color="gray.500"
-                >{`${productsSelectedCatalog.length}/200 produtos selecionados`}</Text>
+                >{`${productsSelectedCatalog.length} produtos selecionados`}</Text>
               </Box>
 
               <Flex justify="center" align="center" columnGap="2">
