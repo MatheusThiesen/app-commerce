@@ -1,6 +1,6 @@
 import { Stack } from "@chakra-ui/react";
 import { memo } from "react";
-import { FilterList } from "../../hooks/queries/useProducts";
+import { FilterList } from "../../@types/api-queries";
 import { FilterItem } from "../FilterItem";
 
 interface ListFilterProps {
