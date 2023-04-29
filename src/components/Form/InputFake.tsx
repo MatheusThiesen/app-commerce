@@ -1,13 +1,18 @@
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, FlexProps, Text } from "@chakra-ui/react";
 
-interface InputFakeProps {
+interface InputFakeProps extends FlexProps {
   label?: string;
   value: string;
 
   onUpdate?: () => void;
 }
 
-export const InputFake = ({ label, value, onUpdate }: InputFakeProps) => {
+export const InputFake = ({
+  label,
+  value,
+  onUpdate,
+  ...rest
+}: InputFakeProps) => {
   return (
     <Box>
       {!!label && (
@@ -24,6 +29,7 @@ export const InputFake = ({ label, value, onUpdate }: InputFakeProps) => {
         borderRadius="md"
         align="center"
         justify="space-between"
+        {...(rest as any)}
       >
         <Text as="span">{value}</Text>
 

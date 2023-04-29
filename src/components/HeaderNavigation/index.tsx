@@ -188,7 +188,7 @@ export function HeaderNavigationComponent({
           maxW="1120px"
         >
           {isAuthenticated ? (
-            <Link href="/inicio">
+            <Link href="/produtos">
               <CharkraLink h="full">
                 <Image
                   py="1"
@@ -210,7 +210,8 @@ export function HeaderNavigationComponent({
           {isAuthenticated && (
             <Stack direction="row" h="full" spacing="10">
               <NavLink href="/inicio">Início</NavLink>
-              <NavLink href="/produtos">Produtos</NavLink>
+              {/* <NavLink href="/produtos">Produtos</NavLink> */}
+              <NavLink href="/clientes">Clientes</NavLink>
             </Stack>
           )}
 

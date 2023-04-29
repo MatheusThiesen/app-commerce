@@ -285,7 +285,7 @@ export default function Produto(props: ProdutoProps) {
                         {product?.descricaoComplementar}
                       </Text>
 
-                      <Box w={["100%", "100%", "100%", "60%"]}>
+                      <Box w={["100%", "100%", "100%", "60%"]} mb="2rem">
                         <Text as="h2" mb="2" fontSize="lg" fontWeight="light">
                           Características gerais
                         </Text>
@@ -315,6 +315,33 @@ export default function Produto(props: ProdutoProps) {
                             <Tr>
                               <Td>Gênero</Td>
                               <Td>{product?.genero?.descricao}</Td>
+                            </Tr>
+                          </Tbody>
+                        </Table>
+                      </Box>
+
+                      <Box w={["100%", "100%", "100%", "60%"]}>
+                        <Text as="h2" mb="2" fontSize="lg" fontWeight="light">
+                          Cadastro
+                        </Text>
+
+                        <Table size="sm" variant="striped">
+                          <Tbody>
+                            <Tr>
+                              <Td>Código produto</Td>
+                              <Td>{product?.codigo}</Td>
+                            </Tr>
+                            <Tr>
+                              <Td>Código agrupador</Td>
+                              <Td>{product?.codigoAlternativo}</Td>
+                            </Tr>
+                            <Tr>
+                              <Td>Referência</Td>
+                              <Td>{product?.referencia}</Td>
+                            </Tr>
+                            <Tr>
+                              <Td>Unidade medida</Td>
+                              <Td>{product?.unidade}</Td>
                             </Tr>
                           </Tbody>
                         </Table>

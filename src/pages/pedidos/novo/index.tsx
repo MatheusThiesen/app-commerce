@@ -10,17 +10,23 @@ import {
   TagLabel,
   Text,
 } from "@chakra-ui/react";
+import Head from "next/head";
 import { useState } from "react";
 import { FaMoneyCheckAlt, FaUser } from "react-icons/fa";
 import { IoBagHandleSharp } from "react-icons/io5";
+import { HeaderNavigation } from "../../../components/HeaderNavigation";
 // import { useBottonNavigation } from "../../../hooks/useBottomNavigation";
 
+import { Me } from "../../../@types/me";
 import { TabOrder } from "../../../components/TabOrder";
+import { setupAPIClient } from "../../../service/api";
+import { withSSRAuth } from "../../../utils/withSSRAuth";
 
-export default function Pedido() {
-  // const { widthNavigationY } = useBottonNavigation();
-  const widthNavigationY = 1;
-  const [headerSizeY, setHeaderSizeY] = useState("");
+interface OrderProps {
+  me: Me;
+}
+
+export default function Order({ me }: OrderProps) {
   const [tabIndex, setTabIndex] = useState(0);
 
   function handleNextTab() {
@@ -29,10 +35,14 @@ export default function Pedido() {
 
   return (
     <>
-      {/* <Header getHeaderY={(value) => setHeaderSizeY(value)} isGoBack /> */}
+      <Head>
+        <title>Orçamento | App Alpar do Brasil</title>
+      </Head>
 
-      <Box pt={headerSizeY} pb={`calc(${widthNavigationY} + 4rem)`}>
-        <Box p="4">
+      <HeaderNavigation user={{ name: me?.email }} title="Orçamento" isGoBack />
+
+      <Box pt={["5.5rem", "5.5rem", "5.5rem", "6rem"]}>
+        <Box px="1.5rem">
           <Tabs
             bg="white"
             p="2"
@@ -155,3 +165,14 @@ export default function Pedido() {
     </>
   );
 }
+export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
+  const apiClient = setupAPIClient(ctx);
+
+  const response = await apiClient.get("/auth/me");
+
+  return {
+    props: {
+      me: response.data,
+    },
+  };
+});

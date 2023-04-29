@@ -1,14 +1,21 @@
-import { Button, Flex, Icon, Spinner, Text, useToast } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Image,
+  Spinner,
+  Stack,
+  Text,
+  useToast,
+} from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
-import { MdPictureAsPdf } from "react-icons/md";
-import { useReactToPrint } from "react-to-print";
+import { useEffect } from "react";
+import { useInView } from "react-intersection-observer";
 import { Me } from "../../@types/me";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { PageCatalog } from "../../components/PageCatalog";
-import { CatalogApiResponse, getCatalog } from "../../hooks/queries/useCatalog";
+import { useCatalog } from "../../hooks/queries/useCatalog";
 import { setupAPIClient } from "../../service/api";
 
 interface CatalogProps {
@@ -16,110 +23,93 @@ interface CatalogProps {
 }
 
 export default function Catalog({ me }: CatalogProps) {
+  const { ref, inView } = useInView();
   const history = useRouter();
   const toast = useToast();
-  const componentRef = useRef(null);
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-  });
+
   const router = useRouter();
   const { id } = router.query;
-  // const { data, isLoading } = useCatalog({ id: String(id) });
-  const [isLoading, setIsLoading] = useState(true);
-  const [data, setData] = useState<CatalogApiResponse | undefined>(undefined);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useCatalog({ id: String(id), pagesize: 5 });
 
   useEffect(() => {
-    (async () => {
-      try {
-        const catalog = await getCatalog({ id: String(id) });
-        if (catalog) setData(catalog);
-        setIsLoading(false);
-      } catch (error) {
-        setIsLoading(false);
-        toast({
-          description: "Ocorreu um erro ao gerar Catálogo.",
-          status: "error",
-          isClosable: true,
-          position: "top",
-        });
-        history.push("/");
-      }
-    })();
-  }, []);
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage]);
 
-  const pageStyle = `
-
-
-    @page { size: A4 landscape; }
-
-    .break { 
-      page-break-before: always; 
-      margin-bottom: 2rem;
-      
-     }
-    
-    `;
   return (
     <>
-      <style>{pageStyle}</style>
-
       <Head>
         <title>Catálogo | App Alpar do Brasil</title>
       </Head>
 
-      <HeaderNavigation user={me ? { name: me.email } : undefined} />
+      <HeaderNavigation
+        isInativeEventScroll
+        user={me ? { name: me.email } : undefined}
+      />
 
       {isLoading && (
         <Flex h="100vh" w="100%" justify="center" align="center">
           <Spinner ml="4" size="xl" />
         </Flex>
       )}
-      {data && (
-        <Flex
-          pt={["6.5rem", "6.5rem", "6.5rem", "7rem"]}
-          pb={["7rem"]}
-          align="center"
-          w="full"
-          flexDir="column"
-        >
-          <Button
-            w="3.4rem"
-            h="3.4rem"
-            position="fixed"
-            bottom="6.5rem"
-            right={"2rem"}
-            colorScheme="red"
-            borderRadius="full"
-            onClick={handlePrint}
-          >
-            <Icon as={MdPictureAsPdf} fontSize={"2rem"} />
-            <Text
-              position="absolute"
-              bottom="-1.745rem"
-              bg="gray.700"
-              p="1"
-              borderRadius="md"
-              fontSize={"0.875rem"}
-              opacity={0.8}
-            >
-              Exportar
-            </Text>
-          </Button>
 
-          <div
-            style={{
-              maxWidth: "90%",
-            }}
-            ref={componentRef}
+      {data?.pages[0].isError ? (
+        <Flex w="full" h="70vh" align="center" justify="center">
+          <Flex
+            flexDir="column"
+            align="center"
+            justify="center"
+            bg="white"
+            borderRadius="md"
+            p="4rem"
+            maxW={1200}
+            w="90%"
           >
-            {data.products.map((product) => (
-              <PageCatalog
-                key={product.reference}
-                product={product}
-                date={data.dateToString ?? "-"}
-              />
-            ))}
-          </div>
+            <Image
+              maxW={120}
+              src="https://alpar.sfo3.digitaloceanspaces.com/Alpar/alert.png"
+            />
+            <Text fontSize={"2xl"} fontWeight="bold" mt="8">
+              {data?.pages[0].error}
+            </Text>
+          </Flex>
+        </Flex>
+      ) : (
+        <Flex
+          w="full"
+          align="center"
+          flexDir="column"
+          pt={["1rem"]}
+          pb={["7rem"]}
+        >
+          <Stack spacing="4" w="95%" maxW={1200}>
+            {data?.pages.map((page) =>
+              page?.products.map((product, i) =>
+                i === page?.products?.length - 1 ? (
+                  <Box ref={ref} key={product.imageMain}>
+                    <PageCatalog
+                      product={product}
+                      date={page.dateToString ?? "-"}
+                    />
+                  </Box>
+                ) : (
+                  <PageCatalog
+                    key={product.imageMain}
+                    product={product}
+                    date={page.dateToString ?? "-"}
+                  />
+                )
+              )
+            )}
+          </Stack>
+
+          {isFetchingNextPage && (
+            <Flex w="100%" justify="center" align="center">
+              <Spinner mt="4rem" ml="4" size="xl" />
+            </Flex>
+          )}
         </Flex>
       )}
     </>

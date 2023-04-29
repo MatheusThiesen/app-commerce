@@ -1,5 +1,6 @@
 import { GetServerSidePropsContext } from "next";
 import { useInfiniteQuery, useQuery } from "react-query";
+import { ItemFilter } from "../../@types/api-queries";
 import { setupAPIClient } from "../../service/api";
 import { api } from "../../service/apiClient";
 
@@ -10,6 +11,7 @@ export type Product = {
   descricao: string;
   descricaoComplementar: string;
   descricaoAdicional: string;
+  unidade: string;
   precoVenda: number;
   precoVendaFormat: string;
   precoVendaEmpresa: number;
@@ -73,17 +75,6 @@ export interface VariationsProduct {
   descricao: string;
 }
 
-export type FilterList = {
-  label: string;
-  name: string;
-  data: ItemFilter[];
-};
-export type ItemFilter = {
-  name: string;
-  value: number | string;
-  field: number | string;
-};
-
 type ProductApiResponse = {
   data: Product[];
   page: number;
@@ -96,11 +87,9 @@ type GetProductsResponse = {
   page: number;
   pagesize: number;
   total: number;
-  productsStartShow: number;
-  productsEndShow: number;
 };
 
-interface UseProductsProps {
+interface GetProductsProps {
   page: number;
   pagesize?: number;
   orderby?: string;
@@ -109,6 +98,8 @@ interface UseProductsProps {
   isReport?: boolean;
 }
 
+type UseProductsProps = Omit<GetProductsProps, `page`>;
+
 export async function getProducts({
   page,
   pagesize,
@@ -116,7 +107,7 @@ export async function getProducts({
   filters,
   distinct,
   isReport = false,
-}: UseProductsProps): Promise<GetProductsResponse> {
+}: GetProductsProps): Promise<GetProductsResponse> {
   const { data } = await api.get<ProductApiResponse>("/products", {
     params: {
       page: page - 1,
@@ -148,13 +139,10 @@ export async function getProducts({
     pagesize: data.pagesize,
     total: data.total,
     page: data.page,
-    productsStartShow: data.pagesize * (data.page + 1) - data.pagesize,
-    productsEndShow: data.pagesize * (data.page + 1),
   };
 
   return response;
 }
-
 export async function getProductOne(
   cod: number,
   ctx: GetServerSidePropsContext | undefined = undefined

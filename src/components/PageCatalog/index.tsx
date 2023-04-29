@@ -14,25 +14,76 @@ interface PageCatalogProps {
   date: string;
 }
 
+interface InfoProductProps {
+  reference?: string;
+  alternativeCod?: string;
+  description?: string;
+  colors?: string;
+}
+
+const InfoProduct = ({
+  alternativeCod,
+  reference,
+  description,
+  colors,
+}: InfoProductProps) => {
+  return (
+    <Box mt={["3rem", "3rem", "3rem", "0"]}>
+      {alternativeCod && (
+        <Text color="#555" fontSize="1rem">
+          Cód. Agrupador: {alternativeCod}
+        </Text>
+      )}
+      {reference && (
+        <Text color="#555" fontSize="1rem">
+          Referência: {reference}
+        </Text>
+      )}
+
+      {description && (
+        <Text fontSize="2.5rem" lineHeight="2.8rem">
+          {description}
+        </Text>
+      )}
+      {colors && (
+        <Text color="#555" fontSize="0.875rem">
+          Cor: {colors}
+        </Text>
+      )}
+    </Box>
+  );
+};
+
 export function PageCatalog({ product, date }: PageCatalogProps) {
   return (
-    <Box
+    <Flex
+      justify="space-between"
       flexDir={"column"}
-      maxW={["none", "none", "100%", "100%"]}
-      // maxH="100%"
-      w="297mm"
-      h="200mm"
+      maxW={["100%", "100%"]}
+      minH={["auto", "auto", "auto", "35rem"]}
+      // maxH={"100vh"}
       bg="white"
       px="4"
       py="4"
       overflow="hidden"
-      className="break"
+      borderRadius="md"
     >
-      <Box as="header" h="5%" w="100%" />
-
-      <Flex h="85%" w="100%">
-        <Flex w="60%">
+      <Flex
+        flex="1"
+        h="90%"
+        w="100%"
+        flexDir={["column", "column", "column", "row"]}
+      >
+        <Flex
+          w={["100%", "100%", "100%", "50%"]}
+          align={"center"}
+          justify="center"
+          maxH={["26rem", "26rem", "100%", "100%"]}
+          h={["18rem", "22rem", "auto", "auto"]}
+        >
           <Image
+            w={["75%", "75%", "75%", "100%"]}
+            maxH={["100%", "100%", "100%", "80vh"]}
             src={product.imageMain}
             objectFit="contain"
             onError={({ currentTarget }) => {
@@ -43,28 +94,15 @@ export function PageCatalog({ product, date }: PageCatalogProps) {
           />
         </Flex>
 
-        <Flex w="40%" flexDir={"column"} pl="2rem">
-          <Box>
-            {product.isGroupProduct ? (
-              <Text color="#555" fontSize="1rem">
-                Cód. Agrupador: {product.alternativeCode}
-              </Text>
-            ) : (
-              <Text color="#555" fontSize="1rem">
-                Referência: {product.reference}
-              </Text>
-            )}
-
-            <Text fontSize="2.5rem" lineHeight="2.8rem">
-              {product.description}
-            </Text>
-
-            {!product.isGroupProduct && (
-              <Text color="#555" fontSize="0.875rem" mt="0.5rem">
-                Cor: {product.colors}
-              </Text>
-            )}
-          </Box>
+        <Flex flexDir={"column"} pl={["0", "0", "0", "1rem"]}>
+          <InfoProduct
+            alternativeCod={
+              product.isGroupProduct ? product.alternativeCode : undefined
+            }
+            colors={!product.isGroupProduct ? product.colors : undefined}
+            description={product.description}
+            reference={!product.isGroupProduct ? product.reference : undefined}
+          />
 
           {product.isGroupProduct && (
             <Flex columnGap="1" rowGap="1" flexWrap="wrap">
@@ -145,19 +183,18 @@ export function PageCatalog({ product, date }: PageCatalogProps) {
 
       <Flex
         as="footer"
-        h="10%"
-        w="100%"
         align={"flex-end"}
         justify={"space-between"}
+        mt={["4rem", "4rem", "4rem", "0"]}
       >
-        <Text as="span" fontWeight="bold" fontSize="0.875rem">
+        <Text as="span" fontWeight="bold" fontSize="sm">
           * PRODUTOS ESTÃO SUJEITOS A ALTERAÇÕES CONFORME DISPONIBILIDADE *
         </Text>
-        <Text as="span" fontSize="0.875rem">
+        <Text as="span" fontSize="smaller">
           Data de criação {date}
         </Text>
       </Flex>
-    </Box>
+    </Flex>
   );
 }
 

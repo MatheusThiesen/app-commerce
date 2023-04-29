@@ -41,7 +41,8 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
             <NavLink href="/clientes" icon={FiUsers}>
               Clientes
             </NavLink>
-          </ListItem>
+          </ListItem> */}
+          {/* 
           <ListItem h="full">
             <MainNavLink href="/pedidos" icon={IoBagHandleOutline}>
               Pedidos

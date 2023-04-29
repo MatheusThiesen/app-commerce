@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import { IoBook } from "react-icons/io5";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
+import { FilterList } from "../../@types/api-queries";
 import { Me } from "../../@types/me";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
@@ -25,11 +26,7 @@ import { ModalList } from "../../components/ModalList";
 import { OrderBy } from "../../components/OrderBy";
 import { OrderByMobile } from "../../components/OrderByMobile";
 import { Product } from "../../components/Product";
-import {
-  FilterList,
-  getProducts,
-  useProducts,
-} from "../../hooks/queries/useProducts";
+import { getProducts, useProducts } from "../../hooks/queries/useProducts";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
 import { setupAPIClient } from "../../service/api";
 import { api } from "../../service/apiClient";
@@ -92,17 +89,14 @@ export default function Produtos({ me }: ProductsProps) {
   const [stockLocation, setStockLocation] = useState(false);
   const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
   const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
-  const [page, setPage] = useState(() => {
-    return 1;
-  });
+
   const [orderBy, setOrderBy] = useState<string>(() => {
     return "precoVenda.desc";
   });
 
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useProducts({
-      page,
-      pagesize: 40,
+      pagesize: 20,
       orderby: orderBy,
       filters: filters,
       distinct: groupProduct ? "codigoAlternativo" : undefined,
@@ -321,8 +315,6 @@ export default function Produtos({ me }: ProductsProps) {
                       filters={dataFilters}
                       selectedFilter={filters}
                       onChangeSelectedFilter={(a) => {
-                        setPage(1);
-
                         setFilters(a);
                       }}
                       isOpen
@@ -432,7 +424,6 @@ export default function Produtos({ me }: ProductsProps) {
                     filters={dataFilters}
                     selectedFilter={filters}
                     onChangeSelectedFilter={(a) => {
-                      setPage(1);
                       setFilters(a);
                     }}
                   />
@@ -522,7 +513,7 @@ export default function Produtos({ me }: ProductsProps) {
                       })
                     }
                   >
-                    IMPRIMIR
+                    GERAR
                   </Button>
 
                   <Button

@@ -1,7 +1,8 @@
 import {
   Box,
-  Flex,
   Link as ChakraLink,
+  Flex,
+  Spinner,
   Table,
   Tag,
   Tbody,
@@ -9,7 +10,13 @@ import {
   Text,
   Tr,
 } from "@chakra-ui/react";
+import Head from "next/head";
 import Link from "next/link";
+import { IoMdAddCircle } from "react-icons/io";
+import { Me } from "../../@types/me";
+import { HeaderNavigation } from "../../components/HeaderNavigation";
+import { setupAPIClient } from "../../service/api";
+import { withSSRAuth } from "../../utils/withSSRAuth";
 
 const orders = [
   {
@@ -71,88 +78,129 @@ const orders = [
   },
 ];
 
-export default function Pedidos() {
+interface OrdersProps {
+  me: Me;
+}
+
+export default function Orders({ me }: OrdersProps) {
   return (
     <>
-      {/* <Header
+      <Head>
+        <title>Orçamentos | App Alpar do Brasil</title>
+      </Head>
+
+      <HeaderNavigation
+        user={{ name: me?.email }}
+        title="Orçamentos"
         Right={
-          <Tooltip label="Novo Pedido">
-            <Flex mr="4" align="center">
-              <Link href={`/pedidos/novo/seila`} passHref>
-                <ChakraLink>
-                  <IoMdAddCircle color="white" fontSize={"1.8rem"} />
-                </ChakraLink>
-              </Link>
-            </Flex>
-          </Tooltip>
+          <Link href={`/pedidos/novo`} passHref>
+            <ChakraLink mr="4">
+              <IoMdAddCircle color="white" fontSize={"1.8rem"} />
+            </ChakraLink>
+          </Link>
         }
-      >
-        <TitlesListing title="PEDIDOS" />
-      </Header> */}
+      />
 
-      <Box>
-        <Table colorScheme="blackAlpha">
-          <Tbody>
-            {orders.map((order) => (
-              <Tr key={order.id}>
-                <Td
-                  bg="white"
-                  _hover={{ filter: "brightness(0.95)", cursor: "pointer" }}
-                >
-                  <Link href={`/clientes/${order.id}`} passHref>
-                    <ChakraLink w="full">
-                      <Flex justify={["space-between", "flex-start"]}>
-                        <Tag
-                          size="md"
-                          variant="solid"
-                          color="white"
-                          bg="red.500"
-                        >
-                          #{order.code}
-                        </Tag>
+      {false ? (
+        <Flex h="100vh" w="100%" justify="center" align="center">
+          <Spinner ml="4" size="xl" />
+        </Flex>
+      ) : (
+        <Flex
+          pt={["6.5rem", "6.5rem", "6.5rem", "7rem"]}
+          pb={["7rem"]}
+          justify="center"
+          w="full"
+        >
+          <Flex w="full" maxW="1200px">
+            <Flex
+              w="22rem"
+              mr="3rem"
+              display={["none", "none", "none", "flex"]}
+              flexDirection="column"
+            ></Flex>
 
-                        <Text
-                          fontWeight="light"
-                          ml={["0", "1rem"]}
-                          fontSize="sm"
-                        >
-                          {order.createAt}
-                        </Text>
-                      </Flex>
+            <Box w="full">
+              <Table colorScheme="blackAlpha">
+                <Tbody>
+                  {orders.map((order) => (
+                    <Tr key={order.id}>
+                      <Td
+                        bg="white"
+                        _hover={{
+                          filter: "brightness(0.95)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Link href={`/clientes/${order.id}`} passHref>
+                          <ChakraLink w="full">
+                            <Flex justify={["space-between", "flex-start"]}>
+                              <Tag
+                                size="md"
+                                variant="solid"
+                                color="white"
+                                bg="red.500"
+                              >
+                                #{order.code}
+                              </Tag>
 
-                      <Box mt="1.5">
-                        <Text
-                          fontWeight="light"
-                          fontSize="small"
-                          color="gray.500"
-                        >
-                          CLIENTE
-                        </Text>
-                        <Text>{`${order.client.brandName} - ${order.client.cnpj}`}</Text>
-                      </Box>
-                      <Box mt="1.5">
-                        <Text
-                          fontWeight="light"
-                          fontSize="small"
-                          color="gray.500"
-                        >
-                          VALOR
-                        </Text>
-                        <Text fontWeight="bold" fontSize="lg">
-                          {order.totalValue}
-                        </Text>
-                        <Text fontWeight="light" fontSize="small">
-                          {order.paymentTerms}
-                        </Text>
-                      </Box>
-                    </ChakraLink>
-                  </Link>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </Box>
+                              <Text
+                                fontWeight="light"
+                                ml={["0", "1rem"]}
+                                fontSize="sm"
+                              >
+                                {order.createAt}
+                              </Text>
+                            </Flex>
+
+                            <Box mt="1.5">
+                              <Text
+                                fontWeight="light"
+                                fontSize="small"
+                                color="gray.500"
+                              >
+                                CLIENTE
+                              </Text>
+                              <Text>{`${order.client.brandName} - ${order.client.cnpj}`}</Text>
+                            </Box>
+                            <Box mt="1.5">
+                              <Text
+                                fontWeight="light"
+                                fontSize="small"
+                                color="gray.500"
+                              >
+                                VALOR
+                              </Text>
+                              <Text fontWeight="bold" fontSize="lg">
+                                {order.totalValue}
+                              </Text>
+                              <Text fontWeight="light" fontSize="small">
+                                {order.paymentTerms}
+                              </Text>
+                            </Box>
+                          </ChakraLink>
+                        </Link>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </Box>
+          </Flex>
+        </Flex>
+      )}
     </>
   );
 }
+
+export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
+  const apiClient = setupAPIClient(ctx);
+
+  const response = await apiClient.get("/auth/me");
+
+  return {
+    props: {
+      me: response.data,
+    },
+  };
+});
