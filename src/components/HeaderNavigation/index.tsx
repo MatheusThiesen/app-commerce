@@ -210,8 +210,9 @@ export function HeaderNavigationComponent({
           {isAuthenticated && (
             <Stack direction="row" h="full" spacing="10">
               <NavLink href="/inicio">Início</NavLink>
-              {/* <NavLink href="/produtos">Produtos</NavLink> */}
-              <NavLink href="/clientes">Clientes</NavLink>
+              <NavLink href="/produtos">Produtos</NavLink>
+              {/* <NavLink href="/clientes">Clientes</NavLink> */}
+              {/* <NavLink href="/pedidos">Orçamentos</NavLink> */}
             </Stack>
           )}
 
