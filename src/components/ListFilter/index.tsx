@@ -3,7 +3,7 @@ import { memo } from "react";
 import { FilterList } from "../../@types/api-queries";
 import { FilterItem } from "../FilterItem";
 
-interface ListFilterProps {
+export interface ListFilterProps {
   filters: FilterList[];
   selectedFilter: SelectedFilter[];
   onChangeSelectedFilter: (a: SelectedFilter[]) => void;

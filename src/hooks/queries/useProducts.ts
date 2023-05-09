@@ -1,8 +1,15 @@
 import { GetServerSidePropsContext } from "next";
 import { useInfiniteQuery, useQuery } from "react-query";
+import { mask } from "remask";
 import { ItemFilter } from "../../@types/api-queries";
 import { setupAPIClient } from "../../service/api";
 import { api } from "../../service/apiClient";
+
+export type StockLocation = {
+  id: string;
+  descricao: string;
+  quantidade: number;
+};
 
 export type Product = {
   codigo: number;
@@ -11,16 +18,19 @@ export type Product = {
   descricao: string;
   descricaoComplementar: string;
   descricaoAdicional: string;
-  unidade: string;
+  ncm: string;
+  ncmFormat: string;
+  obs: string;
+  qtdEmbalagem: number;
+  unidade?: {
+    unidade: string;
+    descricao: string;
+  };
   precoVenda: number;
   precoVendaFormat: string;
   precoVendaEmpresa: number;
   precoVendaEmpresaFormat: string;
-  locaisEstoque?: {
-    id: string;
-    descricao: string;
-    quantidade: number;
-  }[];
+  locaisEstoque?: StockLocation[];
   marca: {
     codigo: number;
     descricao: string;
@@ -62,6 +72,7 @@ export type Product = {
   }[];
   listaPreco?: {
     id: string;
+    codigo: number;
     descricao: string;
     valor: number;
     valorFormat: string;
@@ -135,6 +146,13 @@ export async function getProducts({
             currency: "BRL",
           })
         : "R$ -",
+      listaPreco: product.listaPreco?.map((list) => ({
+        ...list,
+        valorFormat: list.valor.toLocaleString("pt-br", {
+          style: "currency",
+          currency: "BRL",
+        }),
+      })),
     })),
     pagesize: data.pagesize,
     total: data.total,
@@ -174,6 +192,8 @@ export async function getProductOne(
         currency: "BRL",
       }),
     })),
+
+    ncmFormat: mask(data.ncm, "9999.99.99"),
   };
 
   return product;
@@ -215,3 +235,22 @@ export function useProductOne(
 ) {
   return useQuery(["product", codigo], () => getProductOne(codigo, ctx), {});
 }
+
+export const productsOrderBy = [
+  {
+    name: "Maior Preços",
+    value: "precoVenda.desc",
+  },
+  {
+    name: "Menor Preços",
+    value: "precoVenda.asc",
+  },
+  {
+    name: "Alfabética A>Z",
+    value: "descricao.asc",
+  },
+  {
+    name: "Alfabética Z>A",
+    value: "descricao.desc",
+  },
+];

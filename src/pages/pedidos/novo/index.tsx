@@ -1,25 +1,39 @@
 import {
   Box,
   Button,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  Tag,
-  TagCloseButton,
-  TagLabel,
+  Flex,
+  SimpleGrid,
+  Switch,
   Text,
+  useDisclosure,
 } from "@chakra-ui/react";
-import Head from "next/head";
-import { useState } from "react";
-import { FaMoneyCheckAlt, FaUser } from "react-icons/fa";
-import { IoBagHandleSharp } from "react-icons/io5";
-import { HeaderNavigation } from "../../../components/HeaderNavigation";
-// import { useBottonNavigation } from "../../../hooks/useBottomNavigation";
 
+import Head from "next/head";
+import Router from "next/router";
+import { useEffect, useState } from "react";
+import { ImExit } from "react-icons/im";
+import { useInView } from "react-intersection-observer";
+import { FilterList } from "../../../@types/api-queries";
 import { Me } from "../../../@types/me";
-import { TabOrder } from "../../../components/TabOrder";
+import { FilterSelectedList } from "../../../components/FilterSelectedList";
+import { HeaderNavigation } from "../../../components/HeaderNavigation";
+import { HeaderToList } from "../../../components/HeaderToList";
+import { ListFilter, SelectedFilter } from "../../../components/ListFilter";
+import { LoadingInfiniteScroll } from "../../../components/LoadingInfiniteScroll";
+import { ModalList } from "../../../components/ModalList";
+import { ModalOrderBy } from "../../../components/ModalOrderBy";
+import { ModelFilter } from "../../../components/ModelFilter";
+import { PanelLayout } from "../../../components/PanelLayout";
+import { Product } from "../../../components/Product";
+import { ShoppingButton } from "../../../components/ShoppingButton";
+import { useStore } from "../../../contexts/StoreContext";
+import { spaceImages } from "../../../global/parameters";
+import {
+  productsOrderBy,
+  useProducts,
+} from "../../../hooks/queries/useProducts";
 import { setupAPIClient } from "../../../service/api";
+import { api } from "../../../service/apiClient";
 import { withSSRAuth } from "../../../utils/withSSRAuth";
 
 interface OrderProps {
@@ -27,141 +41,312 @@ interface OrderProps {
 }
 
 export default function Order({ me }: OrderProps) {
-  const [tabIndex, setTabIndex] = useState(0);
+  const { ref, inView } = useInView();
 
-  function handleNextTab() {
-    setTabIndex((old) => old + 1);
-  }
+  const {
+    isOpen: isOpenFilter,
+    onOpen: onOpenFilter,
+    onClose: onCloseFilter,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenOrderBy,
+    onOpen: onOpenOrderBy,
+    onClose: onCloseOrderBy,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenOrder,
+    onOpen: onOpenOrder,
+    onClose: onCloseOrder,
+  } = useDisclosure();
+
+  const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
+  const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
+  const [filters, setFilters] = useState<SelectedFilter[]>([]);
+  const [orderBy, setOrderBy] = useState<string>(() => {
+    return "precoVenda.desc";
+  });
+  const [groupProduct, setGroupProduct] = useState<
+    undefined | "codigoAlternativo"
+  >();
+
+  const { client, priceList, onOpenSeleteClient, items } = useStore();
+
+  const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useProducts({
+      pagesize: 20,
+      orderby: orderBy,
+      filters: [
+        ...filters,
+        { value: client?.codigo ?? 0, name: "clientCod", field: "clientCod" },
+        {
+          value: priceList?.codigo ?? 0,
+          name: "priceListCod",
+          field: "priceListCod",
+        },
+      ],
+      distinct: groupProduct ? "codigoAlternativo" : undefined,
+    });
+
+  useEffect(() => {
+    (async () => {
+      setIsLoadingFilters(true);
+
+      const { data } = await api.get<FilterList[]>("/products/filters", {
+        params: {
+          filters: [
+            ...filters,
+            {
+              value: client?.codigo ?? 0,
+              name: "clientCod",
+              field: "clientCod",
+            },
+            {
+              value: priceList?.codigo ?? 0,
+              name: "priceListCod",
+              field: "priceListCod",
+            },
+          ],
+        },
+      });
+      setDataFilters(data);
+
+      setIsLoadingFilters(false);
+    })();
+  }, [client, priceList]);
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage]);
 
   return (
     <>
       <Head>
-        <title>Orçamento | App Alpar do Brasil</title>
+        <title>Pedido | App Alpar do Brasil</title>
       </Head>
 
-      <HeaderNavigation user={{ name: me?.email }} title="Orçamento" isGoBack />
-
-      <Box pt={["5.5rem", "5.5rem", "5.5rem", "6rem"]}>
-        <Box px="1.5rem">
-          <Tabs
-            bg="white"
-            p="2"
-            borderRadius="md"
-            variant="line"
-            colorScheme="red"
-            index={tabIndex}
-            onChange={setTabIndex}
+      <HeaderNavigation
+        user={{ name: me?.email }}
+        title="Pedido"
+        Right={
+          <ShoppingButton qtdItens={items?.length} onClick={onOpenOrder} />
+        }
+        Left={
+          <Button
+            p="0"
+            bg="transparent"
+            display="flex"
+            _hover={{ bg: "transparent" }}
+            alignItems="center"
+            justifyContent="center"
+            onClick={() => Router.push("/pedidos")}
+            ml="4"
           >
-            <TabList>
-              <TabOrder title="Cliente" icon={FaUser} />
-              <TabOrder title="Tabela de preço" icon={FaMoneyCheckAlt} />
-              <TabOrder title="Pedido" icon={IoBagHandleSharp} />
-            </TabList>
-            <TabPanels>
-              <TabPanel>
-                <Box>
-                  {/* <Button>
-                    <Text>Selecionar Cliente</Text>
-                  </Button> */}
+            <ImExit color="white" fontSize={"1.8rem"} />
+            <Text color="white" ml="2">
+              Sair
+            </Text>
+          </Button>
+        }
+        contentHeight={4}
+        content={
+          <Flex w="full" flexDir="column">
+            <Flex w="full" justify="space-around">
+              <Button
+                bg="white"
+                borderRadius={0}
+                w="full"
+                onClick={onOpenOrderBy}
+              >
+                Ordenação
+              </Button>
+              <Button
+                bg="white"
+                borderRadius={0}
+                borderLeft="1px solid #ccc"
+                w="full"
+                onClick={onOpenFilter}
+              >
+                Filtros
+                {filters.length > 0 && (
+                  <Flex
+                    borderRadius="full"
+                    bg="red.500"
+                    ml="1.5"
+                    h="1.6rem"
+                    w="1.6rem"
+                    align="center"
+                    justify="center"
+                  >
+                    <Text fontSize="smaller" color="white">
+                      {filters.length}
+                    </Text>
+                  </Flex>
+                )}
+              </Button>
+            </Flex>
 
-                  <Box>
-                    <Tag size="lg" variant="solid" color="white" bg="red.500">
-                      <TagLabel>35591</TagLabel>
-                      <TagCloseButton />
-                    </Tag>
+            <Flex
+              w="full"
+              h="1.5rem"
+              bg="gray.50"
+              align="center"
+              justify="space-between"
+              px="2rem"
+              // _hover={{
+              //   filter: "brightness(0.95)",
+              //   cursor: "pointer",
+              // }}
+            >
+              <Text fontWeight="light" fontSize="sm">
+                {!!client?.codigo
+                  ? `${client?.codigo} - ${client?.razaoSocial}`
+                  : "-"}
+              </Text>
 
-                    <Box mt="1.5">
-                      <Text>A LEANDRO BAZAR E PAPELARIA</Text>
+              <Text fontWeight="light" fontSize="sm">
+                {!!priceList?.codigo ? `${priceList?.descricao}` : "-"}
+              </Text>
+            </Flex>
+          </Flex>
+        }
+      />
 
-                      <Text
-                        fontWeight="light"
-                        fontSize="small"
-                        color="gray.500"
-                      >
-                        04.896.434/0001-72
-                      </Text>
-                      <Text
-                        fontWeight="light"
-                        fontSize="small"
-                        color="gray.500"
-                      >
-                        AV. DORIVAL CÂNDIDO LUZ DE OLIVEIRA, 8018 -
-                      </Text>
-                      <Text
-                        fontWeight="light"
-                        fontSize="small"
-                        color="gray.500"
-                      >
-                        BOM PRINCÍPIO,GRAVATAÍ - RS
-                      </Text>
+      <PanelLayout
+        isLoading={isLoadingFilters}
+        pt={["8rem", "8rem", "8rem", "7rem"]}
+      >
+        <Flex
+          w="22rem"
+          mr="3rem"
+          display={["none", "none", "none", "flex"]}
+          flexDirection="column"
+        >
+          <Flex
+            justify="space-between"
+            bg="white"
+            p="4"
+            mb="4"
+            borderRadius="md"
+          >
+            <Text fontWeight="bold">Agrupar produtos</Text>
+            <Switch
+              isChecked={!!groupProduct}
+              onChange={(e) =>
+                setGroupProduct(
+                  e.target.checked ? "codigoAlternativo" : undefined
+                )
+              }
+              size="lg"
+              colorScheme="red"
+            />
+          </Flex>
+
+          <Box borderRadius="md">
+            <FilterSelectedList filters={filters} setFilters={setFilters} />
+
+            {dataFilters && (
+              <ListFilter
+                filters={dataFilters}
+                selectedFilter={filters}
+                onChangeSelectedFilter={(a) => {
+                  setFilters(a);
+                }}
+                isOpen
+              />
+            )}
+          </Box>
+        </Flex>
+
+        <Box w="full">
+          <HeaderToList
+            title="Produtos"
+            isLoading={isLoading}
+            total={data?.pages[data?.pages.length - 1].total ?? 0}
+            orderBy={{
+              onChange: setOrderBy,
+              currentValue: orderBy,
+              data: productsOrderBy,
+            }}
+          />
+
+          <LoadingInfiniteScroll
+            isLoading={isLoading}
+            isLoadingNextPage={isFetchingNextPage}
+          >
+            <SimpleGrid columns={[2, 2, 3, 4]} spacing="1" mb="1rem">
+              {data?.pages.map((page) =>
+                page?.products.map((product, i) =>
+                  i === page?.products.length - 4 ? (
+                    <Box key={product.codigo} ref={ref}>
+                      <Product
+                        href="pedidos/novo/produtos"
+                        product={{
+                          cod: product.codigo,
+                          name: product.descricao,
+                          descriptionAdditional: product.descricaoAdicional,
+                          reference: product.referencia,
+                          amount:
+                            product.listaPreco?.find(
+                              (f) =>
+                                Number(f.codigo) === Number(priceList?.codigo)
+                            )?.valorFormat ?? "-",
+                          uri: `${spaceImages}/Produtos/${product.referencia}_01`,
+                        }}
+                      />
                     </Box>
-
-                    <Button
-                      mt="10"
-                      w="full"
-                      maxW={["full", "25rem"]}
-                      colorScheme="red"
-                      onClick={handleNextTab}
-                    >
-                      Avançar
-                    </Button>
-                  </Box>
-                </Box>
-              </TabPanel>
-              <TabPanel>
-                <Box>
-                  {/* <Button>
-                    <Text>Selecionar Cliente</Text>
-                  </Button> */}
-
-                  <Box>
-                    <Tag size="lg" variant="solid" color="white" bg="red.500">
-                      <TagLabel>TABELA 28 DIAS</TagLabel>
-                      <TagCloseButton />
-                    </Tag>
-
-                    <Box mt="1.5">
-                      <Text>TABELA DE PREÇO</Text>
-
-                      <Text
-                        fontWeight="light"
-                        fontSize="small"
-                        color="gray.500"
-                      >
-                        TABELA 28 DIAS
-                      </Text>
-                    </Box>
-
-                    <Button
-                      mt="10"
-                      w="full"
-                      maxW={["full", "25rem"]}
-                      colorScheme="red"
-                      onClick={handleNextTab}
-                    >
-                      Avançar
-                    </Button>
-                  </Box>
-                </Box>
-              </TabPanel>
-              <TabPanel>
-                <Box>
-                  <Box>
-                    <Button
-                      mt="10"
-                      w="full"
-                      maxW={["full", "25rem"]}
-                      colorScheme="red"
-                    >
-                      Finalizar pedido
-                    </Button>
-                  </Box>
-                </Box>
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
+                  ) : (
+                    <Product
+                      href="pedidos/novo/produtos"
+                      key={product.codigo}
+                      product={{
+                        cod: product.codigo,
+                        name: product.descricao,
+                        descriptionAdditional: product.descricaoAdicional,
+                        reference: product.referencia,
+                        amount:
+                          product.listaPreco?.find(
+                            (f) =>
+                              Number(f.codigo) === Number(priceList?.codigo)
+                          )?.valorFormat ?? "-",
+                        uri: `${spaceImages}/Produtos/${product.referencia}_01`,
+                      }}
+                    />
+                  )
+                )
+              )}
+            </SimpleGrid>
+          </LoadingInfiniteScroll>
         </Box>
-      </Box>
+      </PanelLayout>
+
+      <ModelFilter
+        isOpen={isOpenFilter}
+        onClose={onCloseFilter}
+        dataFilters={dataFilters}
+        filters={filters}
+        setFilters={setFilters}
+      />
+
+      <ModalOrderBy
+        isOpen={isOpenOrderBy}
+        onClose={onCloseOrderBy}
+        OrderByItems={productsOrderBy}
+        currentOrderByValue={orderBy}
+        setOrderBy={(orderByValue) => {
+          setOrderBy(String(orderByValue));
+          onCloseOrderBy();
+        }}
+      />
+
+      <ModalList
+        title="Carrinho (10)"
+        isOpen={isOpenOrder}
+        onClose={onCloseOrder}
+      >
+        <Box borderRadius="md"></Box>
+      </ModalList>
     </>
   );
 }

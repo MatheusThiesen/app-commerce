@@ -1,5 +1,5 @@
 import { Flex, Select, Text } from "@chakra-ui/react";
-interface OrderByProps {
+export interface OrderByProps {
   data: OrderByItem[];
   currentValue: string;
   onChange: (v: string) => void;

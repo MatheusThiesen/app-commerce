@@ -21,12 +21,19 @@ import { FilterList } from "../../@types/api-queries";
 import { Me } from "../../@types/me";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
+import { HeaderToList } from "../../components/HeaderToList";
 import { ListFilter, SelectedFilter } from "../../components/ListFilter";
-import { ModalList } from "../../components/ModalList";
-import { OrderBy } from "../../components/OrderBy";
-import { OrderByMobile } from "../../components/OrderByMobile";
+import { LoadingInfiniteScroll } from "../../components/LoadingInfiniteScroll";
+import { ModalOrderBy } from "../../components/ModalOrderBy";
+import { ModelFilter } from "../../components/ModelFilter";
+import { PanelLayout } from "../../components/PanelLayout";
 import { Product } from "../../components/Product";
-import { getProducts, useProducts } from "../../hooks/queries/useProducts";
+import { spaceImages } from "../../global/parameters";
+import {
+  getProducts,
+  productsOrderBy,
+  useProducts,
+} from "../../hooks/queries/useProducts";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
 import { setupAPIClient } from "../../service/api";
 import { api } from "../../service/apiClient";
@@ -36,27 +43,6 @@ import { withSSRAuth } from "../../utils/withSSRAuth";
 interface ProductsProps {
   me: Me;
 }
-
-const OrderByItems = [
-  {
-    name: "Maior Preços",
-    value: "precoVenda.desc",
-  },
-  {
-    name: "Menor Preços",
-    value: "precoVenda.asc",
-  },
-  {
-    name: "Alfabética A>Z",
-    value: "descricao.asc",
-  },
-  {
-    name: "Alfabética Z>A",
-    value: "descricao.desc",
-  },
-];
-
-const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
 
 export default function Produtos({ me }: ProductsProps) {
   const { ref, inView } = useInView();
@@ -81,7 +67,9 @@ export default function Produtos({ me }: ProductsProps) {
     onOpen: onOpenOrderBy,
     onClose: onCloseOrderBy,
   } = useDisclosure();
+
   const { isOpen, onToggle } = useDisclosure();
+
   const [filters, setFilters] = useState<SelectedFilter[]>([]);
   const [groupProduct, setGroupProduct] = useState<
     undefined | "codigoAlternativo"
@@ -265,189 +253,132 @@ export default function Produtos({ me }: ProductsProps) {
         }
       />
 
-      {isLoadingFilters ? (
-        <Flex h="100vh" w="100%" justify="center" align="center">
-          <Spinner ml="4" size="xl" />
-        </Flex>
-      ) : (
-        <>
+      <PanelLayout isLoading={isLoadingFilters}>
+        <Flex
+          w="22rem"
+          mr="3rem"
+          display={["none", "none", "none", "flex"]}
+          flexDirection="column"
+        >
           <Flex
-            pt={["6.5rem", "6.5rem", "6.5rem", "7rem"]}
-            pb={["7rem"]}
-            justify="center"
-            w="full"
+            justify="space-between"
+            bg="white"
+            p="4"
+            mb="4"
+            borderRadius="md"
           >
-            <Flex w="full" maxW="1200px">
-              <Flex
-                w="22rem"
-                mr="3rem"
-                display={["none", "none", "none", "flex"]}
-                flexDirection="column"
-              >
-                <Flex
-                  justify="space-between"
-                  bg="white"
-                  p="4"
-                  mb="4"
-                  borderRadius="md"
-                >
-                  <Text fontWeight="bold">Agrupar produtos</Text>
-                  <Switch
-                    isChecked={!!groupProduct}
-                    onChange={(e) =>
-                      setGroupProduct(
-                        e.target.checked ? "codigoAlternativo" : undefined
-                      )
-                    }
-                    size="lg"
-                    colorScheme="red"
-                  />
-                </Flex>
-
-                <Box borderRadius="md">
-                  <FilterSelectedList
-                    filters={filters}
-                    setFilters={setFilters}
-                  />
-
-                  {dataFilters && (
-                    <ListFilter
-                      filters={dataFilters}
-                      selectedFilter={filters}
-                      onChangeSelectedFilter={(a) => {
-                        setFilters(a);
-                      }}
-                      isOpen
-                    />
-                  )}
-                </Box>
-              </Flex>
-
-              <Box w="full">
-                <Flex display={["none", "none", "none", "block"]}>
-                  <Text
-                    as="h1"
-                    fontSize="4xl"
-                    fontWeight="bold"
-                    color="gray.700"
-                    lineHeight="2rem"
-                  >
-                    Produtos
-                    {isLoading && <Spinner ml="4" size="md" />}
-                    <Button type="button" ml="2" onClick={handleExportList}>
-                      <Icon
-                        as={SiMicrosoftexcel}
-                        fontSize="1.5rem"
-                        color="#147b45"
-                        ml="-1"
-                      />
-                    </Button>
-                  </Text>
-
-                  <Flex justifyContent="space-between" mt="1" mb="2">
-                    <Text fontSize="md" color="gray.600">
-                      Total {data?.pages[data?.pages.length - 1].total}{" "}
-                      resultados
-                    </Text>
-
-                    <OrderBy
-                      onChange={setOrderBy}
-                      currentValue={orderBy}
-                      data={OrderByItems}
-                    />
-                  </Flex>
-                </Flex>
-
-                {isLoading ? (
-                  <Flex h="50vh" w="100%" justify="center" align="center">
-                    <Spinner ml="4" size="xl" />
-                  </Flex>
-                ) : (
-                  <>
-                    <SimpleGrid columns={[2, 2, 3, 4]} spacing="1" mb="1rem">
-                      {data?.pages.map((page) =>
-                        page?.products.map((product, i) =>
-                          i === page?.products.length - 4 ? (
-                            <Box key={product.codigo} ref={ref}>
-                              <Product
-                                product={{
-                                  cod: product.codigo,
-                                  name: product.descricao,
-                                  descriptionAdditional:
-                                    product.descricaoAdicional,
-                                  reference: product.referencia,
-                                  priceSale: product.precoVendaFormat,
-                                  uri: `${spaceImages}/Produtos/${product.referencia}_01`,
-                                }}
-                              />
-                            </Box>
-                          ) : (
-                            <Product
-                              key={product.codigo}
-                              product={{
-                                cod: product.codigo,
-                                name: product.descricao,
-                                descriptionAdditional:
-                                  product.descricaoAdicional,
-                                reference: product.referencia,
-                                priceSale: product.precoVendaFormat,
-                                uri: `${spaceImages}/Produtos/${product.referencia}_01`,
-                              }}
-                            />
-                          )
-                        )
-                      )}
-                    </SimpleGrid>
-
-                    {isFetchingNextPage && (
-                      <Flex w="100%" justify="center" align="center">
-                        <Spinner mt="4" ml="4" size="lg" />
-                      </Flex>
-                    )}
-                  </>
-                )}
-              </Box>
-            </Flex>
+            <Text fontWeight="bold">Agrupar produtos</Text>
+            <Switch
+              isChecked={!!groupProduct}
+              onChange={(e) =>
+                setGroupProduct(
+                  e.target.checked ? "codigoAlternativo" : undefined
+                )
+              }
+              size="lg"
+              colorScheme="red"
+            />
           </Flex>
 
-          <ModalList
-            title="Filtros"
-            isOpen={isOpenFilter}
-            onClose={onCloseFilter}
-          >
-            <Box borderRadius="md">
-              <FilterSelectedList filters={filters} setFilters={setFilters} />
+          <Box borderRadius="md">
+            <FilterSelectedList filters={filters} setFilters={setFilters} />
 
-              <Box p="6">
-                {dataFilters && (
-                  <ListFilter
-                    filters={dataFilters}
-                    selectedFilter={filters}
-                    onChangeSelectedFilter={(a) => {
-                      setFilters(a);
-                    }}
-                  />
-                )}
-              </Box>
-            </Box>
-          </ModalList>
+            {dataFilters && (
+              <ListFilter
+                filters={dataFilters}
+                selectedFilter={filters}
+                onChangeSelectedFilter={(a) => {
+                  setFilters(a);
+                }}
+                isOpen
+              />
+            )}
+          </Box>
+        </Flex>
 
-          <ModalList
-            title="Ordenar por"
-            isOpen={isOpenOrderBy}
-            onClose={onCloseOrderBy}
+        <Box w="full">
+          <HeaderToList
+            title="Produtos"
+            isLoading={isLoading}
+            total={data?.pages[data?.pages.length - 1].total ?? 0}
+            orderBy={{
+              onChange: setOrderBy,
+              currentValue: orderBy,
+              data: productsOrderBy,
+            }}
           >
-            <OrderByMobile
-              OrderByItems={OrderByItems}
-              currentOrderByValue={orderBy}
-              setOrderBy={(orderByValue) => {
-                setOrderBy(orderByValue);
-                onCloseOrderBy();
-              }}
-            />
-          </ModalList>
-        </>
-      )}
+            <Button type="button" ml="2" onClick={handleExportList}>
+              <Icon
+                as={SiMicrosoftexcel}
+                fontSize="1.5rem"
+                color="#147b45"
+                ml="-1"
+              />
+            </Button>
+          </HeaderToList>
+
+          <LoadingInfiniteScroll
+            isLoading={isLoading}
+            isLoadingNextPage={isFetchingNextPage}
+          >
+            <SimpleGrid columns={[2, 2, 3, 4]} spacing="1" mb="1rem">
+              {data?.pages.map((page) =>
+                page?.products.map((product, i) =>
+                  i === page?.products.length - 4 ? (
+                    <Box key={product.codigo} ref={ref}>
+                      <Product
+                        isCatalog
+                        href="produtos"
+                        product={{
+                          cod: product.codigo,
+                          name: product.descricao,
+                          descriptionAdditional: product.descricaoAdicional,
+                          reference: product.referencia,
+                          amount: `PDV ${product.precoVendaFormat}`,
+                          uri: `${spaceImages}/Produtos/${product.referencia}_01`,
+                        }}
+                      />
+                    </Box>
+                  ) : (
+                    <Product
+                      key={product.codigo}
+                      isCatalog
+                      href="produtos"
+                      product={{
+                        cod: product.codigo,
+                        name: product.descricao,
+                        descriptionAdditional: product.descricaoAdicional,
+                        reference: product.referencia,
+                        amount: `PDV ${product.precoVendaFormat}`,
+                        uri: `${spaceImages}/Produtos/${product.referencia}_01`,
+                      }}
+                    />
+                  )
+                )
+              )}
+            </SimpleGrid>
+          </LoadingInfiniteScroll>
+        </Box>
+      </PanelLayout>
+
+      <ModelFilter
+        isOpen={isOpenFilter}
+        onClose={onCloseFilter}
+        dataFilters={dataFilters}
+        filters={filters}
+        setFilters={setFilters}
+      />
+
+      <ModalOrderBy
+        isOpen={isOpenOrderBy}
+        onClose={onCloseOrderBy}
+        OrderByItems={productsOrderBy}
+        currentOrderByValue={orderBy}
+        setOrderBy={(orderByValue) => {
+          setOrderBy(String(orderByValue));
+          onCloseOrderBy();
+        }}
+      />
 
       <Slide direction="bottom" in={isOpen} style={{ zIndex: 10 }}>
         <Box p={["100px", "100px", "100px", "50px"]}>
@@ -510,6 +441,17 @@ export default function Produtos({ me }: ProductsProps) {
                         orderBy: orderBy,
                         groupProduct: groupProduct !== undefined,
                         stockLocation: stockLocation,
+                        filters: JSON.stringify(
+                          filters.filter((f) =>
+                            [
+                              "linhaCodigo",
+                              "colecaoCodigo",
+                              "grupoCodigo",
+                              "locaisEstoque",
+                              "concept",
+                            ].includes(f.name)
+                          )
+                        ),
                       })
                     }
                   >

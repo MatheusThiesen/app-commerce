@@ -2,8 +2,8 @@ import {
   Box,
   Button,
   Center,
-  Flex,
   Link as ChakraLink,
+  Flex,
   Stack,
   Text,
   useToast,
@@ -129,12 +129,21 @@ export default function Forgot() {
               size="lg"
               isLoading={formState.isSubmitting}
             >
-              Entrar
+              RECUPERAR
             </Button>
 
             <Center pt="20px">
               <Link href="/" passHref>
-                <ChakraLink>Voltar</ChakraLink>
+                <ChakraLink
+                  fontWeight={"light"}
+                  _hover={{
+                    textDecoration: "none",
+                    filter: "brightness(0.9)",
+                  }}
+                  transition=" all 0.3s"
+                >
+                  Voltar
+                </ChakraLink>
               </Link>
             </Center>
           </Flex>

@@ -5,6 +5,7 @@ import { QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { AuthProvider } from "../contexts/AuthContext";
 import { LoadingProvider } from "../contexts/LoadingContext";
+import { StoreProvider } from "../contexts/StoreContext";
 import { BottomNavigationProvider } from "../hooks/useBottomNavigation";
 import { ProductCatalogProvider } from "../hooks/useProductCatalog";
 import { queryClient } from "../service/queryClient";
@@ -27,11 +28,13 @@ function MyApp({ Component, pageProps }: AppProps) {
         <ChakraProvider theme={theme}>
           <AuthProvider>
             <LoadingProvider>
-              <ProductCatalogProvider>
-                <BottomNavigationProvider>
-                  <Component {...pageProps} />
-                </BottomNavigationProvider>
-              </ProductCatalogProvider>
+              <StoreProvider>
+                <ProductCatalogProvider>
+                  <BottomNavigationProvider>
+                    <Component {...pageProps} />
+                  </BottomNavigationProvider>
+                </ProductCatalogProvider>
+              </StoreProvider>
             </LoadingProvider>
           </AuthProvider>
         </ChakraProvider>

@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Link as ChakraLink,
   Flex,
   Spinner,
   Stack,
@@ -8,6 +9,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import Head from "next/head";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Me } from "../../@types/me";
@@ -212,12 +214,37 @@ export default function Clientes({ me }: ClientProps) {
                     <Stack mb="1rem">
                       {data?.pages.map((page) =>
                         page?.clients.map((client, i) =>
-                          i === page?.clients?.length - 1 ? (
-                            <Box ref={ref} key={client.codigo}>
-                              <Client client={client} />
-                            </Box>
+                          i === page?.clients?.length - 3 ? (
+                            <Link
+                              key={client.codigo}
+                              href={`/clientes/${client.codigo}`}
+                              passHref
+                            >
+                              <ChakraLink
+                                ref={ref}
+                                _hover={{
+                                  filter: "brightness(0.95)",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <Client client={client} />
+                              </ChakraLink>
+                            </Link>
                           ) : (
-                            <Client client={client} key={client.codigo} />
+                            <Link
+                              key={client.codigo}
+                              href={`/clientes/${client.codigo}`}
+                              passHref
+                            >
+                              <ChakraLink
+                                _hover={{
+                                  filter: "brightness(0.95)",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <Client client={client} />
+                              </ChakraLink>
+                            </Link>
                           )
                         )
                       )}
@@ -265,7 +292,7 @@ export default function Clientes({ me }: ClientProps) {
               OrderByItems={OrderByItems}
               currentOrderByValue={orderBy}
               setOrderBy={(orderByValue) => {
-                setOrderBy(orderByValue);
+                setOrderBy(String(orderByValue));
                 onCloseOrderBy();
               }}
             />

@@ -9,18 +9,24 @@ export interface ProductProps {
   cod: number;
   name: string;
   descriptionAdditional: string;
-  priceSale: string;
+  amount: string;
   reference: string;
   uri: string;
 }
 interface ProductComponentProps {
   product: ProductProps;
+  isCatalog?: boolean;
+  href: string;
 }
 
-export function ProductComponent({ product }: ProductComponentProps) {
+export function ProductComponent({
+  product,
+  isCatalog,
+  href,
+}: ProductComponentProps) {
   const { productsSelected, onRemoveProduct, onSelectedProduct } =
     useProductCatalog();
-  const { cod, name, reference, priceSale, uri } = product;
+  const { cod, name, reference, amount, uri } = product;
 
   const isProductSelectedCatalog = productsSelected.some(
     (produto) => reference === produto.reference
@@ -60,21 +66,23 @@ export function ProductComponent({ product }: ProductComponentProps) {
         alignItems="start"
         h="full"
       >
-        <Box position="absolute" top="0" left="0">
-          <Button
-            h="2.5rem"
-            w="2.5rem"
-            p="0"
-            borderRadius="full"
-            onClick={handleSelectedProductCatalog}
-          >
-            <Icon
-              as={isProductSelectedCatalog ? BsBookmarkFill : BsBookmark}
-              fontSize="20"
-              color={isProductSelectedCatalog ? "blue.600" : "gray.700"}
-            />
-          </Button>
-        </Box>
+        {isCatalog && (
+          <Box position="absolute" top="0" left="0">
+            <Button
+              h="2.5rem"
+              w="2.5rem"
+              p="0"
+              borderRadius="full"
+              onClick={handleSelectedProductCatalog}
+            >
+              <Icon
+                as={isProductSelectedCatalog ? BsBookmarkFill : BsBookmark}
+                fontSize="20"
+                color={isProductSelectedCatalog ? "blue.600" : "gray.700"}
+              />
+            </Button>
+          </Box>
+        )}
 
         {/* <Box position="absolute" top="0" right="0">
           <Button h="2.5rem" w="2.5rem" p="0" borderRadius="full">
@@ -84,7 +92,7 @@ export function ProductComponent({ product }: ProductComponentProps) {
             />
           </Button>
         </Box> */}
-        <Link href={`/produtos/${cod}`} passHref>
+        <Link href={`/${href}/${cod}`} passHref>
           <Box as="a" w="100%">
             <Flex w="full" flexDirection="column" align="center">
               <Image
@@ -115,8 +123,8 @@ export function ProductComponent({ product }: ProductComponentProps) {
                   Referência {reference}
                 </Text>
               </Flex>
-              <Text fontSize="sm" fontWeight="bold">
-                PDV {priceSale}
+              <Text fontSize="lg" fontWeight="bold">
+                {amount}
               </Text>
             </Box>
           </Box>

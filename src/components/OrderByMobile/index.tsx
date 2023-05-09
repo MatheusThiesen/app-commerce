@@ -1,14 +1,14 @@
 import { Box, Flex, List, ListItem, Text } from "@chakra-ui/react";
 import { memo } from "react";
-interface OrderByMobileProps {
+export interface OrderByMobileProps {
   OrderByItems: OrderByItem[];
-  setOrderBy: (e: string) => void;
-  currentOrderByValue: string;
+  setOrderBy: (e: string | number) => void;
+  currentOrderByValue?: string | number;
 }
 
 interface OrderByItem {
   name: string;
-  value: string;
+  value: string | number;
 }
 
 function OrderByMobileComponent({
@@ -30,8 +30,12 @@ function OrderByMobileComponent({
           onClick={() => {
             setOrderBy(item.value);
           }}
+          _hover={{
+            filter: "brightness(0.95)",
+            cursor: "pointer",
+          }}
         >
-          {currentOrderByValue === item.value && (
+          {currentOrderByValue && currentOrderByValue === item.value && (
             <Flex position="absolute" w="2" h="100%" align="center" left="1">
               <Box w="100%" h="90%" bg="red.500" borderRadius="sm" />
             </Flex>

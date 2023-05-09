@@ -84,7 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       switch (message.data) {
         case "signOut":
           signOut();
-          authChannel.close();
+          // authChannel.close();
           break;
         case "signIn":
           window.location.replace(`${base_url}${route_home}`);

@@ -133,7 +133,9 @@ export function HeaderNavigationComponent({
           align="center"
           px={["0", "0", "0", "30"]}
         >
-          <Flex flex={1}>{Left && Left}</Flex>
+          <Flex flex={1} align="center">
+            {Left && Left}
+          </Flex>
           {title ? (
             <Text color="white" fontSize={"medium"} fontWeight="bold">
               {title}
@@ -188,7 +190,7 @@ export function HeaderNavigationComponent({
           maxW="1120px"
         >
           {isAuthenticated ? (
-            <Link href="/produtos">
+            <Link href="/produtos" passHref>
               <CharkraLink h="full">
                 <Image
                   py="1"
@@ -209,10 +211,10 @@ export function HeaderNavigationComponent({
 
           {isAuthenticated && (
             <Stack direction="row" h="full" spacing="10">
-              <NavLink href="/inicio">Início</NavLink>
+              {/* <NavLink href="/inicio">Início</NavLink> */}
               <NavLink href="/produtos">Produtos</NavLink>
-              {/* <NavLink href="/clientes">Clientes</NavLink> */}
-              {/* <NavLink href="/pedidos">Orçamentos</NavLink> */}
+              {/* <NavLink href="/clientes">Clientes</NavLink>
+              <NavLink href="/pedidos">Pedidos</NavLink> */}
             </Stack>
           )}
 

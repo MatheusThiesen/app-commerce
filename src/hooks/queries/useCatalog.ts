@@ -54,15 +54,12 @@ export type ProductPage = {
 
 export async function getCatalog({ id, page, pagesize }: getCatalogProps) {
   try {
-    const { data } = await api.get<CatalogApiResponse>(
-      `/products/catalog/${id}`,
-      {
-        params: {
-          page: page - 1,
-          pagesize,
-        },
-      }
-    );
+    const { data } = await api.get<CatalogApiResponse>(`/catalog/${id}`, {
+      params: {
+        page: page - 1,
+        pagesize,
+      },
+    });
 
     return {
       ...data,

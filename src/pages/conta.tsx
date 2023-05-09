@@ -117,10 +117,15 @@ export default function Conta(props: ContaProps) {
   return (
     <>
       <Head>
-        <title>Inicio - App Alpar do Brasil</title>
+        <title>Conta - App Alpar do Brasil</title>
       </Head>
 
-      <HeaderNavigation isInativeEventScroll user={{ name: props.me.email }} />
+      <HeaderNavigation
+        isInativeEventScroll
+        user={{ name: props.me.email }}
+        title="Conta"
+        isGoBack
+      />
 
       <Flex justify="center" pt="3rem" px="1.25rem">
         <Box bg="white" borderRadius="md" p="6" maxW="47.75rem" w="full">

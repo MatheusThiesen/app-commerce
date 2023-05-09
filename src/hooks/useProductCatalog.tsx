@@ -34,6 +34,7 @@ import { api } from "../service/apiClient";
 import { getProducts } from "./queries/useProducts";
 
 type GenerateCatalogProps = {
+  filters?: string;
   orderBy: string;
   groupProduct?: boolean;
   stockLocation?: boolean;
@@ -94,6 +95,7 @@ export function ProductCatalogProvider({
     orderBy,
     groupProduct,
     stockLocation,
+    filters,
   }: GenerateCatalogProps) {
     //@ts-ignore
     toastIdRef.current = toast({
@@ -120,11 +122,12 @@ export function ProductCatalogProvider({
     });
 
     try {
-      const response = await api.post("/products/catalog", {
+      const response = await api.post("/catalog", {
         referencesProduct: productsSelected.map((product) => product.reference),
         orderBy: orderBy,
         groupProduct: groupProduct,
         stockLocation: stockLocation,
+        filters: filters,
       });
 
       if (toastIdRef.current) {

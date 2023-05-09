@@ -1,8 +1,8 @@
 import {
   Box,
-  Icon,
-  Link as CharkraLink,
   LinkProps as ChakraLinkProps,
+  Link as CharkraLink,
+  Icon,
   Text,
 } from "@chakra-ui/react";
 import LinkNext from "next/link";
@@ -20,11 +20,11 @@ export function MainNavLink({ href, icon, children, ...rest }: NavLinkProps) {
   const [isActiveLink, setIsActiveLink] = useState(false);
 
   useEffect(() => {
-    if (asPath === href) {
+    if (asPath.startsWith(String(href))) {
       return setIsActiveLink(true);
     }
 
-    if (asPath !== href && isActiveLink) {
+    if (!asPath.startsWith(String(href)) && isActiveLink) {
       setIsActiveLink(false);
     }
   }, [asPath]);

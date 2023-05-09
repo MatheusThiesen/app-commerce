@@ -1,9 +1,9 @@
 import {
   Box,
   Button,
+  Link as ChakraLink,
   Flex,
   Image,
-  Link as ChakraLink,
   Stack,
   Text,
   useToast,
@@ -116,7 +116,17 @@ export default function SignIn() {
             </Stack>
 
             <Link href="/esquecido" passHref>
-              <ChakraLink mt="2">Esqueci minha senha</ChakraLink>
+              <ChakraLink
+                mt="2"
+                fontWeight="bold"
+                _hover={{
+                  textDecoration: "none",
+                  filter: "brightness(1.2)",
+                }}
+                transition=" all 0.3s"
+              >
+                Esqueci minha senha
+              </ChakraLink>
             </Link>
 
             <Button
@@ -126,7 +136,7 @@ export default function SignIn() {
               size="lg"
               isLoading={formState.isSubmitting}
             >
-              Entrar
+              ENTRAR
             </Button>
           </Flex>
         </Box>

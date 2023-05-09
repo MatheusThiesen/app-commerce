@@ -3,18 +3,16 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
+  Button,
   Link as CharkraLink,
   Divider,
   Flex,
   Spinner,
+  Stack,
   Table,
-  TableCaption,
-  TableContainer,
   Tbody,
   Td,
   Text,
-  Th,
-  Thead,
   Tr,
 } from "@chakra-ui/react";
 import Head from "next/head";
@@ -23,14 +21,14 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { IoChevronForwardSharp } from "react-icons/io5";
 import ReactSelect from "react-select";
-import { Me } from "../../@types/me";
-import { HeaderNavigation } from "../../components/HeaderNavigation";
-import { ProductCarousel } from "../../components/ProductCarousel";
-import { VariationsProduct } from "../../components/VariationsProduct";
-import { useProductOne } from "../../hooks/queries/useProducts";
-import { useImagesProduct } from "../../hooks/useImagesProduct";
-import { setupAPIClient } from "../../service/api";
-import { withSSRAuth } from "../../utils/withSSRAuth";
+import { Me } from "../../../../@types/me";
+import { HeaderNavigation } from "../../../../components/HeaderNavigation";
+import { ProductCarousel } from "../../../../components/ProductCarousel";
+import { VariationsProduct } from "../../../../components/VariationsProduct";
+import { useProductOne } from "../../../../hooks/queries/useProducts";
+import { useImagesProduct } from "../../../../hooks/useImagesProduct";
+import { setupAPIClient } from "../../../../service/api";
+import { withSSRAuth } from "../../../../utils/withSSRAuth";
 
 interface ProdutoProps {
   me: Me;
@@ -40,6 +38,7 @@ export default function Produto(props: ProdutoProps) {
   const router = useRouter();
   const { codigo } = router.query;
   const [images, setImages] = useState<string[]>([]);
+  const [selectStockLocation, setSelectStockLocation] = useState();
 
   const { data: product, isLoading } = useProductOne(Number(codigo));
 
@@ -78,81 +77,52 @@ export default function Produto(props: ProdutoProps) {
         />
       )}
 
-      <Box mt="4">
-        <Text fontWeight="light">Grade</Text>
-        <ReactSelect
-          options={product?.grades?.map((grade) => ({
-            value: grade.codigo,
-            label: grade.descricaoAdicional,
-          }))}
-          defaultValue={{
-            value: product?.codigo,
-            label: product?.descricaoAdicional,
-          }}
-          onChange={(e) => router.push(`/produtos/${e?.value}`)}
-        />
-      </Box>
-      <TableContainer mt="6" w="70%">
-        <Text mb="3" fontSize="lg">
-          Locais de estoque
-        </Text>
-        <Table size="sm" variant="simple">
-          {(product?.locaisEstoque?.length ?? 0) <= 0 && (
-            <TableCaption>Sem dados</TableCaption>
-          )}
+      <Stack mt="4" spacing="4">
+        <Box>
+          <Text fontWeight="light">Grade</Text>
+          <ReactSelect
+            options={product?.grades?.map((grade) => ({
+              value: grade.codigo,
+              label: grade.descricaoAdicional,
+            }))}
+            defaultValue={{
+              value: product?.codigo,
+              label: product?.descricaoAdicional,
+            }}
+            onChange={(e) => router.push(`/produtos/${e?.value}`)}
+          />
+        </Box>
+        <Box>
+          <Text fontWeight="light">Disponibilidade</Text>
+          <ReactSelect
+            placeholder="Selecionar"
+            options={product?.locaisEstoque?.map((localEstoque) => ({
+              value: localEstoque.id,
+              label: localEstoque.descricao,
+            }))}
+            // defaultValue={{
+            //   value: localEstoque.id,
+            //   label: product?.descricaoAdicional,
+            // }}
+            // onChange={(e) => router.push(`/produtos/${e?.value}`)}
+          />
+        </Box>
+      </Stack>
 
-          <Thead>
-            <Tr>
-              <Th>Período</Th>
-              <Th>Estoque</Th>
-            </Tr>
-          </Thead>
-          {
-            <Tbody>
-              {product?.locaisEstoque?.map((localEstoque) => (
-                <Tr key={localEstoque.id}>
-                  <Td>{localEstoque.descricao}</Td>
-
-                  <Td>
-                    {/* {localEstoque.quantidade >= 1
-                      ? "Disponível"
-                      : "Indisponível"} */}
-                    {localEstoque.quantidade}
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          }
-        </Table>
-      </TableContainer>
-      <TableContainer mt="6">
-        <Text mb="3" fontSize="lg">
-          Lista de preço
-        </Text>
-        <Table size="sm" variant="simple">
-          {(product?.listaPreco?.length ?? 0) <= 0 && (
-            <TableCaption>Sem dados</TableCaption>
-          )}
-
-          <Thead>
-            <Tr>
-              <Th>Lista</Th>
-              <Th>Preço</Th>
-            </Tr>
-          </Thead>
-          {
-            <Tbody>
-              {product?.listaPreco?.map((localEstoque) => (
-                <Tr key={localEstoque.id}>
-                  <Td>{localEstoque.descricao}</Td>
-
-                  <Td>{localEstoque.valorFormat}</Td>
-                </Tr>
-              ))}
-            </Tbody>
-          }
-        </Table>
-      </TableContainer>
+      <Button
+        mt="6"
+        colorScheme="red"
+        size="lg"
+        w="full"
+        disabled
+        _disabled={{
+          _hover: {
+            bg: "black",
+          },
+        }}
+      >
+        Adicionar ao carrinho
+      </Button>
     </>
   );
 
@@ -263,7 +233,7 @@ export default function Produto(props: ProdutoProps) {
                   </Box>
 
                   <Box p="1rem">
-                    <Divider />
+                    <Divider display={["none", "none", "none", "block"]} />
 
                     <Box>
                       <Text

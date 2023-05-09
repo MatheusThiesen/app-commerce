@@ -20,7 +20,12 @@ export function BottomNavigationProvider({
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
-  const isActive = !["/produtos/[codigo]"].includes(router.pathname);
+  const isActive = ![
+    "/produtos/[codigo]",
+    "/clientes/[codigo]",
+    "/pedidos/novo/produtos/[codigo]",
+    "/pedidos/novo",
+  ].includes(router.pathname);
 
   return (
     <BottomNavigationContext.Provider value={{}}>

@@ -10,13 +10,14 @@ import {
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Me } from "../../@types/me";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { PageCatalog } from "../../components/PageCatalog";
 import { useCatalog } from "../../hooks/queries/useCatalog";
 import { setupAPIClient } from "../../service/api";
+import { api } from "../../service/apiClient";
 
 interface CatalogProps {
   me?: Me;
@@ -27,10 +28,19 @@ export default function Catalog({ me }: CatalogProps) {
   const history = useRouter();
   const toast = useToast();
 
+  const [catalogId, setCatalogId] = useState("");
+
   const router = useRouter();
   const { id } = router.query;
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useCatalog({ id: String(id), pagesize: 5 });
+
+  useEffect(() => {
+    if (id && String(id) !== catalogId) {
+      setCatalogId(String(id));
+      api.patch(`/catalog/visit/${id}`).then();
+    }
+  }, []);
 
   useEffect(() => {
     if (inView && hasNextPage) {

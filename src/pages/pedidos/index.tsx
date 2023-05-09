@@ -1,21 +1,32 @@
 import {
   Box,
+  Button,
   Link as ChakraLink,
   Flex,
+  Icon,
   Spinner,
-  Table,
-  Tag,
-  Tbody,
-  Td,
+  Stack,
   Text,
-  Tr,
+  useDisclosure,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { IoMdAddCircle } from "react-icons/io";
+import { SiMicrosoftexcel } from "react-icons/si";
+import { FilterList } from "../../@types/api-queries";
 import { Me } from "../../@types/me";
+import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
+import { ListFilter, SelectedFilter } from "../../components/ListFilter";
+import { ModalList } from "../../components/ModalList";
+import { Order } from "../../components/Order";
+import { OrderBy } from "../../components/OrderBy";
+import { OrderByMobile } from "../../components/OrderByMobile";
+import { useStore } from "../../contexts/StoreContext";
+import { useClients } from "../../hooks/queries/useClients";
 import { setupAPIClient } from "../../service/api";
+import { api } from "../../service/apiClient";
 import { withSSRAuth } from "../../utils/withSSRAuth";
 
 const orders = [
@@ -82,112 +93,251 @@ interface OrdersProps {
   me: Me;
 }
 
+const OrderByItems = [
+  {
+    name: "Maior Código",
+    value: "codigo.desc",
+  },
+  {
+    name: "Menor Código",
+    value: "codigo.asc",
+  },
+  {
+    name: "Alfabética A>Z",
+    value: "razaoSocial.asc",
+  },
+  {
+    name: "Alfabética Z>A",
+    value: "razaoSocial.desc",
+  },
+];
+
 export default function Orders({ me }: OrdersProps) {
+  const {
+    isOpen: isOpenFilter,
+    onOpen: onOpenFilter,
+    onClose: onCloseFilter,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenOrderBy,
+    onOpen: onOpenOrderBy,
+    onClose: onCloseOrderBy,
+  } = useDisclosure();
+
+  const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
+  const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
+  const [filters, setFilters] = useState<SelectedFilter[]>([]);
+  const [orderBy, setOrderBy] = useState<string>(() => {
+    return "codigo.desc";
+  });
+
+  const { setClient, setPriceList } = useStore();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useClients({
+      pagesize: 10,
+      orderby: orderBy,
+      filters: filters,
+    });
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await api.get<FilterList[]>("/clients/filters");
+      setDataFilters(data);
+
+      setIsLoadingFilters(false);
+    })();
+  }, []);
+
+  function handleCreateOrder() {
+    setClient({} as any);
+    setPriceList({} as any);
+  }
+
   return (
     <>
       <Head>
-        <title>Orçamentos | App Alpar do Brasil</title>
+        <title>Pedidos | App Alpar do Brasil</title>
       </Head>
 
       <HeaderNavigation
         user={{ name: me?.email }}
-        title="Orçamentos"
+        title="Pedidos"
         Right={
           <Link href={`/pedidos/novo`} passHref>
-            <ChakraLink mr="4">
+            <ChakraLink mr="4" onClick={handleCreateOrder}>
               <IoMdAddCircle color="white" fontSize={"1.8rem"} />
             </ChakraLink>
           </Link>
         }
+        contentHeight={2.5}
+        content={
+          <Flex w="full" justify="space-around">
+            <Button
+              bg="white"
+              borderRadius={0}
+              w="full"
+              onClick={onOpenOrderBy}
+            >
+              Ordenação
+            </Button>
+            <Button
+              bg="white"
+              borderRadius={0}
+              borderLeft="1px solid #ccc"
+              w="full"
+              onClick={onOpenFilter}
+            >
+              Filtros
+              {filters.length > 0 && (
+                <Flex
+                  borderRadius="full"
+                  bg="red.500"
+                  ml="1.5"
+                  h="1.6rem"
+                  w="1.6rem"
+                  align="center"
+                  justify="center"
+                >
+                  <Text fontSize="smaller" color="white">
+                    {filters.length}
+                  </Text>
+                </Flex>
+              )}
+            </Button>
+          </Flex>
+        }
       />
 
-      {false ? (
+      {isLoadingFilters ? (
         <Flex h="100vh" w="100%" justify="center" align="center">
           <Spinner ml="4" size="xl" />
         </Flex>
       ) : (
-        <Flex
-          pt={["6.5rem", "6.5rem", "6.5rem", "7rem"]}
-          pb={["7rem"]}
-          justify="center"
-          w="full"
-        >
-          <Flex w="full" maxW="1200px">
-            <Flex
-              w="22rem"
-              mr="3rem"
-              display={["none", "none", "none", "flex"]}
-              flexDirection="column"
-            ></Flex>
+        <>
+          <Flex
+            pt={["6.5rem", "6.5rem", "6.5rem", "7rem"]}
+            pb={["7rem"]}
+            justify="center"
+            w="full"
+          >
+            <Flex w="full" maxW="1200px">
+              <Flex
+                w="22rem"
+                mr="3rem"
+                display={["none", "none", "none", "flex"]}
+                flexDirection="column"
+              >
+                <Box borderRadius="md">
+                  <FilterSelectedList
+                    filters={filters}
+                    setFilters={setFilters}
+                  />
 
-            <Box w="full">
-              <Table colorScheme="blackAlpha">
-                <Tbody>
+                  {dataFilters && (
+                    <ListFilter
+                      filters={dataFilters}
+                      selectedFilter={filters}
+                      onChangeSelectedFilter={(a) => {
+                        setFilters(a);
+                      }}
+                      isOpen
+                    />
+                  )}
+                </Box>
+              </Flex>
+
+              <Box w="full">
+                <Flex display={["none", "none", "none", "block"]}>
+                  <Text
+                    as="h1"
+                    fontSize="4xl"
+                    fontWeight="bold"
+                    color="gray.700"
+                    lineHeight="2rem"
+                  >
+                    Pedidos
+                    {isLoading && <Spinner ml="4" size="md" />}
+                    <Button type="button" ml="2" onClick={() => {}}>
+                      <Icon
+                        as={SiMicrosoftexcel}
+                        fontSize="1.5rem"
+                        color="#147b45"
+                        ml="-1"
+                      />
+                    </Button>
+                    <Button type="button" ml="2" onClick={handleCreateOrder}>
+                      <Link href={`/pedidos/novo`} passHref>
+                        <ChakraLink>
+                          <Icon
+                            as={IoMdAddCircle}
+                            color="red.500"
+                            fontSize={"1.8rem"}
+                          />
+                        </ChakraLink>
+                      </Link>
+                    </Button>
+                  </Text>
+
+                  <Flex justifyContent="space-between" mt="1" mb="2">
+                    <Text fontSize="md" color="gray.600">
+                      Total {data?.pages[data?.pages.length - 1].total}{" "}
+                      resultados
+                    </Text>
+
+                    <OrderBy
+                      onChange={setOrderBy}
+                      currentValue={orderBy}
+                      data={OrderByItems}
+                    />
+                  </Flex>
+                </Flex>
+
+                <Stack>
                   {orders.map((order) => (
-                    <Tr key={order.id}>
-                      <Td
-                        bg="white"
-                        _hover={{
-                          filter: "brightness(0.95)",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <Link href={`/clientes/${order.id}`} passHref>
-                          <ChakraLink w="full">
-                            <Flex justify={["space-between", "flex-start"]}>
-                              <Tag
-                                size="md"
-                                variant="solid"
-                                color="white"
-                                bg="red.500"
-                              >
-                                #{order.code}
-                              </Tag>
-
-                              <Text
-                                fontWeight="light"
-                                ml={["0", "1rem"]}
-                                fontSize="sm"
-                              >
-                                {order.createAt}
-                              </Text>
-                            </Flex>
-
-                            <Box mt="1.5">
-                              <Text
-                                fontWeight="light"
-                                fontSize="small"
-                                color="gray.500"
-                              >
-                                CLIENTE
-                              </Text>
-                              <Text>{`${order.client.brandName} - ${order.client.cnpj}`}</Text>
-                            </Box>
-                            <Box mt="1.5">
-                              <Text
-                                fontWeight="light"
-                                fontSize="small"
-                                color="gray.500"
-                              >
-                                VALOR
-                              </Text>
-                              <Text fontWeight="bold" fontSize="lg">
-                                {order.totalValue}
-                              </Text>
-                              <Text fontWeight="light" fontSize="small">
-                                {order.paymentTerms}
-                              </Text>
-                            </Box>
-                          </ChakraLink>
-                        </Link>
-                      </Td>
-                    </Tr>
+                    <Order />
                   ))}
-                </Tbody>
-              </Table>
-            </Box>
+                </Stack>
+              </Box>
+            </Flex>
           </Flex>
-        </Flex>
+
+          <ModalList
+            title="Filtros"
+            isOpen={isOpenFilter}
+            onClose={onCloseFilter}
+          >
+            <Box borderRadius="md">
+              <FilterSelectedList filters={filters} setFilters={setFilters} />
+
+              <Box p="6">
+                {dataFilters && (
+                  <ListFilter
+                    filters={dataFilters}
+                    selectedFilter={filters}
+                    onChangeSelectedFilter={(a) => {
+                      setFilters(a);
+                    }}
+                  />
+                )}
+              </Box>
+            </Box>
+          </ModalList>
+
+          <ModalList
+            title="Ordenar por"
+            isOpen={isOpenOrderBy}
+            onClose={onCloseOrderBy}
+          >
+            <OrderByMobile
+              OrderByItems={OrderByItems}
+              currentOrderByValue={orderBy}
+              setOrderBy={(orderByValue) => {
+                setOrderBy(String(orderByValue));
+                onCloseOrderBy();
+              }}
+            />
+          </ModalList>
+        </>
       )}
     </>
   );
