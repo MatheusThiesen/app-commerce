@@ -17,16 +17,16 @@ export default function Sso() {
         await sso(String(token));
         history.push("/produtos");
       } catch (error) {
-        toast({
-          title: "Ocorreu erro com seu acesso direto, realize seu login!",
-          status: "error",
-          position: "top",
-          isClosable: true,
-        });
+        // toast({
+        //   title: "Ocorreu erro com seu acesso direto, realize seu login!",
+        //   status: "error",
+        //   position: "top",
+        //   isClosable: true,
+        // });
         history.push("/");
       }
     })();
-  }, [token]);
+  }, []);
 
   return (
     <>
