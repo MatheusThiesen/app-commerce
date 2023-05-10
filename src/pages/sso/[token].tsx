@@ -26,7 +26,7 @@ export default function Sso() {
         history.push("/");
       }
     })();
-  }, []);
+  }, [token]);
 
   return (
     <>

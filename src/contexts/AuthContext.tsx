@@ -215,7 +215,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       method: "post",
       url: "/auth/sso",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token.trim()}`,
       },
     });
 
