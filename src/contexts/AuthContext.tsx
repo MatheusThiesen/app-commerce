@@ -1,4 +1,4 @@
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import Router from "next/router";
 import { destroyCookie, parseCookies, setCookie } from "nookies";
 import {
@@ -63,8 +63,6 @@ let authChannel: BroadcastChannel;
 export function signOut() {
   destroyCookie(undefined, "nextauth.token");
   destroyCookie(undefined, "nextauth.refreshToken");
-
-  window.location.reload();
 
   // authChannel.postMessage("signOut");
 
@@ -146,8 +144,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     //@ts-ignore
     api.defaults.headers["Authorization"] = `Bearer ${token}`;
 
-    window.location.reload();
-
     const me = await api.get("/auth/me");
     setUser(me.data);
 
@@ -211,7 +207,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   async function sso(token: string) {
-    const response = await api({
+    const response = await axios({
+      baseURL:
+        process.env.NODE_ENV !== "development"
+          ? "https://api-app.alpardobrasil.com.br/"
+          : "http://localhost:4444/",
       method: "post",
       url: "/auth/sso",
       headers: {
