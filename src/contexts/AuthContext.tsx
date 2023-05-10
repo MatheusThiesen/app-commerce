@@ -64,7 +64,7 @@ export function signOut() {
   destroyCookie(undefined, "nextauth.token");
   destroyCookie(undefined, "nextauth.refreshToken");
 
-  // window.location.reload();
+  window.location.reload();
 
   // authChannel.postMessage("signOut");
 
@@ -77,24 +77,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User>();
   const isAuthenticated = !!user && !!token;
 
-  useEffect(() => {
-    authChannel = new BroadcastChannel("auth");
+  // useEffect(() => {
+  //   authChannel = new BroadcastChannel("auth");
 
-    authChannel.onmessage = (message) => {
-      switch (message.data) {
-        case "signOut":
-          signOut();
-          // authChannel.close();
-          break;
-        case "signIn":
-          window.location.replace(`${base_url}${route_home}`);
-          break;
+  //   authChannel.onmessage = (message) => {
+  //     switch (message.data) {
+  //       case "signOut":
+  //         signOut();
+  //         // authChannel.close();
+  //         break;
+  //       case "signIn":
+  //         window.location.replace(`${base_url}${route_home}`);
+  //         break;
 
-        default:
-          break;
-      }
-    };
-  }, []);
+  //       default:
+  //         break;
+  //     }
+  //   };
+  // }, []);
 
   useEffect(() => {
     const { "nextauth.token": token } = parseCookies();
@@ -146,8 +146,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     //@ts-ignore
     api.defaults.headers["Authorization"] = `Bearer ${token}`;
 
-    const me = await api.get("/auth/me");
+    window.location.reload();
 
+    const me = await api.get("/auth/me");
     setUser(me.data);
 
     // authChannel.postMessage("signIn");
