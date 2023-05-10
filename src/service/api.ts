@@ -34,7 +34,7 @@ export function setupAPIClient(
     (success) => success,
     (error: AxiosError) => {
       if (error?.response?.status === 401) {
-        if (error?.response?.data?.message === "Unauthorized" || false) {
+        if (error?.response?.data?.message === "Unauthorized") {
           cookies = parseCookies(ctx);
 
           const { "nextauth.refreshToken": refreshToken } = cookies;

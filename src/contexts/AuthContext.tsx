@@ -66,7 +66,7 @@ export function signOut() {
 
   // window.location.reload();
 
-  authChannel.postMessage("signOut");
+  // authChannel.postMessage("signOut");
 
   Router.push("/");
 }
@@ -150,7 +150,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setUser(me.data);
 
-    authChannel.postMessage("signIn");
+    // authChannel.postMessage("signIn");
     Router.push(route_home);
   }
 
