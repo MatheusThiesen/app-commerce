@@ -1,16 +1,12 @@
 import { Flex, Spinner, useToast } from "@chakra-ui/react";
-import { GetServerSideProps } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { withSSRGuest } from "../../utils/withSSRGuest";
 
-interface SsoProps {
-  token: string;
-}
-
-export default function Sso({ token }: SsoProps) {
+export default function Sso() {
+  const router = useRouter();
+  const { token } = router.query;
   const { sso } = useAuth();
   const toast = useToast();
   const history = useRouter();
@@ -18,7 +14,7 @@ export default function Sso({ token }: SsoProps) {
   useEffect(() => {
     (async () => {
       try {
-        await sso(token);
+        await sso(String(token));
         history.push("/produtos");
       } catch (error) {
         toast({
@@ -43,22 +39,3 @@ export default function Sso({ token }: SsoProps) {
     </>
   );
 }
-
-export const getServerSideProps: GetServerSideProps<any> = withSSRGuest<{}>(
-  async (ctx) => {
-    if (!ctx.query?.token) {
-      return {
-        redirect: {
-          destination: "/",
-          permanent: false,
-        },
-      };
-    }
-
-    return {
-      props: {
-        token: ctx.query?.token,
-      },
-    };
-  }
-);
