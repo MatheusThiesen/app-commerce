@@ -33,7 +33,10 @@ export function setupAPIClient(
   api.interceptors.response.use(
     (success) => success,
     (error: AxiosError) => {
-      if (error?.response?.status === 401) {
+      if (
+        error?.response?.status === 401 &&
+        error?.config?.url !== "/auth/sso"
+      ) {
         if (error?.response?.data?.message === "Unauthorized") {
           cookies = parseCookies(ctx);
 
