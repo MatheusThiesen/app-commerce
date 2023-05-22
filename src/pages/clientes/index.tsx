@@ -17,16 +17,17 @@ import { Client } from "../../components/Client";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ListFilter, SelectedFilter } from "../../components/ListFilter";
-import { ModalList } from "../../components/ModalList";
+import { ModalFilter } from "../../components/ModalFilter";
+import { ModalOrderBy } from "../../components/ModalOrderBy";
 import { OrderBy } from "../../components/OrderBy";
-import { OrderByMobile } from "../../components/OrderByMobile";
+import { Search } from "../../components/Search";
 import { useClients } from "../../hooks/queries/useClients";
 import { FilterList } from "../../hooks/queries/useProductsFilters";
 import { setupAPIClient } from "../../service/api";
 import { api } from "../../service/apiClient";
 import { withSSRAuth } from "../../utils/withSSRAuth";
 
-const OrderByItems = [
+const clientOrderByItems = [
   {
     name: "Maior Código",
     value: "codigo.desc",
@@ -64,6 +65,7 @@ export default function Clientes({ me }: ClientProps) {
   } = useDisclosure();
 
   const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
+  const [search, setSearch] = useState("");
   const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
   const [filters, setFilters] = useState<SelectedFilter[]>([]);
   const [orderBy, setOrderBy] = useState<string>(() => {
@@ -75,6 +77,7 @@ export default function Clientes({ me }: ClientProps) {
       pagesize: 10,
       orderby: orderBy,
       filters: filters,
+      search: search,
     });
 
   useEffect(() => {
@@ -159,6 +162,8 @@ export default function Clientes({ me }: ClientProps) {
                 display={["none", "none", "none", "flex"]}
                 flexDirection="column"
               >
+                <Search mb="4" setSearch={setSearch} search={search} />
+
                 <Box borderRadius="md">
                   <FilterSelectedList
                     filters={filters}
@@ -200,7 +205,7 @@ export default function Clientes({ me }: ClientProps) {
                     <OrderBy
                       onChange={setOrderBy}
                       currentValue={orderBy}
-                      data={OrderByItems}
+                      data={clientOrderByItems}
                     />
                   </Flex>
                 </Flex>
@@ -261,42 +266,26 @@ export default function Clientes({ me }: ClientProps) {
             </Flex>
           </Flex>
 
-          <ModalList
-            title="Filtros"
+          <ModalFilter
             isOpen={isOpenFilter}
             onClose={onCloseFilter}
+            dataFilters={dataFilters}
+            filters={filters}
+            setFilters={setFilters}
           >
-            <Box borderRadius="md">
-              <FilterSelectedList filters={filters} setFilters={setFilters} />
+            <Search mb="4" setSearch={setSearch} search={search} />
+          </ModalFilter>
 
-              <Box p="6">
-                {dataFilters && (
-                  <ListFilter
-                    filters={dataFilters}
-                    selectedFilter={filters}
-                    onChangeSelectedFilter={(a) => {
-                      setFilters(a);
-                    }}
-                  />
-                )}
-              </Box>
-            </Box>
-          </ModalList>
-
-          <ModalList
-            title="Ordenar por"
+          <ModalOrderBy
             isOpen={isOpenOrderBy}
             onClose={onCloseOrderBy}
-          >
-            <OrderByMobile
-              OrderByItems={OrderByItems}
-              currentOrderByValue={orderBy}
-              setOrderBy={(orderByValue) => {
-                setOrderBy(String(orderByValue));
-                onCloseOrderBy();
-              }}
-            />
-          </ModalList>
+            OrderByItems={clientOrderByItems}
+            currentOrderByValue={orderBy}
+            setOrderBy={(orderByValue) => {
+              setOrderBy(String(orderByValue));
+              onCloseOrderBy();
+            }}
+          />
         </>
       )}
     </>

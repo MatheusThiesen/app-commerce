@@ -1,15 +1,15 @@
 import {
   Box,
   Button,
+  Input as ChakraInput,
+  InputProps as ChakraInputProps,
   Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
   Icon,
-  Input as ChakraInput,
-  InputProps as ChakraInputProps,
 } from "@chakra-ui/react";
-import { forwardRef, ForwardRefRenderFunction, useState } from "react";
+import { ForwardRefRenderFunction, forwardRef, useState } from "react";
 import { IconType } from "react-icons";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 
@@ -76,15 +76,18 @@ export const InputBase: ForwardRefRenderFunction<
         />
 
         {iconRight && !isPassword && (
-          <Button
+          <Flex
+            w="40px"
+            h="34px"
+            align="center"
+            justify="center"
             position="absolute"
             top="1.5"
             right="0"
             zIndex={1}
-            variant="unstyled"
           >
             <Icon as={iconRight} color="gray.500" />
-          </Button>
+          </Flex>
         )}
 
         {isPassword && (

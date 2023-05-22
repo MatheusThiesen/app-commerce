@@ -14,6 +14,7 @@ import {
   Td,
   Text,
   Tr,
+  useNumberInput,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
@@ -22,10 +23,15 @@ import { useEffect, useState } from "react";
 import { IoChevronForwardSharp } from "react-icons/io5";
 import ReactSelect from "react-select";
 import { Me } from "../../../../@types/me";
+import { InputQuantity } from "../../../../components/Form/InputQuantity";
 import { HeaderNavigation } from "../../../../components/HeaderNavigation";
 import { ProductCarousel } from "../../../../components/ProductCarousel";
 import { VariationsProduct } from "../../../../components/VariationsProduct";
-import { useProductOne } from "../../../../hooks/queries/useProducts";
+import { useStore } from "../../../../contexts/StoreContext";
+import {
+  StockLocation,
+  useProductOne,
+} from "../../../../hooks/queries/useProducts";
 import { useImagesProduct } from "../../../../hooks/useImagesProduct";
 import { setupAPIClient } from "../../../../service/api";
 import { withSSRAuth } from "../../../../utils/withSSRAuth";
@@ -38,9 +44,25 @@ export default function Produto(props: ProdutoProps) {
   const router = useRouter();
   const { codigo } = router.query;
   const [images, setImages] = useState<string[]>([]);
-  const [selectStockLocation, setSelectStockLocation] = useState();
+  const [stockLocationSelected, setStockLocationSelected] = useState<
+    StockLocation | undefined
+  >();
 
   const { data: product, isLoading } = useProductOne(Number(codigo));
+
+  const { priceList } = useStore();
+
+  const {
+    getInputProps: inputQuantityInputProps,
+    getIncrementButtonProps: inputQuantityIncrementButtonProps,
+    getDecrementButtonProps: inputQuantityDecrementButtonProps,
+    value: quantity,
+  } = useNumberInput({
+    step: product?.qtdEmbalagem ?? 0,
+    defaultValue: product?.qtdEmbalagem ?? 0,
+    min: product?.qtdEmbalagem ?? 0,
+    max: 120,
+  });
 
   useEffect(() => {
     (async () => {
@@ -54,77 +76,108 @@ export default function Produto(props: ProdutoProps) {
     })();
   }, [product]);
 
-  const InfoProduct = () => (
-    <>
-      <Text as="span" fontSize="2xl" fontWeight="medium">
-        PDV {product?.precoVendaFormat}
-      </Text>
-
-      <Text as="p" fontSize="small" mt="2" fontWeight="light">
-        Cor:{" "}
-        <Text as="span" fontSize="small" mt="2" fontWeight="bold">
-          {product?.corPrimaria?.descricao}
-          {product?.corSecundaria?.cor.descricao
-            ? ` e ${product?.corSecundaria?.cor.descricao}`
-            : ""}
+  const InfoProduct = () => {
+    return (
+      <>
+        <Text as="span" fontSize="2xl" fontWeight="medium">
+          {product?.listaPreco?.find(
+            (f) => Number(f.codigo) === Number(priceList?.codigo)
+          )?.valorFormat ?? "-"}
         </Text>
-      </Text>
 
-      {product?.variacoes && product?.variacoes?.length >= 1 && (
-        <VariationsProduct
-          variationsProduct={product.variacoes}
-          currentReference={product?.referencia ?? ""}
-        />
-      )}
+        <Text as="p" fontSize="small" mt="2" fontWeight="light">
+          Cor:{" "}
+          <Text as="span" fontSize="small" mt="2" fontWeight="bold">
+            {product?.corPrimaria?.descricao}
+            {product?.corSecundaria?.cor.descricao
+              ? ` e ${product?.corSecundaria?.cor.descricao}`
+              : ""}
+          </Text>
+        </Text>
 
-      <Stack mt="4" spacing="4">
-        <Box>
-          <Text fontWeight="light">Grade</Text>
-          <ReactSelect
-            options={product?.grades?.map((grade) => ({
-              value: grade.codigo,
-              label: grade.descricaoAdicional,
-            }))}
-            defaultValue={{
-              value: product?.codigo,
-              label: product?.descricaoAdicional,
-            }}
-            onChange={(e) => router.push(`/produtos/${e?.value}`)}
+        {product?.variacoes && product?.variacoes?.length >= 1 && (
+          <VariationsProduct
+            variationsProduct={product.variacoes}
+            currentReference={product?.referencia ?? ""}
+            uri={`/pedidos/novo/produtos`}
           />
-        </Box>
-        <Box>
-          <Text fontWeight="light">Disponibilidade</Text>
-          <ReactSelect
-            placeholder="Selecionar"
-            options={product?.locaisEstoque?.map((localEstoque) => ({
-              value: localEstoque.id,
-              label: localEstoque.descricao,
-            }))}
-            // defaultValue={{
-            //   value: localEstoque.id,
-            //   label: product?.descricaoAdicional,
-            // }}
-            // onChange={(e) => router.push(`/produtos/${e?.value}`)}
-          />
-        </Box>
-      </Stack>
+        )}
 
-      <Button
-        mt="6"
-        colorScheme="red"
-        size="lg"
-        w="full"
-        disabled
-        _disabled={{
-          _hover: {
-            bg: "black",
-          },
-        }}
-      >
-        Adicionar ao carrinho
-      </Button>
-    </>
-  );
+        <Stack mt="4" spacing="4">
+          <Box>
+            <Text fontWeight="light">Grade</Text>
+            <ReactSelect
+              options={product?.grades?.map((grade) => ({
+                value: grade.codigo,
+                label: grade.descricaoAdicional,
+              }))}
+              defaultValue={{
+                value: product?.codigo,
+                label: product?.descricaoAdicional,
+              }}
+              onChange={(e) =>
+                router.push(`/pedidos/novo/produtos/${e?.value}`)
+              }
+            />
+          </Box>
+          <Box>
+            <Text fontWeight="light">Disponibilidade</Text>
+            <ReactSelect
+              placeholder="Selecionar"
+              options={product?.locaisEstoque?.map((localEstoque) => ({
+                value: localEstoque.periodo,
+                label: localEstoque.descricao,
+              }))}
+              onChange={(e) =>
+                setStockLocationSelected({
+                  periodo: e?.value ?? "",
+                  descricao: e?.label ?? "",
+                })
+              }
+              value={
+                stockLocationSelected
+                  ? {
+                      label: stockLocationSelected.descricao,
+                      value: stockLocationSelected.periodo,
+                    }
+                  : undefined
+              }
+            />
+          </Box>
+          {stockLocationSelected && (
+            <Box w="8rem">
+              <InputQuantity
+                inputProps={inputQuantityInputProps}
+                incrementButtonProps={inputQuantityIncrementButtonProps}
+                decrementButtonProps={inputQuantityDecrementButtonProps}
+              />
+              <Text
+                mt="4"
+                as={"span"}
+                fontSize="sm"
+                fontWeight="light"
+                color="gray.500"
+              >
+                128 disponível
+              </Text>
+              {/* <Text>Ultimo disponível</Text> */}
+            </Box>
+          )}
+        </Stack>
+
+        <Button
+          colorScheme="red"
+          mt="6"
+          size="lg"
+          w="full"
+          aria-disabled={!stockLocationSelected}
+          disabled={!stockLocationSelected}
+        >
+          Adicionar ao carrinho
+        </Button>
+      </>
+    );
+  };
 
   return (
     <>
@@ -307,6 +360,10 @@ export default function Produto(props: ProdutoProps) {
                             <Tr>
                               <Td>Referência</Td>
                               <Td>{product?.referencia}</Td>
+                            </Tr>
+                            <Tr>
+                              <Td>Preço de venda sugerido</Td>
+                              <Td>{product?.precoVendaFormat}</Td>
                             </Tr>
                             <Tr>
                               <Td>NCM</Td>

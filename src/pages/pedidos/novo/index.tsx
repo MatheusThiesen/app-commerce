@@ -20,9 +20,9 @@ import { HeaderNavigation } from "../../../components/HeaderNavigation";
 import { HeaderToList } from "../../../components/HeaderToList";
 import { ListFilter, SelectedFilter } from "../../../components/ListFilter";
 import { LoadingInfiniteScroll } from "../../../components/LoadingInfiniteScroll";
+import { ModalFilter } from "../../../components/ModalFilter";
 import { ModalList } from "../../../components/ModalList";
 import { ModalOrderBy } from "../../../components/ModalOrderBy";
-import { ModelFilter } from "../../../components/ModelFilter";
 import { PanelLayout } from "../../../components/PanelLayout";
 import { Product } from "../../../components/Product";
 import { ShoppingButton } from "../../../components/ShoppingButton";
@@ -69,7 +69,7 @@ export default function Order({ me }: OrderProps) {
     undefined | "codigoAlternativo"
   >();
 
-  const { client, priceList, onOpenSeleteClient, items } = useStore();
+  const { client, priceList, totalItems } = useStore();
 
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useProducts({
@@ -129,9 +129,7 @@ export default function Order({ me }: OrderProps) {
       <HeaderNavigation
         user={{ name: me?.email }}
         title="Pedido"
-        Right={
-          <ShoppingButton qtdItens={items?.length} onClick={onOpenOrder} />
-        }
+        Right={<ShoppingButton qtdItens={totalItems} onClick={onOpenOrder} />}
         Left={
           <Button
             p="0"
@@ -292,6 +290,7 @@ export default function Order({ me }: OrderProps) {
                               (f) =>
                                 Number(f.codigo) === Number(priceList?.codigo)
                             )?.valorFormat ?? "-",
+                          pdv: product.precoVendaFormat ?? "-",
                           uri: `${spaceImages}/Produtos/${product.referencia}_01`,
                         }}
                       />
@@ -310,6 +309,7 @@ export default function Order({ me }: OrderProps) {
                             (f) =>
                               Number(f.codigo) === Number(priceList?.codigo)
                           )?.valorFormat ?? "-",
+                        pdv: product.precoVendaFormat ?? "-",
                         uri: `${spaceImages}/Produtos/${product.referencia}_01`,
                       }}
                     />
@@ -321,7 +321,7 @@ export default function Order({ me }: OrderProps) {
         </Box>
       </PanelLayout>
 
-      <ModelFilter
+      <ModalFilter
         isOpen={isOpenFilter}
         onClose={onCloseFilter}
         dataFilters={dataFilters}

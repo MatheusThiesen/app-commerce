@@ -75,6 +75,7 @@ export default function Produto(props: ProdutoProps) {
         <VariationsProduct
           variationsProduct={product.variacoes}
           currentReference={product?.referencia ?? ""}
+          uri={`/pedidos/novo/produtos`}
         />
       )}
 

@@ -10,7 +10,7 @@ import {
 import { ModalSelectClient } from "../components/ModalSelectClient";
 import { ModalSelectPriceList } from "../components/ModalSelectPriceList";
 import { Client } from "../hooks/queries/useClients";
-import { Product } from "../hooks/queries/useProducts";
+import { Product, StockLocation } from "../hooks/queries/useProducts";
 
 export type PriceList = {
   codigo: number;
@@ -18,20 +18,19 @@ export type PriceList = {
 };
 
 interface Order {
-  period: Period;
-  items: [];
-}
+  stockLocation: StockLocation;
+  items: Item[];
 
-interface Period {
-  period: string;
-  name: string;
+  qtd: number;
+  amount: number;
+  amountFormat: string;
 }
 
 interface Item {
   product: Product;
   qtd: number;
   amount: number;
-  total: number;
+  amountFormat: string;
 }
 
 type StoreContextData = {
@@ -40,7 +39,8 @@ type StoreContextData = {
   priceList?: PriceList;
   setPriceList: (a: PriceList) => void;
 
-  items?: Item[];
+  orders?: Order[];
+  totalItems?: number;
 
   onOpenSeleteClient: () => void;
   isOpenSeleteClient: boolean;
@@ -89,6 +89,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
 
   const [client, setClient] = useState<Client>({} as Client);
   const [priceList, setPriceList] = useState<PriceList>({} as PriceList);
+  const [orders, setOrders] = useState<Order>({} as Order);
 
   useEffect(() => {
     if (asPath === "/pedidos/novo") {
@@ -97,6 +98,11 @@ export function StoreProvider({ children }: StoreProviderProps) {
         onOpenSeleteListPrice();
     }
   }, [asPath, client, priceList, isOpenSeleteClient, isOpenSeleteListPrice]);
+
+  function handleGetStockProduct(
+    product: Product,
+    stockLocation: StockLocation
+  ) {}
 
   return (
     <StoreContext.Provider

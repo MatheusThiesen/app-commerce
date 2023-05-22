@@ -57,6 +57,7 @@ interface GetClientsProps {
   pagesize?: number;
   orderby?: string;
   filters?: ItemFilter[];
+  search?: string;
 }
 type UseClientsProps = Omit<GetClientsProps, "page">;
 
@@ -65,12 +66,14 @@ export async function getClients({
   pagesize,
   orderby,
   filters,
+  search,
 }: GetClientsProps): Promise<GetClientsResponse> {
   const { data } = await api.get<ClientApiResponse>("/clients", {
     params: {
       page: page - 1,
       pagesize,
       orderby,
+      search,
       filters: filters?.map((filter) => ({
         name: filter.name,
         value: filter.value,
@@ -118,9 +121,14 @@ export async function getClientOne(
   return product;
 }
 
-export function useClients({ pagesize, orderby, filters }: UseClientsProps) {
+export function useClients({
+  pagesize,
+  orderby,
+  filters,
+  search,
+}: UseClientsProps) {
   return useInfiniteQuery(
-    ["clients", pagesize, orderby, filters],
+    ["clients", pagesize, orderby, filters, search],
 
     ({ pageParam = 1 }) => {
       return getClients({
@@ -128,6 +136,7 @@ export function useClients({ pagesize, orderby, filters }: UseClientsProps) {
         pagesize,
         orderby,
         filters,
+        search,
       });
     },
     {

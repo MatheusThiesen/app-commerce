@@ -12,7 +12,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import Router from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
 import { useInView } from "react-intersection-observer";
 import {
@@ -21,6 +21,7 @@ import {
 } from "../../hooks/queries/useClients";
 import { Client } from "../Client";
 import { LoadingInfiniteScroll } from "../LoadingInfiniteScroll";
+import { Search } from "../Search";
 
 interface ModalSelectClientProps {
   isOpen: boolean;
@@ -34,10 +35,12 @@ export function ModalSelectClient({
   setClient,
 }: ModalSelectClientProps) {
   const { ref, inView } = useInView();
+  const [search, setSearch] = useState("");
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useClients({
       pagesize: 10,
+      search: search,
     });
 
   useEffect(() => {
@@ -67,7 +70,7 @@ export function ModalSelectClient({
 
                   setTimeout(() => {
                     onClose();
-                  }, 200);
+                  }, 500);
                 }}
                 display={"flex"}
                 alignItems="center"
@@ -80,6 +83,8 @@ export function ModalSelectClient({
             <Flex align="center" justify="center">
               <Text fontSize="2xl">Selecionar Cliente</Text>
             </Flex>
+
+            <Search setSearch={setSearch} search={search} />
           </Stack>
         </ModalHeader>
 

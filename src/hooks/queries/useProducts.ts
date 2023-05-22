@@ -6,9 +6,10 @@ import { setupAPIClient } from "../../service/api";
 import { api } from "../../service/apiClient";
 
 export type StockLocation = {
-  id: string;
+  id?: string;
   descricao: string;
-  quantidade: number;
+  periodo: string;
+  quantidade?: number;
 };
 
 export type Product = {
@@ -107,6 +108,7 @@ interface GetProductsProps {
   distinct?: "codigoAlternativo" | "referencia";
   filters?: ItemFilter[];
   isReport?: boolean;
+  search?: string;
 }
 
 type UseProductsProps = Omit<GetProductsProps, `page`>;
@@ -118,6 +120,7 @@ export async function getProducts({
   filters,
   distinct,
   isReport = false,
+  search,
 }: GetProductsProps): Promise<GetProductsResponse> {
   const { data } = await api.get<ProductApiResponse>("/products", {
     params: {
@@ -130,6 +133,7 @@ export async function getProducts({
         name: filter.name,
         value: filter.value,
       })),
+      search,
     },
   });
 
@@ -204,9 +208,10 @@ export function useProducts({
   orderby,
   filters,
   distinct,
+  search,
 }: UseProductsProps) {
   return useInfiniteQuery(
-    ["products", pagesize, orderby, filters, distinct],
+    ["products", pagesize, orderby, filters, distinct, search],
 
     ({ pageParam = 1 }) => {
       return getProducts({
@@ -215,6 +220,7 @@ export function useProducts({
         orderby,
         filters,
         distinct,
+        search,
       });
     },
     {
@@ -238,11 +244,11 @@ export function useProductOne(
 
 export const productsOrderBy = [
   {
-    name: "Maior Preços",
+    name: "Maior PDV",
     value: "precoVenda.desc",
   },
   {
-    name: "Menor Preços",
+    name: "Menor PDV",
     value: "precoVenda.asc",
   },
   {

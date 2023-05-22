@@ -6,18 +6,20 @@ import Link from "next/link";
 interface VariationsProductProps {
   variationsProduct: VariationsProduct[];
   currentReference: string;
+  uri: string;
 }
 
 export function VariationsProduct({
   variationsProduct,
   currentReference,
+  uri,
 }: VariationsProductProps) {
   const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
   return (
     <HStack spacing={1}>
       {variationsProduct?.map((variation) => (
         <Link
-          href={`/produtos/${variation.codigo}`}
+          href={`${uri}/${variation.codigo}`}
           key={variation.codigo}
           passHref
         >

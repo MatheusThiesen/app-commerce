@@ -24,10 +24,11 @@ import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { HeaderToList } from "../../components/HeaderToList";
 import { ListFilter, SelectedFilter } from "../../components/ListFilter";
 import { LoadingInfiniteScroll } from "../../components/LoadingInfiniteScroll";
+import { ModalFilter } from "../../components/ModalFilter";
 import { ModalOrderBy } from "../../components/ModalOrderBy";
-import { ModelFilter } from "../../components/ModelFilter";
 import { PanelLayout } from "../../components/PanelLayout";
 import { Product } from "../../components/Product";
+import { Search } from "../../components/Search";
 import { spaceImages } from "../../global/parameters";
 import {
   getProducts,
@@ -70,6 +71,7 @@ export default function Produtos({ me }: ProductsProps) {
 
   const { isOpen, onToggle } = useDisclosure();
 
+  const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<SelectedFilter[]>([]);
   const [groupProduct, setGroupProduct] = useState<
     undefined | "codigoAlternativo"
@@ -84,10 +86,11 @@ export default function Produtos({ me }: ProductsProps) {
 
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useProducts({
-      pagesize: 20,
+      pagesize: 40,
       orderby: orderBy,
       filters: filters,
       distinct: groupProduct ? "codigoAlternativo" : undefined,
+      search: search,
     });
 
   useEffect(() => {
@@ -260,6 +263,8 @@ export default function Produtos({ me }: ProductsProps) {
           display={["none", "none", "none", "flex"]}
           flexDirection="column"
         >
+          <Search mb="4" setSearch={setSearch} search={search} />
+
           <Flex
             justify="space-between"
             bg="white"
@@ -361,13 +366,37 @@ export default function Produtos({ me }: ProductsProps) {
         </Box>
       </PanelLayout>
 
-      <ModelFilter
+      <ModalFilter
         isOpen={isOpenFilter}
         onClose={onCloseFilter}
         dataFilters={dataFilters}
         filters={filters}
         setFilters={setFilters}
-      />
+      >
+        <>
+          <Search mb="4" setSearch={setSearch} search={search} />
+
+          <Flex
+            justify="space-between"
+            bg="white"
+            p="4"
+            mb="4"
+            borderRadius="md"
+          >
+            <Text fontWeight="bold">Agrupar produtos</Text>
+            <Switch
+              isChecked={!!groupProduct}
+              onChange={(e) =>
+                setGroupProduct(
+                  e.target.checked ? "codigoAlternativo" : undefined
+                )
+              }
+              size="lg"
+              colorScheme="red"
+            />
+          </Flex>
+        </>
+      </ModalFilter>
 
       <ModalOrderBy
         isOpen={isOpenOrderBy}
