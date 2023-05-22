@@ -86,7 +86,7 @@ export default function Produtos({ me }: ProductsProps) {
 
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useProducts({
-      pagesize: 40,
+      pagesize: 20,
       orderby: orderBy,
       filters: filters,
       distinct: groupProduct ? "codigoAlternativo" : undefined,
