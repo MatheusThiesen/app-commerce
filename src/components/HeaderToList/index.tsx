@@ -4,7 +4,7 @@ import { OrderBy, OrderByProps } from "../OrderBy";
 
 interface HeaderToListProps {
   title: string;
-  total: number;
+  total?: number;
   isLoading?: boolean;
   orderBy?: OrderByProps;
   children?: ReactNode;
@@ -33,7 +33,7 @@ export const HeaderToList = ({
 
       <Flex justifyContent="space-between" mt="1" mb="2">
         <Text fontSize="md" color="gray.600">
-          Total {total} resultados
+          {total && `Total ${total} resultados`}
         </Text>
 
         {orderBy && (

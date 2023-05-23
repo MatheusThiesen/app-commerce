@@ -91,14 +91,14 @@ type ProductApiResponse = {
   data: Product[];
   page: number;
   pagesize: number;
-  total: number;
+  hasNextPage: boolean;
 };
 
 type GetProductsResponse = {
   products: Omit<Product, "variacoes">[];
   page: number;
   pagesize: number;
-  total: number;
+  hasNextPage: boolean;
 };
 
 interface GetProductsProps {
@@ -159,8 +159,8 @@ export async function getProducts({
       })),
     })),
     pagesize: data.pagesize,
-    total: data.total,
     page: data.page,
+    hasNextPage: data.hasNextPage,
   };
 
   return response;
@@ -226,9 +226,7 @@ export function useProducts({
     {
       // getPreviousPageParam: (firstPage, allPages) => undefined,
       getNextPageParam: (lastPage) => {
-        const totalCount = lastPage.page * lastPage.pagesize;
-
-        if (totalCount >= lastPage.total) return undefined;
+        if (lastPage.hasNextPage) return undefined;
 
         return lastPage.page + 2;
       },

@@ -305,7 +305,6 @@ export default function Produtos({ me }: ProductsProps) {
           <HeaderToList
             title="Produtos"
             isLoading={isLoading}
-            total={data?.pages[data?.pages.length - 1].total ?? 0}
             orderBy={{
               onChange: setOrderBy,
               currentValue: orderBy,
