@@ -128,7 +128,7 @@ export async function getProducts({
       pagesize,
       orderby,
       distinct,
-      isReport,
+      isReport: isReport ? 1 : 0,
       filters: filters?.map((filter) => ({
         name: filter.name,
         value: filter.value,
