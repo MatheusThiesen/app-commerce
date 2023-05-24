@@ -17,7 +17,6 @@ import { useEffect, useRef, useState } from "react";
 import { IoBook } from "react-icons/io5";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
-import { FilterList } from "../../@types/api-queries";
 import { Me } from "../../@types/me";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
@@ -35,9 +34,9 @@ import {
   productsOrderBy,
   useProducts,
 } from "../../hooks/queries/useProducts";
+import { useProductsFilters } from "../../hooks/queries/useProductsFilters";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
 import { setupAPIClient } from "../../service/api";
-import { api } from "../../service/apiClient";
 import { exportXlsx } from "../../utils/exportXlsx";
 import { withSSRAuth } from "../../utils/withSSRAuth";
 
@@ -77,8 +76,6 @@ export default function Produtos({ me }: ProductsProps) {
     undefined | "codigoAlternativo"
   >();
   const [stockLocation, setStockLocation] = useState(false);
-  const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
-  const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
 
   const [orderBy, setOrderBy] = useState<string>(() => {
     return "precoVenda.desc";
@@ -93,14 +90,8 @@ export default function Produtos({ me }: ProductsProps) {
       search: search,
     });
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await api.get<FilterList[]>("/products/filters");
-      setDataFilters(data);
-
-      setIsLoadingFilters(false);
-    })();
-  }, []);
+  const { data: productsFilters, isLoading: isLoadingProductsFilters } =
+    useProductsFilters({});
 
   useEffect(() => {
     if (isActivatedCatalog && !isOpen) {
@@ -256,7 +247,7 @@ export default function Produtos({ me }: ProductsProps) {
         }
       />
 
-      <PanelLayout isLoading={isLoadingFilters}>
+      <PanelLayout isLoading={isLoadingProductsFilters}>
         <Flex
           w="22rem"
           mr="3rem"
@@ -288,9 +279,9 @@ export default function Produtos({ me }: ProductsProps) {
           <Box borderRadius="md">
             <FilterSelectedList filters={filters} setFilters={setFilters} />
 
-            {dataFilters && (
+            {productsFilters?.filters && (
               <ListFilter
-                filters={dataFilters}
+                filters={productsFilters.filters}
                 selectedFilter={filters}
                 onChangeSelectedFilter={(a) => {
                   setFilters(a);
@@ -368,7 +359,7 @@ export default function Produtos({ me }: ProductsProps) {
       <ModalFilter
         isOpen={isOpenFilter}
         onClose={onCloseFilter}
-        dataFilters={dataFilters}
+        dataFilters={productsFilters?.filters ?? []}
         filters={filters}
         setFilters={setFilters}
       >

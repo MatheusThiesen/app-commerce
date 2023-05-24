@@ -213,8 +213,8 @@ export function HeaderNavigationComponent({
             <Stack direction="row" h="full" spacing="10">
               {/* <NavLink href="/inicio">Início</NavLink> */}
               <NavLink href="/produtos">Produtos</NavLink>
-              {/* <NavLink href="/clientes">Clientes</NavLink>
-              <NavLink href="/pedidos">Pedidos</NavLink> */}
+              <NavLink href="/clientes">Clientes</NavLink>
+              {/* <NavLink href="/pedidos">Pedidos</NavLink> */}
             </Stack>
           )}
 

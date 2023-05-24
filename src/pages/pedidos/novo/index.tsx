@@ -13,7 +13,6 @@ import Router from "next/router";
 import { useEffect, useState } from "react";
 import { ImExit } from "react-icons/im";
 import { useInView } from "react-intersection-observer";
-import { FilterList } from "../../../@types/api-queries";
 import { Me } from "../../../@types/me";
 import { FilterSelectedList } from "../../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../../components/HeaderNavigation";
@@ -32,8 +31,8 @@ import {
   productsOrderBy,
   useProducts,
 } from "../../../hooks/queries/useProducts";
+import { useProductsFilters } from "../../../hooks/queries/useProductsFilters";
 import { setupAPIClient } from "../../../service/api";
-import { api } from "../../../service/apiClient";
 import { withSSRAuth } from "../../../utils/withSSRAuth";
 
 interface OrderProps {
@@ -59,8 +58,6 @@ export default function Order({ me }: OrderProps) {
     onClose: onCloseOrder,
   } = useDisclosure();
 
-  const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
-  const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
   const [filters, setFilters] = useState<SelectedFilter[]>([]);
   const [orderBy, setOrderBy] = useState<string>(() => {
     return "precoVenda.desc";
@@ -87,32 +84,21 @@ export default function Order({ me }: OrderProps) {
       distinct: groupProduct ? "codigoAlternativo" : undefined,
     });
 
-  useEffect(() => {
-    (async () => {
-      setIsLoadingFilters(true);
-
-      const { data } = await api.get<FilterList[]>("/products/filters", {
-        params: {
-          filters: [
-            ...filters,
-            {
-              value: client?.codigo ?? 0,
-              name: "clientCod",
-              field: "clientCod",
-            },
-            {
-              value: priceList?.codigo ?? 0,
-              name: "priceListCod",
-              field: "priceListCod",
-            },
-          ],
+  const { data: productsFilters, isLoading: isLoadingProductsFilters } =
+    useProductsFilters({
+      filters: [
+        {
+          value: client?.codigo ?? 0,
+          name: "clientCod",
+          field: "clientCod",
         },
-      });
-      setDataFilters(data);
-
-      setIsLoadingFilters(false);
-    })();
-  }, [client, priceList]);
+        {
+          value: priceList?.codigo ?? 0,
+          name: "priceListCod",
+          field: "priceListCod",
+        },
+      ],
+    });
 
   useEffect(() => {
     if (inView && hasNextPage) {
@@ -212,7 +198,7 @@ export default function Order({ me }: OrderProps) {
       />
 
       <PanelLayout
-        isLoading={isLoadingFilters}
+        isLoading={isLoadingProductsFilters}
         pt={["8rem", "8rem", "8rem", "7rem"]}
       >
         <Flex
@@ -244,9 +230,9 @@ export default function Order({ me }: OrderProps) {
           <Box borderRadius="md">
             <FilterSelectedList filters={filters} setFilters={setFilters} />
 
-            {dataFilters && (
+            {productsFilters?.filters && (
               <ListFilter
-                filters={dataFilters}
+                filters={productsFilters?.filters}
                 selectedFilter={filters}
                 onChangeSelectedFilter={(a) => {
                   setFilters(a);
@@ -323,7 +309,7 @@ export default function Order({ me }: OrderProps) {
       <ModalFilter
         isOpen={isOpenFilter}
         onClose={onCloseFilter}
-        dataFilters={dataFilters}
+        dataFilters={productsFilters?.filters ?? []}
         filters={filters}
         setFilters={setFilters}
       />
