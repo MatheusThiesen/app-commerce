@@ -333,8 +333,8 @@ export default function Produtos({ me }: ProductsProps) {
                           uri: `${spaceImages}/Produtos/${
                             product.imagens && product.imagens[0]
                               ? product.imagens[0].nome
-                              : product.referencia
-                          }_01`,
+                              : product.referencia + "_01"
+                          }`,
                         }}
                       />
                     </Box>
@@ -352,8 +352,8 @@ export default function Produtos({ me }: ProductsProps) {
                         uri: `${spaceImages}/Produtos/${
                           product.imagens && product.imagens[0]
                             ? product.imagens[0].nome
-                            : product.referencia
-                        }_01`,
+                            : product.referencia + "_01"
+                        }`,
                       }}
                     />
                   )
