@@ -33,7 +33,7 @@ export default function Catalog({ me }: CatalogProps) {
   const router = useRouter();
   const { id } = router.query;
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useCatalog({ id: String(id), pagesize: 5 });
+    useCatalog({ id: String(id), pagesize: 10 });
 
   useEffect(() => {
     if (id && String(id) !== catalogId) {

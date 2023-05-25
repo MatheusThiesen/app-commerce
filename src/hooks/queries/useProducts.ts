@@ -226,7 +226,7 @@ export function useProducts({
     {
       // getPreviousPageParam: (firstPage, allPages) => undefined,
       getNextPageParam: (lastPage) => {
-        if (lastPage.hasNextPage) return undefined;
+        if (!lastPage.hasNextPage) return undefined;
 
         return lastPage.page + 2;
       },

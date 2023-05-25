@@ -16,7 +16,7 @@ export type CatalogApiResponse = {
   dateToString: string;
   page: number;
   pagesize: number;
-  total: number;
+  hasNextPage: boolean;
 
   isError?: boolean;
   error?: string;
@@ -79,7 +79,7 @@ export async function getCatalog({ id, page, pagesize }: getCatalogProps) {
       dateToString: "",
       page: 0,
       pagesize: 0,
-      total: 0,
+      hasNextPage: false,
       isError: true,
       error:
         "Desculpe, ocorreu um erro interno ao gerar catálogo, entre em contato com suporte (51) 3441-1000",
@@ -100,9 +100,7 @@ export function useCatalog({ id, pagesize }: UseCatalogProps) {
     {
       // getPreviousPageParam: (firstPage, allPages) => undefined,
       getNextPageParam: (lastPage) => {
-        const totalCount = lastPage?.page * lastPage?.pagesize;
-
-        if (totalCount >= lastPage?.total) return undefined;
+        if (!lastPage.hasNextPage) return undefined;
 
         return lastPage.page + 2;
       },
