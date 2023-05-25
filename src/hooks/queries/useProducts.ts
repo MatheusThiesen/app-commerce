@@ -32,6 +32,9 @@ export type Product = {
   precoVendaEmpresa: number;
   precoVendaEmpresaFormat: string;
   locaisEstoque?: StockLocation[];
+  imagens?: {
+    nome: string;
+  }[];
   marca: {
     codigo: number;
     descricao: string;

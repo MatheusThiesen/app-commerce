@@ -330,7 +330,11 @@ export default function Produtos({ me }: ProductsProps) {
                           descriptionAdditional: product.descricaoAdicional,
                           reference: product.referencia,
                           amount: `PDV ${product.precoVendaFormat}`,
-                          uri: `${spaceImages}/Produtos/${product.referencia}_01`,
+                          uri: `${spaceImages}/Produtos/${
+                            product.imagens && product.imagens[0]
+                              ? product.imagens[0].nome
+                              : product.referencia
+                          }_01`,
                         }}
                       />
                     </Box>
@@ -345,7 +349,11 @@ export default function Produtos({ me }: ProductsProps) {
                         descriptionAdditional: product.descricaoAdicional,
                         reference: product.referencia,
                         amount: `PDV ${product.precoVendaFormat}`,
-                        uri: `${spaceImages}/Produtos/${product.referencia}_01`,
+                        uri: `${spaceImages}/Produtos/${
+                          product.imagens && product.imagens[0]
+                            ? product.imagens[0].nome
+                            : product.referencia
+                        }_01`,
                       }}
                     />
                   )
