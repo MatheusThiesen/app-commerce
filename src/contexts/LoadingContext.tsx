@@ -1,9 +1,10 @@
 import { Center, Spinner } from "@chakra-ui/react";
 import {
-  createContext,
   Dispatch,
   ReactNode,
   SetStateAction,
+  createContext,
+  useContext,
   useState,
 } from "react";
 
@@ -47,4 +48,4 @@ export function LoadingProvider({ children }: AuthProviderProps) {
   );
 }
 
-export const useLoading = () => null;
+export const useLoading = () => useContext(LoadingContext);

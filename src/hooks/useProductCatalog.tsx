@@ -30,6 +30,7 @@ import { IoBook } from "react-icons/io5";
 import { RxClipboardCopy } from "react-icons/rx";
 
 import { SelectedFilter } from "../components/ListFilter";
+import { useLoading } from "../contexts/LoadingContext";
 import { api } from "../service/apiClient";
 import { getProducts } from "./queries/useProducts";
 
@@ -71,6 +72,7 @@ export function ProductCatalogProvider({
   const toast = useToast();
   const toastIdRef = useRef();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { setLoading } = useLoading();
 
   const [productsSelected, setProductsSelected] = useState<
     CatalogProductProps[]
@@ -159,6 +161,8 @@ export function ProductCatalogProvider({
     orderby: string,
     groupProduct: boolean
   ) {
+    setLoading(true);
+
     const responseProducts = await getProducts({
       page: 1,
       filters: filters,
@@ -174,6 +178,8 @@ export function ProductCatalogProvider({
     setProductsSelected(
       normalizedProducts.filter((f) => !productsSelected.includes(f))
     );
+
+    setLoading(false);
   }
 
   function handleCopyClipboard() {
