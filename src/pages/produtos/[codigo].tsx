@@ -27,6 +27,7 @@ import { Me } from "../../@types/me";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductCarousel } from "../../components/ProductCarousel";
 import { VariationsProduct } from "../../components/VariationsProduct";
+import { useLoading } from "../../contexts/LoadingContext";
 import { useProductOne } from "../../hooks/queries/useProducts";
 import { useImagesProduct } from "../../hooks/useImagesProduct";
 import { setupAPIClient } from "../../service/api";
@@ -42,6 +43,7 @@ export default function Produto(props: ProdutoProps) {
   const [images, setImages] = useState<string[]>([]);
 
   const { data: product, isLoading } = useProductOne(Number(codigo));
+  const { setLoading } = useLoading();
 
   useEffect(() => {
     (async () => {
@@ -51,6 +53,8 @@ export default function Produto(props: ProdutoProps) {
         });
 
         setImages(getImages ?? [""]);
+
+        setLoading(false);
       }
     })();
   }, [product]);
@@ -76,6 +80,7 @@ export default function Produto(props: ProdutoProps) {
           variationsProduct={product.variacoes}
           currentReference={product?.referencia ?? ""}
           uri={`/produtos`}
+          onClick={() => setLoading(true)}
         />
       )}
 
@@ -90,7 +95,10 @@ export default function Produto(props: ProdutoProps) {
             value: product?.codigo,
             label: product?.descricaoAdicional,
           }}
-          onChange={(e) => router.push(`/produtos/${e?.value}`)}
+          onChange={(e) => {
+            setLoading(true);
+            router.push(`/produtos/${e?.value}`);
+          }}
         />
       </Box>
       <TableContainer mt="6" w="70%">
