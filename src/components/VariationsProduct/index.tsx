@@ -7,16 +7,18 @@ interface VariationsProductProps {
   variationsProduct: VariationsProduct[];
   currentReference: string;
   uri: string;
+  onClick?: () => void;
 }
 
 export function VariationsProduct({
   variationsProduct,
   currentReference,
   uri,
+  onClick,
 }: VariationsProductProps) {
   const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
   return (
-    <HStack spacing={1}>
+    <HStack spacing={1} overflow="auto">
       {variationsProduct?.map((variation) => (
         <Link
           href={`${uri}/${variation.codigo}`}
@@ -26,9 +28,10 @@ export function VariationsProduct({
           <Box
             as="a"
             w="4rem"
+            minW="4rem"
             h="4rem"
             borderRadius="md"
-            // onClick={() => setImages([])}
+            onClick={onClick && onClick}
             cursor={
               currentReference === variation.referencia ? "auto" : "pointer"
             }
@@ -45,7 +48,11 @@ export function VariationsProduct({
               w="full"
               h="full"
               objectFit="contain"
-              src={`${spaceImages}/Produtos/${variation.referencia}_01`}
+              src={`${spaceImages}/Produtos/${
+                variation.imagens && variation.imagens[0]
+                  ? variation.imagens[0].nome
+                  : variation.referencia + "_01"
+              }`}
               alt={variation.descricao}
               onError={({ currentTarget }) => {
                 currentTarget.onerror = null; // prevents looping

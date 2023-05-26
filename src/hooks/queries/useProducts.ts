@@ -88,6 +88,10 @@ export interface VariationsProduct {
   codigoAlternativo: number;
   referencia: string;
   descricao: string;
+
+  imagens?: {
+    nome: string;
+  }[];
 }
 
 type ProductApiResponse = {
