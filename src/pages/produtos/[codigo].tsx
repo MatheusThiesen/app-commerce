@@ -3,7 +3,6 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
-  Link as CharkraLink,
   Divider,
   Flex,
   Spinner,
@@ -203,11 +202,14 @@ export default function Produto(props: ProdutoProps) {
                 align="center"
                 display={["none", "none", "none", "flex"]}
               >
-                <Link href="/produtos">
-                  <CharkraLink h="full" color="gray.600">
-                    Voltar à listagem
-                  </CharkraLink>
-                </Link>
+                <Box
+                  onClick={() => router.back()}
+                  h="full"
+                  color="gray.600"
+                  cursor="pointer"
+                >
+                  Voltar à listagem
+                </Box>
 
                 <Divider h="1rem" mx="2" orientation="vertical" />
 
@@ -249,23 +251,17 @@ export default function Produto(props: ProdutoProps) {
                   w={["100%", "100%", "100%", "65%"]}
                   pr={["0", "0", "0", "2"]}
                 >
-                  {images.length <= 0 ? (
-                    <Flex h="26rem" w="full" justify="center" align="center">
-                      <Spinner ml={["0", "0", "0", "4"]} size="xl" />
-                    </Flex>
-                  ) : (
-                    <ProductCarousel
-                      bg="white"
-                      h="26rem"
-                      banners={
-                        images?.map((image, index) => ({
-                          id: index.toString(),
-                          name: product?.descricao ?? "-",
-                          uri: image,
-                        })) ?? []
-                      }
-                    />
-                  )}
+                  <ProductCarousel
+                    bg="white"
+                    h="26rem"
+                    banners={
+                      images?.map((image, index) => ({
+                        id: index.toString(),
+                        name: product?.descricao ?? "-",
+                        uri: image,
+                      })) ?? []
+                    }
+                  />
 
                   <Box display={["block", "block", "block", "none"]} p="1rem">
                     <InfoProduct />

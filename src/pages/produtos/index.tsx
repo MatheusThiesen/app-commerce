@@ -13,6 +13,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { IoBook } from "react-icons/io5";
 import { SiMicrosoftexcel } from "react-icons/si";
@@ -28,6 +29,7 @@ import { ModalOrderBy } from "../../components/ModalOrderBy";
 import { PanelLayout } from "../../components/PanelLayout";
 import { Product } from "../../components/Product";
 import { Search } from "../../components/Search";
+import { useLoading } from "../../contexts/LoadingContext";
 import { spaceImages } from "../../global/parameters";
 import {
   getProducts,
@@ -36,6 +38,11 @@ import {
 } from "../../hooks/queries/useProducts";
 import { useProductsFilters } from "../../hooks/queries/useProductsFilters";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
+import { useQueryParams } from "../../hooks/useQueryParams";
+import {
+  queryParamsToFiltersNormalized,
+  useQueryParamsFilterList,
+} from "../../hooks/useQueryParamsFilterList";
 import { setupAPIClient } from "../../service/api";
 import { exportXlsx } from "../../utils/exportXlsx";
 import { withSSRAuth } from "../../utils/withSSRAuth";
@@ -48,6 +55,8 @@ export default function Produtos({ me }: ProductsProps) {
   const { ref, inView } = useInView();
   const toast = useToast();
   const toastIdRef = useRef();
+  const router = useRouter();
+  const { setLoading } = useLoading();
 
   const {
     isActivated: isActivatedCatalog,
@@ -70,18 +79,34 @@ export default function Produtos({ me }: ProductsProps) {
 
   const { isOpen, onToggle } = useDisclosure();
 
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<SelectedFilter[]>([]);
-  const [groupProduct, setGroupProduct] = useState<
-    undefined | "codigoAlternativo"
-  >();
-  const [stockLocation, setStockLocation] = useState(false);
+  const { setQueryParams } = useQueryParams({ router });
 
-  const [orderBy, setOrderBy] = useState<string>(() => {
-    return "precoVenda.desc";
+  const [search, setSearch] = useState<string>(() => {
+    return router.query.search ? String(router.query.search) : "";
   });
 
-  const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
+  const [orderBy, setOrderBy] = useState<string>(() => {
+    return router.query.orderby
+      ? String(router.query.orderby)
+      : "precoVenda.desc";
+  });
+
+  const [filters, setFilters] = useState<SelectedFilter[]>(() => {
+    return queryParamsToFiltersNormalized(router.query);
+  });
+  const [groupProduct, setGroupProduct] = useState<
+    undefined | string | "codigoAlternativo"
+  >(() => {
+    return router.query.distinct ? String(router.query.distinct) : "";
+  });
+  const [stockLocation, setStockLocation] = useState(false);
+
+  useQueryParamsFilterList({
+    router,
+    filters,
+  });
+
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useProducts({
       pagesize: 40,
       orderby: orderBy,
@@ -107,6 +132,23 @@ export default function Produtos({ me }: ProductsProps) {
       fetchNextPage();
     }
   }, [inView, fetchNextPage, hasNextPage]);
+
+  useEffect(() => {
+    setQueryParams({ type: "set", data: { field: "orderby", value: orderBy } });
+  }, [orderBy]);
+  useEffect(() => {
+    setQueryParams({ type: "set", data: { field: "search", value: search } });
+  }, [search]);
+  useEffect(() => {
+    setQueryParams({
+      type: "set",
+      data: { field: "distinct", value: groupProduct },
+    });
+  }, [groupProduct]);
+
+  useEffect(() => {
+    setLoading(isLoading);
+  }, [isLoading]);
 
   async function handleExportList() {
     //@ts-ignore
@@ -312,10 +354,7 @@ export default function Produtos({ me }: ProductsProps) {
             </Button>
           </HeaderToList>
 
-          <LoadingInfiniteScroll
-            isLoading={isLoading}
-            isLoadingNextPage={isFetchingNextPage}
-          >
+          <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
             <SimpleGrid columns={[2, 2, 3, 4]} spacing="1" mb="1rem">
               {data?.pages.map((page) =>
                 page?.products.map((product, i) =>
@@ -336,26 +375,29 @@ export default function Produtos({ me }: ProductsProps) {
                               : product.referencia + "_01"
                           }`,
                         }}
+                        onClickProduct={() => setLoading(true)}
                       />
                     </Box>
                   ) : (
-                    <Product
-                      key={product.codigo}
-                      isCatalog
-                      href="produtos"
-                      product={{
-                        cod: product.codigo,
-                        name: product.descricao,
-                        descriptionAdditional: product.descricaoAdicional,
-                        reference: product.referencia,
-                        amount: `PDV ${product.precoVendaFormat}`,
-                        uri: `${spaceImages}/Produtos/${
-                          product.imagens && product.imagens[0]
-                            ? product.imagens[0].nome
-                            : product.referencia + "_01"
-                        }`,
-                      }}
-                    />
+                    <Box key={product.codigo}>
+                      <Product
+                        isCatalog
+                        href="produtos"
+                        product={{
+                          cod: product.codigo,
+                          name: product.descricao,
+                          descriptionAdditional: product.descricaoAdicional,
+                          reference: product.referencia,
+                          amount: `PDV ${product.precoVendaFormat}`,
+                          uri: `${spaceImages}/Produtos/${
+                            product.imagens && product.imagens[0]
+                              ? product.imagens[0].nome
+                              : product.referencia + "_01"
+                          }`,
+                        }}
+                        onClickProduct={() => setLoading(true)}
+                      />
+                    </Box>
                   )
                 )
               )}

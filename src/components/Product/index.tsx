@@ -18,12 +18,14 @@ interface ProductComponentProps {
   product: ProductProps;
   isCatalog?: boolean;
   href: string;
+  onClickProduct?: () => void;
 }
 
 export function ProductComponent({
   product,
   isCatalog,
   href,
+  onClickProduct,
 }: ProductComponentProps) {
   const { productsSelected, onRemoveProduct, onSelectedProduct } =
     useProductCatalog();
@@ -94,7 +96,13 @@ export function ProductComponent({
           </Button>
         </Box> */}
         <Link href={`/${href}/${cod}`} passHref>
-          <Box as="a" w="100%">
+          <Box
+            as="a"
+            w="100%"
+            onClick={() => {
+              if (onClickProduct) onClickProduct();
+            }}
+          >
             <Flex w="full" flexDirection="column" align="center">
               <Image
                 height="10rem"

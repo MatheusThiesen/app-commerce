@@ -1,39 +1,44 @@
-import React from "react";
+import { NextRouter } from "next/router";
 
 type SetQueryParamsParams = {
   data: {
     field: string;
     value?: string | string[];
   };
-  type: "append" | "set" | "delete";
-  history: any;
+  type: "set" | "delete";
 };
 
-export function useQueryParams() {
-  function getQueryParams() {
-    const search = "";
+type useQueryParamsProps = {
+  router: NextRouter;
+};
 
-    return React.useMemo(() => new URLSearchParams(search), [search]);
+export function useQueryParams({ router }: useQueryParamsProps) {
+  function getQueryParams(key: string) {
+    return router.query[key];
   }
 
-  function setQueryParams({ data, type, history }: SetQueryParamsParams) {
-    const params = new URLSearchParams(history?.location?.search);
+  function setQueryParams({ data, type }: SetQueryParamsParams) {
+    const queryNormalized = router.query as any;
 
     const { field, value } = data;
 
-    if (value) {
-      if (typeof value === "string") {
-        params[type](field, value);
+    if (type === "set") {
+      if (value) {
+        queryNormalized[field] = value;
       } else {
-        value.forEach((item) => {
-          params[type](field, item);
-        });
+        delete queryNormalized[field];
       }
     }
 
-    if (type === "delete") params.delete(field);
+    if (type === "delete") delete queryNormalized[field];
 
-    history.push({ search: params.toString() });
+    router.replace(
+      {
+        query: queryNormalized,
+      },
+      undefined,
+      { scroll: false }
+    );
   }
 
   return {
