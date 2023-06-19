@@ -508,7 +508,7 @@ export default function Produtos({ me }: ProductsProps) {
                     onClick={() =>
                       onGenerateCatalog({
                         orderBy: orderBy,
-                        groupProduct: groupProduct !== undefined,
+                        groupProduct: groupProduct  === 'codigoAlternativo',
                         stockLocation: stockLocation,
                         filters: JSON.stringify(
                           filters.filter((f) =>
