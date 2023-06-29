@@ -28,6 +28,7 @@ export function setupAPIClient(
       Authorization: `Bearer ${cookies["nextauth.token"]}`,
     },
     httpsAgent: agent,
+    timeout: 300000,
   });
 
   api.interceptors.response.use(
