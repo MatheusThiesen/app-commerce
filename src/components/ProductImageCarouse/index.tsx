@@ -1,9 +1,12 @@
-import { Box, BoxProps, Image } from "@chakra-ui/react";
-import { Lazy, Pagination } from "swiper";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+
+import { Navigation, Pagination } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
+
+import { Box, BoxProps, Image } from "@chakra-ui/react";
+import { defaultNoImage } from "../../global/parameters";
 import styles from "./style.module.scss";
 
 interface Banner {
@@ -16,16 +19,18 @@ interface BannerCarouselProps extends BoxProps {
   banners: Banner[];
 }
 
-export function ProductCarousel({ banners, ...rest }: BannerCarouselProps) {
+export function ProductImageCarouse({ banners, ...rest }: BannerCarouselProps) {
   return (
     <Box bg="#fff" {...rest}>
       <Swiper
-        spaceBetween={30}
+        spaceBetween={50}
         centeredSlides={true}
         pagination={{
           clickable: true,
         }}
-        modules={[Pagination, Lazy]}
+        navigation={true}
+        rewind={true}
+        modules={[Pagination, Navigation]}
         className={styles["container-carousel-product"]}
       >
         {banners.map((banner) => (
@@ -38,8 +43,7 @@ export function ProductCarousel({ banners, ...rest }: BannerCarouselProps) {
               src={banner.uri}
               onError={({ currentTarget }) => {
                 currentTarget.onerror = null; // prevents looping
-                currentTarget.src =
-                  "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
+                currentTarget.src = defaultNoImage;
               }}
             />
           </SwiperSlide>

@@ -25,6 +25,8 @@ export function BottomNavigationProvider({
     "/clientes/[codigo]",
     "/pedidos/novo/produtos/[codigo]",
     "/pedidos/novo",
+    "/catalogo/[id]",
+    "/conta",
   ].includes(router.pathname);
 
   return (

@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Link as ChakraLink,
   Flex,
   Icon,
   Spinner,
@@ -10,7 +9,6 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import Head from "next/head";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { IoMdAddCircle } from "react-icons/io";
 import { SiMicrosoftexcel } from "react-icons/si";
@@ -131,7 +129,6 @@ export default function Orders({ me }: OrdersProps) {
     return "codigo.desc";
   });
 
-  const { setClient, setPriceList } = useStore();
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useClients({
       pagesize: 10,
@@ -148,10 +145,7 @@ export default function Orders({ me }: OrdersProps) {
     })();
   }, []);
 
-  function handleCreateOrder() {
-    setClient({} as any);
-    setPriceList({} as any);
-  }
+  const { createOrder } = useStore();
 
   return (
     <>
@@ -163,11 +157,15 @@ export default function Orders({ me }: OrdersProps) {
         user={{ name: me?.email }}
         title="Pedidos"
         Right={
-          <Link href={`/pedidos/novo`} passHref>
-            <ChakraLink mr="4" onClick={handleCreateOrder}>
-              <IoMdAddCircle color="white" fontSize={"1.8rem"} />
-            </ChakraLink>
-          </Link>
+          <Button
+            onClick={createOrder}
+            variant="unstyled"
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <IoMdAddCircle color="white" fontSize={"1.8rem"} />
+          </Button>
         }
         contentHeight={2.5}
         content={
@@ -265,16 +263,12 @@ export default function Orders({ me }: OrdersProps) {
                         ml="-1"
                       />
                     </Button>
-                    <Button type="button" ml="2" onClick={handleCreateOrder}>
-                      <Link href={`/pedidos/novo`} passHref>
-                        <ChakraLink>
-                          <Icon
-                            as={IoMdAddCircle}
-                            color="red.500"
-                            fontSize={"1.8rem"}
-                          />
-                        </ChakraLink>
-                      </Link>
+                    <Button type="button" ml="2" onClick={createOrder}>
+                      <Icon
+                        as={IoMdAddCircle}
+                        color="red.500"
+                        fontSize={"1.8rem"}
+                      />
                     </Button>
                   </Text>
 

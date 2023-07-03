@@ -4,7 +4,6 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Button,
-  Link as CharkraLink,
   Divider,
   Flex,
   Spinner,
@@ -15,6 +14,7 @@ import {
   Text,
   Tr,
   useNumberInput,
+  useToast,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
@@ -25,8 +25,9 @@ import ReactSelect from "react-select";
 import { Me } from "../../../../@types/me";
 import { InputQuantity } from "../../../../components/Form/InputQuantity";
 import { HeaderNavigation } from "../../../../components/HeaderNavigation";
-import { ProductCarousel } from "../../../../components/ProductCarousel";
+import { ProductImageCarouse } from "../../../../components/ProductImageCarouse";
 import { VariationsProduct } from "../../../../components/VariationsProduct";
+import { useLoading } from "../../../../contexts/LoadingContext";
 import { useStore } from "../../../../contexts/StoreContext";
 import {
   StockLocation,
@@ -42,6 +43,9 @@ interface ProdutoProps {
 
 export default function Produto(props: ProdutoProps) {
   const router = useRouter();
+  const { setLoading } = useLoading();
+  const toast = useToast();
+
   const { codigo } = router.query;
   const [images, setImages] = useState<string[]>([]);
   const [stockLocationSelected, setStockLocationSelected] = useState<
@@ -50,18 +54,24 @@ export default function Produto(props: ProdutoProps) {
 
   const { data: product, isLoading } = useProductOne(Number(codigo));
 
-  const { priceList } = useStore();
+  const { priceList, addItem, getStockProduct } = useStore();
 
   const {
     getInputProps: inputQuantityInputProps,
     getIncrementButtonProps: inputQuantityIncrementButtonProps,
     getDecrementButtonProps: inputQuantityDecrementButtonProps,
-    value: quantity,
+    valueAsNumber: quantity,
   } = useNumberInput({
     step: product?.qtdEmbalagem ?? 0,
-    defaultValue: product?.qtdEmbalagem ?? 0,
-    min: product?.qtdEmbalagem ?? 0,
-    max: 120,
+    defaultValue:
+      product && stockLocationSelected
+        ? getStockProduct({
+            product,
+            stockLocationPeriod: stockLocationSelected?.periodo,
+          })
+        : 0,
+    min: 0,
+    max: stockLocationSelected?.quantidade ?? 0,
   });
 
   useEffect(() => {
@@ -72,14 +82,40 @@ export default function Produto(props: ProdutoProps) {
         });
 
         setImages(getImages ?? [""]);
+        setLoading(false);
+        setStockLocationSelected(undefined);
       }
     })();
   }, [product]);
 
+  async function handleAddProductStore() {
+    if (!product || !stockLocationSelected) {
+      return toast({
+        title: "Informe o produto e disponibilidade",
+        status: "warning",
+        position: "top",
+        isClosable: true,
+      });
+    }
+
+    addItem({
+      product,
+      qtd: quantity,
+      stockLocation: stockLocationSelected,
+    });
+
+    return toast({
+      title: "Produto adicionado no carrinho",
+      status: "success",
+      position: "top",
+      isClosable: true,
+    });
+  }
+
   const InfoProduct = () => {
     return (
       <>
-        <Text as="span" fontSize="2xl" fontWeight="medium">
+        <Text as="span" fontSize="3xl" fontWeight="medium">
           {product?.listaPreco?.find(
             (f) => Number(f.codigo) === Number(priceList?.codigo)
           )?.valorFormat ?? "-"}
@@ -100,6 +136,7 @@ export default function Produto(props: ProdutoProps) {
             variationsProduct={product.variacoes}
             currentReference={product?.referencia ?? ""}
             uri={`/pedidos/novo/produtos`}
+            onClick={() => setLoading(true)}
           />
         )}
 
@@ -115,9 +152,10 @@ export default function Produto(props: ProdutoProps) {
                 value: product?.codigo,
                 label: product?.descricaoAdicional,
               }}
-              onChange={(e) =>
-                router.push(`/pedidos/novo/produtos/${e?.value}`)
-              }
+              onChange={(e) => {
+                setLoading(true);
+                router.push(`/pedidos/novo/produtos/${e?.value}`);
+              }}
             />
           </Box>
           <Box>
@@ -128,12 +166,13 @@ export default function Produto(props: ProdutoProps) {
                 value: localEstoque.periodo,
                 label: localEstoque.descricao,
               }))}
-              onChange={(e) =>
-                setStockLocationSelected({
-                  periodo: e?.value ?? "",
-                  descricao: e?.label ?? "",
-                })
-              }
+              onChange={(e) => {
+                const findStockLocation = product?.locaisEstoque?.find(
+                  (f) => String(f.periodo) === String(e?.value)
+                );
+
+                setStockLocationSelected(findStockLocation);
+              }}
               value={
                 stockLocationSelected
                   ? {
@@ -152,15 +191,18 @@ export default function Produto(props: ProdutoProps) {
                 decrementButtonProps={inputQuantityDecrementButtonProps}
               />
               <Text
-                mt="4"
+                mt="1"
                 as={"span"}
                 fontSize="sm"
                 fontWeight="light"
                 color="gray.500"
+                display="block"
+                textAlign="center"
               >
-                128 disponível
+                {stockLocationSelected?.quantidade
+                  ? `${stockLocationSelected?.quantidade} disponível`
+                  : "-"}
               </Text>
-              {/* <Text>Ultimo disponível</Text> */}
             </Box>
           )}
         </Stack>
@@ -170,8 +212,13 @@ export default function Produto(props: ProdutoProps) {
           mt="6"
           size="lg"
           w="full"
-          aria-disabled={!stockLocationSelected}
-          disabled={!stockLocationSelected}
+          aria-disabled={!stockLocationSelected || !(Number(quantity) > 0)}
+          disabled={!stockLocationSelected || !(Number(quantity) > 0)}
+          onClick={() =>
+            !stockLocationSelected || !(Number(quantity) > 0)
+              ? () => {}
+              : handleAddProductStore()
+          }
         >
           Adicionar ao carrinho
         </Button>
@@ -217,11 +264,15 @@ export default function Produto(props: ProdutoProps) {
                 align="center"
                 display={["none", "none", "none", "flex"]}
               >
-                <Link href="/produtos">
-                  <CharkraLink h="full" color="gray.600">
-                    Voltar à listagem
-                  </CharkraLink>
-                </Link>
+                <Button
+                  onClick={() => router.back()}
+                  h="full"
+                  color="gray.600"
+                  cursor="pointer"
+                  variant="link"
+                >
+                  Voltar à listagem
+                </Button>
 
                 <Divider h="1rem" mx="2" orientation="vertical" />
 
@@ -268,7 +319,7 @@ export default function Produto(props: ProdutoProps) {
                       <Spinner ml={["0", "0", "0", "4"]} size="xl" />
                     </Flex>
                   ) : (
-                    <ProductCarousel
+                    <ProductImageCarouse
                       bg="white"
                       h="26rem"
                       banners={

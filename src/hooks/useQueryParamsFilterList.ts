@@ -25,7 +25,7 @@ export function queryParamsToFiltersNormalized(query: ParsedUrlQuery) {
           filterNormalized.push({
             name: key,
             field: field,
-            value: valueSplit,
+            value: isNaN(Number(valueSplit)) ? valueSplit : Number(valueSplit),
           });
         } else {
           const valueArr = value as string[];
@@ -36,7 +36,9 @@ export function queryParamsToFiltersNormalized(query: ParsedUrlQuery) {
             filterNormalized.push({
               name: key,
               field: field,
-              value: valueSplit,
+              value: isNaN(Number(valueSplit))
+                ? valueSplit
+                : Number(valueSplit),
             });
           });
         }

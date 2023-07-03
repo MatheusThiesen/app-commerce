@@ -244,7 +244,9 @@ export function useProductOne(
   codigo: number,
   ctx: GetServerSidePropsContext | undefined = undefined
 ) {
-  return useQuery(["product", codigo], () => getProductOne(codigo, ctx), {});
+  return useQuery(["product", codigo], () => getProductOne(codigo, ctx), {
+    refetchOnWindowFocus: false,
+  });
 }
 
 export const productsOrderBy = [

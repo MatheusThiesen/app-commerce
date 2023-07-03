@@ -1,4 +1,9 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
   Button,
   Flex,
@@ -9,22 +14,25 @@ import {
 } from "@chakra-ui/react";
 
 import Head from "next/head";
-import Router from "next/router";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ImExit } from "react-icons/im";
 import { useInView } from "react-intersection-observer";
 import { Me } from "../../../@types/me";
+import { DrawerList } from "../../../components/DrawerList";
 import { FilterSelectedList } from "../../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../../components/HeaderNavigation";
 import { HeaderToList } from "../../../components/HeaderToList";
 import { ListFilter, SelectedFilter } from "../../../components/ListFilter";
 import { LoadingInfiniteScroll } from "../../../components/LoadingInfiniteScroll";
 import { ModalFilter } from "../../../components/ModalFilter";
-import { ModalList } from "../../../components/ModalList";
 import { ModalOrderBy } from "../../../components/ModalOrderBy";
 import { PanelLayout } from "../../../components/PanelLayout";
 import { Product } from "../../../components/Product";
+import { ProductStore } from "../../../components/ProductStore";
+import { Search } from "../../../components/Search";
 import { ShoppingButton } from "../../../components/ShoppingButton";
+import { useLoading } from "../../../contexts/LoadingContext";
 import { useStore } from "../../../contexts/StoreContext";
 import { spaceImages } from "../../../global/parameters";
 import {
@@ -32,6 +40,11 @@ import {
   useProducts,
 } from "../../../hooks/queries/useProducts";
 import { useProductsFilters } from "../../../hooks/queries/useProductsFilters";
+import { useQueryParams } from "../../../hooks/useQueryParams";
+import {
+  queryParamsToFiltersNormalized,
+  useQueryParamsFilterList,
+} from "../../../hooks/useQueryParamsFilterList";
 import { setupAPIClient } from "../../../service/api";
 import { withSSRAuth } from "../../../utils/withSSRAuth";
 
@@ -41,6 +54,11 @@ interface OrderProps {
 
 export default function Order({ me }: OrderProps) {
   const { ref, inView } = useInView();
+  const { setLoading } = useLoading();
+  const router = useRouter();
+  const { setQueryParams } = useQueryParams({ router });
+  const { client, priceList, orders, reset, totalItems, exitOrder } =
+    useStore();
 
   const {
     isOpen: isOpenFilter,
@@ -58,19 +76,31 @@ export default function Order({ me }: OrderProps) {
     onClose: onCloseOrder,
   } = useDisclosure();
 
-  const [filters, setFilters] = useState<SelectedFilter[]>([]);
+  const [search, setSearch] = useState<string>(() => {
+    return router.query.search ? String(router.query.search) : "";
+  });
   const [orderBy, setOrderBy] = useState<string>(() => {
-    return "precoVenda.desc";
+    return router.query.orderby
+      ? String(router.query.orderby)
+      : "precoVenda.desc";
+  });
+  const [filters, setFilters] = useState<SelectedFilter[]>(() => {
+    return queryParamsToFiltersNormalized(router.query);
   });
   const [groupProduct, setGroupProduct] = useState<
-    undefined | "codigoAlternativo"
-  >();
+    undefined | string | "codigoAlternativo"
+  >(() => {
+    return router.query.distinct ? String(router.query.distinct) : "";
+  });
 
-  const { client, priceList, totalItems } = useStore();
+  useQueryParamsFilterList({
+    router,
+    filters,
+  });
 
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useProducts({
-      pagesize: 20,
+      pagesize: 40,
       orderby: orderBy,
       filters: [
         ...filters,
@@ -82,8 +112,8 @@ export default function Order({ me }: OrderProps) {
         },
       ],
       distinct: groupProduct ? "codigoAlternativo" : undefined,
+      search: search,
     });
-
   const { data: productsFilters, isLoading: isLoadingProductsFilters } =
     useProductsFilters({
       filters: [
@@ -105,6 +135,21 @@ export default function Order({ me }: OrderProps) {
       fetchNextPage();
     }
   }, [inView, fetchNextPage, hasNextPage]);
+  useEffect(() => {
+    setQueryParams({ type: "set", data: { field: "orderby", value: orderBy } });
+  }, [orderBy]);
+  useEffect(() => {
+    setQueryParams({ type: "set", data: { field: "search", value: search } });
+  }, [search]);
+  useEffect(() => {
+    setQueryParams({
+      type: "set",
+      data: { field: "distinct", value: groupProduct },
+    });
+  }, [groupProduct]);
+  useEffect(() => {
+    setLoading(isLoading);
+  }, [isLoading]);
 
   return (
     <>
@@ -124,7 +169,7 @@ export default function Order({ me }: OrderProps) {
             _hover={{ bg: "transparent" }}
             alignItems="center"
             justifyContent="center"
-            onClick={() => Router.push("/pedidos")}
+            onClick={exitOrder}
             ml="4"
           >
             <ImExit color="white" fontSize={"1.8rem"} />
@@ -207,6 +252,8 @@ export default function Order({ me }: OrderProps) {
           display={["none", "none", "none", "flex"]}
           flexDirection="column"
         >
+          <Search mb="4" setSearch={setSearch} search={search} />
+
           <Flex
             justify="space-between"
             bg="white"
@@ -254,10 +301,7 @@ export default function Order({ me }: OrderProps) {
             }}
           />
 
-          <LoadingInfiniteScroll
-            isLoading={isLoading}
-            isLoadingNextPage={isFetchingNextPage}
-          >
+          <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
             <SimpleGrid columns={[2, 2, 3, 4]} spacing="1" mb="1rem">
               {data?.pages.map((page) =>
                 page?.products.map((product, i) =>
@@ -295,7 +339,11 @@ export default function Order({ me }: OrderProps) {
                               Number(f.codigo) === Number(priceList?.codigo)
                           )?.valorFormat ?? "-",
                         pdv: product.precoVendaFormat ?? "-",
-                        uri: `${spaceImages}/Produtos/${product.referencia}_01`,
+                        uri: `${spaceImages}/Produtos/${
+                          product.imagens && product.imagens[0]
+                            ? product.imagens[0].nome
+                            : product.referencia + "_01"
+                        }`,
                       }}
                     />
                   )
@@ -312,7 +360,31 @@ export default function Order({ me }: OrderProps) {
         dataFilters={productsFilters?.filters ?? []}
         filters={filters}
         setFilters={setFilters}
-      />
+      >
+        <>
+          <Search mb="4" setSearch={setSearch} search={search} />
+
+          <Flex
+            justify="space-between"
+            bg="white"
+            p="4"
+            mb="4"
+            borderRadius="md"
+          >
+            <Text fontWeight="bold">Agrupar produtos</Text>
+            <Switch
+              isChecked={!!groupProduct}
+              onChange={(e) =>
+                setGroupProduct(
+                  e.target.checked ? "codigoAlternativo" : undefined
+                )
+              }
+              size="lg"
+              colorScheme="red"
+            />
+          </Flex>
+        </>
+      </ModalFilter>
 
       <ModalOrderBy
         isOpen={isOpenOrderBy}
@@ -325,13 +397,72 @@ export default function Order({ me }: OrderProps) {
         }}
       />
 
-      <ModalList
-        title="Carrinho (10)"
+      <DrawerList
+        title={`Carrinho (${totalItems})`}
         isOpen={isOpenOrder}
         onClose={onCloseOrder}
       >
-        <Box borderRadius="md"></Box>
-      </ModalList>
+        <Accordion mt="2rem" px="1rem" allowMultiple>
+          {orders.map((order) => (
+            <AccordionItem
+              key={order.stockLocation.periodo}
+              border={0}
+              bg="white"
+              mb="1rem"
+              borderRadius="md"
+            >
+              <AccordionButton>
+                <Box as="span" flex="1" textAlign="left">
+                  <Text fontSize="2xl" fontWeight="bold">
+                    {`${order.stockLocation.descricao} (${order.items.length})`}
+                  </Text>
+                </Box>
+                <AccordionIcon />
+              </AccordionButton>
+              <AccordionPanel borderTop="1px" borderColor="gray.100">
+                {order.items.map((item) => (
+                  <Box
+                    key={item.product.codigo}
+                    borderBottom="1px"
+                    borderColor="gray.100"
+                    pb="2"
+                  >
+                    <ProductStore
+                      product={{
+                        cod: item.product.codigo,
+                        name: item.product.descricao,
+                        reference: item.product.referencia,
+                        packingQuantity: item.product.qtdEmbalagem,
+                        stockLocationsQtd:
+                          item.product?.locaisEstoque?.find(
+                            (f) =>
+                              String(f.periodo) ===
+                              String(order.stockLocation.periodo)
+                          )?.quantidade ?? 0,
+                        uri: `${spaceImages}/Produtos/${
+                          item.product.imagens && item.product.imagens[0]
+                            ? item.product.imagens[0].nome
+                            : item.product.referencia + "_01"
+                        }`,
+                      }}
+                      amount={item.amountFormat}
+                      qtd={item.qtd}
+                    />
+                  </Box>
+                ))}
+                <Text
+                  mt="4"
+                  textAlign="end"
+                  fontSize="larger"
+                  fontWeight="bold"
+                >
+                  TOTAL {order.amountFormat}
+                </Text>
+              </AccordionPanel>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </DrawerList>
     </>
   );
 }

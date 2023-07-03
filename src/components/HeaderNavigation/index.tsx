@@ -38,6 +38,7 @@ export interface HeaderProps {
   user?: {
     name: string;
   };
+  isNotNavigation?: boolean;
 }
 
 export function HeaderNavigationComponent({
@@ -51,6 +52,7 @@ export function HeaderNavigationComponent({
   isNotHideHeaderEventScroll = false,
   isGoBack = false,
   user,
+  isNotNavigation = false,
 }: HeaderProps) {
   const { signOut, isAuthenticated } = useAuth();
 
@@ -189,7 +191,7 @@ export function HeaderNavigationComponent({
           px={["30"]}
           maxW="1120px"
         >
-          {isAuthenticated ? (
+          {isAuthenticated && !isNotNavigation ? (
             <Link href="/produtos" passHref>
               <CharkraLink h="full">
                 <Image
@@ -209,7 +211,7 @@ export function HeaderNavigationComponent({
             />
           )}
 
-          {isAuthenticated && (
+          {isAuthenticated && !isNotNavigation && (
             <Stack direction="row" h="full" spacing="10">
               {/* <NavLink href="/inicio">Início</NavLink> */}
               <NavLink href="/produtos">Produtos</NavLink>

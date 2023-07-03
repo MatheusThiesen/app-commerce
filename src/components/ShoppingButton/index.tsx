@@ -2,13 +2,13 @@ import { Button, ButtonProps, Flex, Icon, Text } from "@chakra-ui/react";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 
 interface ShoppingButtonProps extends ButtonProps {
-  qtdItens?: number;
+  qtdItens: number;
 }
 
 export const ShoppingButton = ({ qtdItens, ...rest }: ShoppingButtonProps) => {
   return (
     <Button mr="4" variant="unstyled" position="relative" {...(rest as any)}>
-      {qtdItens && (
+      {qtdItens > 0 && (
         <Flex
           w="1.3rem"
           h="1.3rem"

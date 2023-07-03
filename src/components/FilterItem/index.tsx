@@ -53,7 +53,7 @@ export function FilterItem({
 
   function onChecked(item: ItemProps): boolean | undefined {
     const findOne = selectedFilter.some(
-      (f) => f.value === item.value && f.name === name
+      (f) => f.name === name && f.value === item.value
     );
 
     return findOne ? true : false;

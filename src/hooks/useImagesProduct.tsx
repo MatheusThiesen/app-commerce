@@ -1,5 +1,6 @@
 import axios from "axios";
 import xml2js from "xml2js";
+import { spaceImages } from "../global/parameters";
 
 interface useImagesProductProps {
   reference: string;
@@ -18,7 +19,7 @@ export const useImagesProduct = async ({
 }: useImagesProductProps) => {
   var images: string[] = [];
   const response = await axios(
-    `https://alpar.sfo3.digitaloceanspaces.com/?prefix=Produtos%2F${reference}&max-keys=10`,
+    `${spaceImages}/?prefix=Produtos%2F${reference}&max-keys=10`,
     {
       method: "GET",
       headers: {
@@ -34,7 +35,7 @@ export const useImagesProduct = async ({
       response.data
     )) as ResponseXmlToJson;
     images = xmlToJson?.ListBucketResult?.Contents?.map(
-      (key) => "https://alpar.sfo3.digitaloceanspaces.com" + "/" + key?.Key[0]
+      (key) => spaceImages + "/" + key?.Key[0]
     );
 
     return images;

@@ -52,19 +52,11 @@ type ResetProps = {
 
 export const AuthContext = createContext({} as AuthContextData);
 
-const base_url =
-  process.env.NODE_ENV !== "development"
-    ? "https://app.alpardobrasil.com.br"
-    : "http://localhost:3000";
 const route_home = "/produtos";
-
-let authChannel: BroadcastChannel;
 
 export function signOut() {
   destroyCookie(undefined, "nextauth.token");
   destroyCookie(undefined, "nextauth.refreshToken");
-
-  // authChannel.postMessage("signOut");
 
   Router.push("/");
 }
@@ -75,28 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User>();
   const isAuthenticated = !!user && !!token;
 
-  // useEffect(() => {
-  //   authChannel = new BroadcastChannel("auth");
-
-  //   authChannel.onmessage = (message) => {
-  //     switch (message.data) {
-  //       case "signOut":
-  //         signOut();
-  //         // authChannel.close();
-  //         break;
-  //       case "signIn":
-  //         window.location.replace(`${base_url}${route_home}`);
-  //         break;
-
-  //       default:
-  //         break;
-  //     }
-  //   };
-  // }, []);
-
   useEffect(() => {
-    const { "nextauth.token": token } = parseCookies();
-
     if (token) {
       api
         .get("/auth/me")
