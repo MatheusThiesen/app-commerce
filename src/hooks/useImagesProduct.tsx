@@ -22,11 +22,11 @@ export const useImagesProduct = async ({
     `${spaceImages}/?prefix=Produtos%2F${reference}&max-keys=10`,
     {
       method: "GET",
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Credentials": "true",
-      },
+      // headers: {
+      //   "Access-Control-Allow-Origin": "*",
+      //   "Access-Control-Allow-Headers": "*",
+      //   "Access-Control-Allow-Credentials": "true",
+      // },
     }
   );
 

@@ -48,10 +48,10 @@ export default async function getImageByUrl(url: string) {
     // const compressBuffer = await blobToBuffer(compress);
     // return compressBuffer;
 
-    return Buffer.from(fileArrayBuffer);
+    return Buffer.from(fileArrayBuffer).toString("base64");
   } catch (error) {
     console.log(error);
 
-    return Buffer.from(noImageBase64, "base64");
+    return noImageBase64;
   }
 }

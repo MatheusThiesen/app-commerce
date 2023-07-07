@@ -12,6 +12,7 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
+import * as ExcelJS from "exceljs";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
@@ -44,7 +45,6 @@ import {
   useQueryParamsFilterList,
 } from "../../hooks/useQueryParamsFilterList";
 import { setupAPIClient } from "../../service/api";
-import { exportXlsx } from "../../utils/exportXlsx";
 import { withSSRAuth } from "../../utils/withSSRAuth";
 
 interface ProductsProps {
@@ -65,6 +65,7 @@ export default function Produtos({ me }: ProductsProps) {
     onSelectedAllProduct: onSelectedAllProductCatalog,
     onGenerateCatalog,
   } = useProductCatalog();
+  const [stockLocation, setStockLocation] = useState(false);
 
   const {
     isOpen: isOpenFilter,
@@ -76,7 +77,6 @@ export default function Produtos({ me }: ProductsProps) {
     onOpen: onOpenOrderBy,
     onClose: onCloseOrderBy,
   } = useDisclosure();
-
   const { isOpen, onToggle } = useDisclosure();
 
   const { setQueryParams } = useQueryParams({ router });
@@ -99,7 +99,6 @@ export default function Produtos({ me }: ProductsProps) {
   >(() => {
     return router.query.distinct ? String(router.query.distinct) : "";
   });
-  const [stockLocation, setStockLocation] = useState(false);
 
   useQueryParamsFilterList({
     router,
@@ -154,7 +153,7 @@ export default function Produtos({ me }: ProductsProps) {
     //@ts-ignore
     toastIdRef.current = toast({
       position: "top-right",
-      duration: 100000,
+      duration: 1000 * 60 * 60 * 1,
       render: () => (
         <Box
           bg="blue.400"
@@ -181,42 +180,245 @@ export default function Produtos({ me }: ProductsProps) {
         filters: filters,
         orderby: orderBy,
         pagesize: 100000,
+        search: search,
         isReport: true,
       });
 
-      const normalizedProducts = responseProducts.products.map((product) => {
-        let data = {};
+      const stocks: { descricao: string; periodo: string }[] = [];
 
+      for (const product of responseProducts.products) {
         if (product.locaisEstoque) {
           for (const stock of product.locaisEstoque) {
-            data = { ...data, [stock.descricao]: stock.quantidade };
+            const findStock = stocks.find((s) => s.periodo === stock.periodo);
+
+            if (!findStock)
+              stocks.push({
+                descricao: stock.descricao,
+                periodo: stock.periodo,
+              });
           }
         }
+      }
 
-        return {
-          "Cód. Produto": product.codigo ?? "-",
-          "Cód. Agrupador": product.codigoAlternativo ?? "-",
-          Referência: product.referencia ?? "-",
-          Descrição: product.descricao ?? "-",
-          PDV: product.precoVenda ?? "-",
-          Grade: product.descricaoAdicional ?? "-",
-          Marca: product.marca.descricao ?? "-",
-          Coleção: product.colecao?.descricao ?? "-",
-          Linha: product.linha?.descricao ?? "-",
-          Grupo: product.grupo?.descricao ?? "-",
-          Subgrupo: product.subGrupo?.descricao ?? "-",
-          Gênero: product.genero?.descricao ?? "-",
-          ...data,
-        };
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet("My Sheet");
+
+      sheet.getRow(1).height = 25;
+      sheet.getRow(1).font = {
+        name: "Roboto",
+        family: 4,
+        size: 16,
+        bold: true,
+      };
+
+      sheet.columns = [
+        // {
+        //   header: "Foto",
+        //   key: "image",
+        //   width: 20,
+        // },
+        {
+          header: "Cód. Produto",
+          key: "productCod",
+          width: 25,
+
+          alignment: {
+            horizontal: "center",
+            vertical: "middle",
+          },
+        },
+        {
+          header: "Cód. Agrupador",
+          key: "alterativeCode",
+          width: 24,
+        },
+        {
+          header: "Referência",
+          key: "reference",
+          width: 20,
+        },
+        {
+          header: "Descrição",
+          key: "description",
+          width: 30,
+        },
+        {
+          header: "Cor",
+          key: "colors",
+          width: 12,
+        },
+        {
+          header: "Marca",
+          key: "brand",
+          width: 10,
+        },
+        {
+          header: "Coleção",
+          key: "collection",
+          width: 15,
+        },
+        {
+          header: "Linha",
+          key: "line",
+          width: 10,
+        },
+        {
+          header: "Grupo",
+          key: "group",
+          width: 10,
+        },
+        {
+          header: "Subgrupo",
+          key: "subgroup",
+          width: 18,
+        },
+        {
+          header: "Gênero",
+          key: "genre",
+          width: 13,
+        },
+        {
+          header: "Grade/Tamanho",
+          key: "grid",
+          width: 24,
+        },
+        {
+          header: "PDV Sugerido",
+          key: "pdv",
+          width: 25,
+        },
+        {
+          header: "Acondicionamento",
+          key: "packageQuantity",
+          width: 26,
+        },
+
+        ...stocks.map((stock) => ({
+          header: stock.descricao,
+          key: stock.periodo,
+          width: 23,
+        })),
+      ];
+
+      const getImages: { reference: string; imageBase64: string }[] = [];
+
+      // const promiseAllImages = Promise.all(
+      //   groupByObj(responseProducts.products, (p) => p.referencia).map(
+      //     async (productGroup) => {
+      //       const reference = productGroup.value as string;
+
+      //       const product = productGroup.data[0];
+
+      //       const getImageBase64 = await getImageByUrl(
+      //         `${spaceImages}/Produtos/${
+      //           product.imagens && product.imagens[0]
+      //             ? product.imagens[0].nome
+      //             : product.referencia + "_01"
+      //         }_smaller`
+      //       );
+
+      //       getImages.push({
+      //         reference: reference,
+      //         imageBase64: getImageBase64,
+      //       });
+      //     }
+      //   )
+      // );
+      // await promiseAllImages;
+
+      const promise = Promise.all(
+        responseProducts.products.map(async (product, index) => {
+          let data = {};
+
+          if (product.locaisEstoque) {
+            for (const stock of product.locaisEstoque) {
+              data = { ...data, [stock.periodo]: stock.quantidade };
+            }
+          }
+
+          sheet.addRow({
+            productCod: product.codigo ?? "-",
+            alterativeCode: product.codigoAlternativo ?? "-",
+            reference: product.referencia ?? "-",
+            description: product.descricao ?? "-",
+            colors:
+              product?.corPrimaria && product?.corSecundaria
+                ? `${product?.corPrimaria.descricao} / ${product.corSecundaria.cor.descricao}`
+                : product?.corPrimaria
+                ? `${product?.corPrimaria.descricao}`
+                : "-",
+            brand: product.marca.descricao ?? "-",
+            collection: product.colecao?.descricao ?? "-",
+            line: product.linha?.descricao ?? "-",
+            group: product.grupo?.descricao ?? "-",
+            subgroup: product.subGrupo?.descricao ?? "-",
+            genre: product.genero?.descricao ?? "-",
+            grid: product.descricaoAdicional ?? "-",
+            pdv: product.precoVenda ?? "-",
+            packageQuantity: product?.qtdEmbalagem
+              ? `- ${product.qtdEmbalagem} +`
+              : "-",
+            ...data,
+          });
+
+          // const imageId = workbook.addImage({
+          //   base64:
+          //     getImages.find((f) => f.reference === product.referencia)
+          //       ?.imageBase64 ?? "",
+          //   extension: "jpeg",
+          // });
+
+          // sheet.addImage(imageId, {
+          //   tl: { col: 0, row: index + 1 },
+          //   ext: { width: 110, height: 80 },
+          //   editAs: "oneCells",
+          // });
+        })
+      );
+
+      sheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
+        row.eachCell({ includeEmpty: true }, function (cell, colNumber) {
+          cell.alignment = {
+            vertical: "middle",
+            horizontal: "center",
+            wrapText: true,
+          };
+
+          if (rowNumber !== 1) {
+            row.height = 90;
+          }
+
+          if (rowNumber === 1) {
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "4473c5" },
+            };
+
+            cell.font.color = { argb: "ffffff" };
+          }
+
+          // cell.border = {
+          //   top: { style: "thin" },
+          //   left: { style: "thin" },
+          //   bottom: { style: "thin" },
+          //   right: { style: "thin" },
+          // };
+        });
       });
 
-      const now = new Date().toLocaleString("pt-br", {
-        dateStyle: "short",
-      });
+      await promise;
 
-      await exportXlsx({
-        filename: `Produtos-${now}`,
-        data: normalizedProducts,
+      workbook.xlsx.writeBuffer().then(function (data) {
+        const blob = new Blob([data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = "produtos.xlsx";
+        anchor.click();
+        window.URL.revokeObjectURL(url);
       });
 
       if (toastIdRef.current) {
@@ -286,6 +488,22 @@ export default function Produtos({ me }: ProductsProps) {
               )}
             </Button>
           </Flex>
+        }
+        Right={
+          <Button
+            type="button"
+            colorScheme="whiteAlpha"
+            variant="ghost"
+            mr="2"
+            onClick={handleExportList}
+          >
+            <Icon
+              as={SiMicrosoftexcel}
+              fontSize="1.5rem"
+              color="white"
+              ml="-1"
+            />
+          </Button>
         }
       />
 
@@ -373,7 +591,7 @@ export default function Produtos({ me }: ProductsProps) {
                             product.imagens && product.imagens[0]
                               ? product.imagens[0].nome
                               : product.referencia + "_01"
-                          }`,
+                          }_smaller`,
                         }}
                         onClickProduct={() => setLoading(true)}
                       />
@@ -393,7 +611,7 @@ export default function Produtos({ me }: ProductsProps) {
                             product.imagens && product.imagens[0]
                               ? product.imagens[0].nome
                               : product.referencia + "_01"
-                          }`,
+                          }_smaller`,
                         }}
                         onClickProduct={() => setLoading(true)}
                       />
@@ -508,7 +726,7 @@ export default function Produtos({ me }: ProductsProps) {
                     onClick={() =>
                       onGenerateCatalog({
                         orderBy: orderBy,
-                        groupProduct: groupProduct  === 'codigoAlternativo',
+                        groupProduct: groupProduct === "codigoAlternativo",
                         stockLocation: stockLocation,
                         filters: JSON.stringify(
                           filters.filter((f) =>

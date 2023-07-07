@@ -2,6 +2,7 @@ import { Box, HStack, Image } from "@chakra-ui/react";
 import { VariationsProduct } from "../../hooks/queries/useProducts";
 
 import Link from "next/link";
+import { spaceImages } from "../../global/parameters";
 
 interface VariationsProductProps {
   variationsProduct: VariationsProduct[];
@@ -16,7 +17,6 @@ export function VariationsProduct({
   uri,
   onClick,
 }: VariationsProductProps) {
-  const spaceImages = "https://alpar.sfo3.digitaloceanspaces.com";
   return (
     <HStack spacing={1} overflow="auto">
       {variationsProduct?.map((variation) => (
@@ -52,7 +52,7 @@ export function VariationsProduct({
                 variation.imagens && variation.imagens[0]
                   ? variation.imagens[0].nome
                   : variation.referencia + "_01"
-              }`}
+              }_smaller`}
               alt={variation.descricao}
               onError={({ currentTarget }) => {
                 currentTarget.onerror = null; // prevents looping
