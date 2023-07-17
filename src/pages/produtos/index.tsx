@@ -45,6 +45,8 @@ import {
   useQueryParamsFilterList,
 } from "../../hooks/useQueryParamsFilterList";
 import { setupAPIClient } from "../../service/api";
+import getImageByUrl from "../../utils/getImageByUrl";
+import { groupByObj } from "../../utils/groupByObj";
 import { withSSRAuth } from "../../utils/withSSRAuth";
 
 interface ProductsProps {
@@ -212,11 +214,11 @@ export default function Produtos({ me }: ProductsProps) {
       };
 
       sheet.columns = [
-        // {
-        //   header: "Foto",
-        //   key: "image",
-        //   width: 20,
-        // },
+        {
+          header: "Foto",
+          key: "image",
+          width: 20,
+        },
         {
           header: "Cód. Produto",
           key: "productCod",
@@ -287,44 +289,62 @@ export default function Produtos({ me }: ProductsProps) {
           key: "pdv",
           width: 25,
         },
-        {
-          header: "Acondicionamento",
-          key: "packageQuantity",
-          width: 26,
-        },
 
         ...stocks.map((stock) => ({
           header: stock.descricao,
           key: stock.periodo,
           width: 23,
         })),
+
+        {
+          header: "Acondicionamento",
+          key: "packageQuantity",
+          width: 26,
+        },
+
+        {
+          header: "Lista 28 DDL",
+          key: "list28",
+          width: 26,
+        },
+        {
+          header: "Quantidade Grades",
+          key: "qtd",
+          width: 30,
+        },
+        {
+          header: "Total",
+          key: "total",
+          width: 26,
+          numFmt: "numFmt = '$#,##0.00;[Red]-$#,##0.00';",
+        },
       ];
 
       const getImages: { reference: string; imageBase64: string }[] = [];
 
-      // const promiseAllImages = Promise.all(
-      //   groupByObj(responseProducts.products, (p) => p.referencia).map(
-      //     async (productGroup) => {
-      //       const reference = productGroup.value as string;
+      const promiseAllImages = Promise.all(
+        groupByObj(responseProducts.products, (p) => p.referencia).map(
+          async (productGroup) => {
+            const reference = productGroup.value as string;
 
-      //       const product = productGroup.data[0];
+            const product = productGroup.data[0];
 
-      //       const getImageBase64 = await getImageByUrl(
-      //         `${spaceImages}/Produtos/${
-      //           product.imagens && product.imagens[0]
-      //             ? product.imagens[0].nome
-      //             : product.referencia + "_01"
-      //         }_smaller`
-      //       );
+            const getImageBase64 = await getImageByUrl(
+              `${spaceImages}/Produtos/${
+                product.imagens && product.imagens[0]
+                  ? product.imagens[0].nome
+                  : product.referencia + "_01"
+              }_smaller`
+            );
 
-      //       getImages.push({
-      //         reference: reference,
-      //         imageBase64: getImageBase64,
-      //       });
-      //     }
-      //   )
-      // );
-      // await promiseAllImages;
+            getImages.push({
+              reference: reference,
+              imageBase64: getImageBase64,
+            });
+          }
+        )
+      );
+      await promiseAllImages;
 
       const promise = Promise.all(
         responseProducts.products.map(async (product, index) => {
@@ -356,25 +376,90 @@ export default function Produtos({ me }: ProductsProps) {
             grid: product.descricaoAdicional ?? "-",
             pdv: product.precoVenda ?? "-",
             packageQuantity: product?.qtdEmbalagem
-              ? `- ${product.qtdEmbalagem} +`
+              ? product.qtdEmbalagem // `- ${product.qtdEmbalagem} +`
               : "-",
+            list28: product.listaPreco?.find((f) => f.codigo === 28)?.valor,
             ...data,
           });
 
-          // const imageId = workbook.addImage({
-          //   base64:
-          //     getImages.find((f) => f.reference === product.referencia)
-          //       ?.imageBase64 ?? "",
-          //   extension: "jpeg",
-          // });
+          const imageId = workbook.addImage({
+            base64:
+              getImages.find((f) => f.reference === product.referencia)
+                ?.imageBase64 ?? "",
+            extension: "jpeg",
+          });
 
-          // sheet.addImage(imageId, {
-          //   tl: { col: 0, row: index + 1 },
-          //   ext: { width: 110, height: 80 },
-          //   editAs: "oneCells",
-          // });
+          sheet.addImage(imageId, {
+            tl: { col: 0, row: index + 1 },
+            ext: { width: 110, height: 80 },
+            editAs: "oneCells",
+          });
         })
       );
+
+      let columnLocationTotal = "";
+      let columnLocationQtd = "";
+      let columnLocationList28 = "";
+      let columnLocationPackageQuantity = "";
+
+      let columnCurrent: number[] = [];
+
+      sheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
+        row.eachCell({ includeEmpty: true }, function (cell, columnNumber) {
+          //@ts-ignore
+          let columnKey = cell["_column"]["_key"];
+
+          if (rowNumber === 1) {
+            if (columnKey === "pdv") {
+              columnCurrent.push(columnNumber);
+            }
+
+            if (columnKey === "total") {
+              columnCurrent.push(columnNumber);
+
+              // @ts-ignore
+              columnLocationTotal = cell["_address"].replaceAll(
+                /[^a-zA-Z]/g,
+                ""
+              );
+            }
+            if (columnKey === "qtd") {
+              // @ts-ignore
+              columnLocationQtd = cell["_address"].replaceAll(/[^a-zA-Z]/g, "");
+            }
+            if (columnKey === "list28") {
+              columnCurrent.push(columnNumber);
+
+              // @ts-ignore
+              columnLocationList28 = cell["_address"].replaceAll(
+                /[^a-zA-Z]/g,
+                ""
+              );
+            }
+            if (columnKey === "packageQuantity") {
+              // @ts-ignore
+              columnLocationPackageQuantity = cell["_address"].replaceAll(
+                /[^a-zA-Z]/g,
+                ""
+              );
+            }
+          }
+        });
+      });
+
+      columnCurrent.forEach(
+        (index) =>
+          (sheet.getColumn(index).numFmt = "R$#,##0.00;[Red]-R$#,##0.00")
+      );
+
+      responseProducts.products.forEach((_, index) => {
+        const column = index + 2;
+
+        // @ts-ignore
+        sheet.getCell(`${columnLocationTotal}${column}`).value = {
+          formula: `${columnLocationQtd}${column} * ${columnLocationPackageQuantity}${column} * SUM(${columnLocationList28}${column})`,
+        };
+      });
 
       sheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
         row.eachCell({ includeEmpty: true }, function (cell, colNumber) {

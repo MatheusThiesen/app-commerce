@@ -2,7 +2,7 @@ import { Box, HStack, Image } from "@chakra-ui/react";
 import { VariationsProduct } from "../../hooks/queries/useProducts";
 
 import Link from "next/link";
-import { spaceImages } from "../../global/parameters";
+import { defaultNoImage, spaceImages } from "../../global/parameters";
 
 interface VariationsProductProps {
   variationsProduct: VariationsProduct[];
@@ -56,8 +56,7 @@ export function VariationsProduct({
               alt={variation.descricao}
               onError={({ currentTarget }) => {
                 currentTarget.onerror = null; // prevents looping
-                currentTarget.src =
-                  "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
+                currentTarget.src = defaultNoImage;
               }}
             />
           </Box>
