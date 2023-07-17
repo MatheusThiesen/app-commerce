@@ -282,7 +282,7 @@ export default function Produtos({ me }: ProductsProps) {
         {
           header: "Grade/Tamanho",
           key: "grid",
-          width: 24,
+          width: 26,
         },
         {
           header: "PDV Sugerido",
@@ -299,7 +299,7 @@ export default function Produtos({ me }: ProductsProps) {
         {
           header: "Acondicionamento",
           key: "packageQuantity",
-          width: 28,
+          width: 30,
         },
 
         {
