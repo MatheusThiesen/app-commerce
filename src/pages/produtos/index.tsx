@@ -299,7 +299,7 @@ export default function Produtos({ me }: ProductsProps) {
         {
           header: "Acondicionamento",
           key: "packageQuantity",
-          width: 26,
+          width: 28,
         },
 
         {
@@ -391,7 +391,7 @@ export default function Produtos({ me }: ProductsProps) {
 
           sheet.addImage(imageId, {
             tl: { col: 0, row: index + 1 },
-            ext: { width: 110, height: 80 },
+            ext: { width: 110, height: 85 },
             editAs: "oneCells",
           });
         })
@@ -463,6 +463,9 @@ export default function Produtos({ me }: ProductsProps) {
 
       sheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
         row.eachCell({ includeEmpty: true }, function (cell, colNumber) {
+          //@ts-ignore
+          let columnKey = cell["_column"]["_key"];
+
           cell.alignment = {
             vertical: "middle",
             horizontal: "center",
@@ -481,6 +484,14 @@ export default function Produtos({ me }: ProductsProps) {
             };
 
             cell.font.color = { argb: "ffffff" };
+
+            if (["qtd", "total"].includes(columnKey)) {
+              cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "22a883" },
+              };
+            }
           }
 
           // cell.border = {
