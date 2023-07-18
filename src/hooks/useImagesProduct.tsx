@@ -38,7 +38,7 @@ export const useImagesProduct = async ({
       (key) => spaceImages + "/" + key?.Key[0]
     );
 
-    return images;
+    return images.filter((f) => !f.endsWith("_smaller"));
   } catch (error) {
     return [""];
   }
