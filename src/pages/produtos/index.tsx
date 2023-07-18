@@ -3,6 +3,11 @@ import {
   Button,
   Flex,
   Icon,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   SimpleGrid,
   Slide,
   Spinner,
@@ -151,7 +156,7 @@ export default function Produtos({ me }: ProductsProps) {
     setLoading(isLoading);
   }, [isLoading]);
 
-  async function handleExportList() {
+  async function handleExportList({ noImage = false }: { noImage?: boolean }) {
     //@ts-ignore
     toastIdRef.current = toast({
       position: "top-right",
@@ -213,12 +218,13 @@ export default function Produtos({ me }: ProductsProps) {
         bold: true,
       };
 
-      sheet.columns = [
+      const columns = [
         {
           header: "Foto",
           key: "image",
           width: 20,
         },
+
         {
           header: "Cód. Produto",
           key: "productCod",
@@ -320,31 +326,38 @@ export default function Produtos({ me }: ProductsProps) {
         },
       ];
 
+      //@ts-ignore
+      sheet.columns = noImage
+        ? columns.filter((f) => f.key !== "image")
+        : columns;
+
       const getImages: { reference: string; imageBase64: string }[] = [];
 
-      const promiseAllImages = Promise.all(
-        groupByObj(responseProducts.products, (p) => p.referencia).map(
-          async (productGroup) => {
-            const reference = productGroup.value as string;
+      if (!noImage) {
+        const promiseAllImages = Promise.all(
+          groupByObj(responseProducts.products, (p) => p.referencia).map(
+            async (productGroup) => {
+              const reference = productGroup.value as string;
 
-            const product = productGroup.data[0];
+              const product = productGroup.data[0];
 
-            const getImageBase64 = await getImageByUrl(
-              `${spaceImages}/Produtos/${
-                product.imagens && product.imagens[0]
-                  ? product.imagens[0].nome
-                  : product.referencia + "_01"
-              }_smaller`
-            );
+              const getImageBase64 = await getImageByUrl(
+                `${spaceImages}/Produtos/${
+                  product.imagens && product.imagens[0]
+                    ? product.imagens[0].nome
+                    : product.referencia + "_01"
+                }_smaller`
+              );
 
-            getImages.push({
-              reference: reference,
-              imageBase64: getImageBase64,
-            });
-          }
-        )
-      );
-      await promiseAllImages;
+              getImages.push({
+                reference: reference,
+                imageBase64: getImageBase64,
+              });
+            }
+          )
+        );
+        await promiseAllImages;
+      }
 
       const promise = Promise.all(
         responseProducts.products.map(async (product, index) => {
@@ -382,18 +395,20 @@ export default function Produtos({ me }: ProductsProps) {
             ...data,
           });
 
-          const imageId = workbook.addImage({
-            base64:
-              getImages.find((f) => f.reference === product.referencia)
-                ?.imageBase64 ?? "",
-            extension: "jpeg",
-          });
+          if (!noImage) {
+            const imageId = workbook.addImage({
+              base64:
+                getImages.find((f) => f.reference === product.referencia)
+                  ?.imageBase64 ?? "",
+              extension: "jpeg",
+            });
 
-          sheet.addImage(imageId, {
-            tl: { col: 0, row: index + 1 },
-            ext: { width: 110, height: 85 },
-            editAs: "oneCells",
-          });
+            sheet.addImage(imageId, {
+              tl: { col: 0, row: index + 1 },
+              ext: { width: 110, height: 85 },
+              editAs: "oneCells",
+            });
+          }
         })
       );
 
@@ -586,20 +601,29 @@ export default function Produtos({ me }: ProductsProps) {
           </Flex>
         }
         Right={
-          <Button
-            type="button"
-            colorScheme="whiteAlpha"
-            variant="ghost"
-            mr="2"
-            onClick={handleExportList}
-          >
-            <Icon
-              as={SiMicrosoftexcel}
+          <Menu>
+            <MenuButton
+              as={IconButton}
+              aria-label="Options"
+              icon={<SiMicrosoftexcel />}
               fontSize="1.5rem"
               color="white"
               ml="-1"
+              variant="ghost"
+              colorScheme="whiteAlpha"
             />
-          </Button>
+            <MenuList>
+              <MenuItem fontSize="md" onClick={() => handleExportList({})}>
+                Listagem com Imagem
+              </MenuItem>
+              <MenuItem
+                fontSize="md"
+                onClick={() => handleExportList({ noImage: true })}
+              >
+                Listagem sem Imagem
+              </MenuItem>
+            </MenuList>
+          </Menu>
         }
       />
 
@@ -658,14 +682,28 @@ export default function Produtos({ me }: ProductsProps) {
               data: productsOrderBy,
             }}
           >
-            <Button type="button" ml="2" onClick={handleExportList}>
-              <Icon
-                as={SiMicrosoftexcel}
-                fontSize="1.5rem"
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                aria-label="Options"
+                icon={<SiMicrosoftexcel />}
+                variant="outline"
                 color="#147b45"
-                ml="-1"
+                fontSize="1.5rem"
+                ml="2"
               />
-            </Button>
+              <MenuList>
+                <MenuItem fontSize="md" onClick={() => handleExportList({})}>
+                  Listagem com Imagem
+                </MenuItem>
+                <MenuItem
+                  fontSize="md"
+                  onClick={() => handleExportList({ noImage: true })}
+                >
+                  Listagem sem Imagem
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </HeaderToList>
 
           <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
