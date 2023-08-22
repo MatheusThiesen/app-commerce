@@ -20,7 +20,7 @@ export const PanelLayout = ({
       ) : (
         <>
           <Flex
-            pt={["6.5rem", "6.5rem", "6.5rem", "7rem"]}
+            pt={["6.5rem", "6.5rem", "6.5rem", "8rem"]}
             pb={["7rem"]}
             justify="center"
             w="full"

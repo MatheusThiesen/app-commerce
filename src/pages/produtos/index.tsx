@@ -601,29 +601,41 @@ export default function Produtos({ me }: ProductsProps) {
           </Flex>
         }
         Right={
-          <Menu>
-            <MenuButton
-              as={IconButton}
-              aria-label="Options"
-              icon={<SiMicrosoftexcel />}
-              fontSize="1.5rem"
-              color="white"
-              ml="-1"
-              variant="ghost"
-              colorScheme="whiteAlpha"
+          <Box display={["block", "block", "block", "none"]}>
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                aria-label="Options"
+                icon={<SiMicrosoftexcel />}
+                fontSize="1.5rem"
+                color="white"
+                ml="-1"
+                variant="ghost"
+                colorScheme="whiteAlpha"
+              />
+              <MenuList>
+                <MenuItem fontSize="md" onClick={() => handleExportList({})}>
+                  Exportar listagem com Imagem
+                </MenuItem>
+                <MenuItem
+                  fontSize="md"
+                  onClick={() => handleExportList({ noImage: true })}
+                >
+                  Exportar listagem sem Imagem
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Box>
+        }
+        Center={
+          <Box width={"100%"} paddingX={["0.5rem", "0.5rem", "0.5rem", "0"]}>
+            <Search
+              size={"md"}
+              setSearch={setSearch}
+              search={search}
+              placeholder="Buscar na Alpar do Brasil por produtos"
             />
-            <MenuList>
-              <MenuItem fontSize="md" onClick={() => handleExportList({})}>
-                Listagem com Imagem
-              </MenuItem>
-              <MenuItem
-                fontSize="md"
-                onClick={() => handleExportList({ noImage: true })}
-              >
-                Listagem sem Imagem
-              </MenuItem>
-            </MenuList>
-          </Menu>
+          </Box>
         }
       />
 
@@ -634,8 +646,6 @@ export default function Produtos({ me }: ProductsProps) {
           display={["none", "none", "none", "flex"]}
           flexDirection="column"
         >
-          <Search mb="4" setSearch={setSearch} search={search} />
-
           <Flex
             justify="space-between"
             bg="white"
@@ -694,13 +704,13 @@ export default function Produtos({ me }: ProductsProps) {
               />
               <MenuList>
                 <MenuItem fontSize="md" onClick={() => handleExportList({})}>
-                  Listagem com Imagem
+                  Exportar listagem com Imagem
                 </MenuItem>
                 <MenuItem
                   fontSize="md"
                   onClick={() => handleExportList({ noImage: true })}
                 >
-                  Listagem sem Imagem
+                  Exportar listagem sem Imagem
                 </MenuItem>
               </MenuList>
             </Menu>
@@ -766,8 +776,6 @@ export default function Produtos({ me }: ProductsProps) {
         setFilters={setFilters}
       >
         <>
-          <Search mb="4" setSearch={setSearch} search={search} />
-
           <Flex
             justify="space-between"
             bg="white"
@@ -793,7 +801,7 @@ export default function Produtos({ me }: ProductsProps) {
       <ModalOrderBy
         isOpen={isOpenOrderBy}
         onClose={onCloseOrderBy}
-        OrderByItems={productsOrderBy}
+        orderByItems={productsOrderBy}
         currentOrderByValue={orderBy}
         setOrderBy={(orderByValue) => {
           setOrderBy(String(orderByValue));

@@ -1,6 +1,4 @@
-import { useDisclosure } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { destroyCookie, parseCookies, setCookie } from "nookies";
 import {
   ReactNode,
   createContext,
@@ -8,23 +6,30 @@ import {
   useEffect,
   useState,
 } from "react";
-import { ModalSelectClient } from "../components/ModalSelectClient";
-import { ModalSelectPriceList } from "../components/ModalSelectPriceList";
+
 import { Client } from "../hooks/queries/useClients";
-import { Product, StockLocation } from "../hooks/queries/useProducts";
+import { Brand, Product, StockLocation } from "../hooks/queries/useProducts";
+import { useLocalStore } from "../hooks/useLocalStore";
+import { api } from "../service/apiClient";
 
 export type PriceList = {
   codigo: number;
   descricao: string;
 };
 
+export type PaymentCondition = {
+  codigo: number;
+  descricao: string;
+};
+
 interface Order {
   stockLocation: StockLocation;
+  brand: Brand;
   items: Item[];
-
   qtd: number;
   amount: number;
   amountFormat: string;
+  paymentCondition?: PaymentCondition;
 }
 
 interface Item {
@@ -39,128 +44,126 @@ type StoreContextData = {
   priceList?: PriceList;
   orders: Order[];
   totalItems: number;
+  totalAmount: number;
+  totalAmountFormat: string;
+
+  validOrders: boolean;
 
   addItem: (a: {
     product: Product;
     stockLocation: StockLocation;
+    brand: Brand;
     qtd: number;
   }) => void;
-  reset: () => void;
-  getStockProduct: (props: {
-    product: Product;
+  removeItem: (props: {
+    productCod: number;
     stockLocationPeriod: string;
-  }) => number;
-  createOrder: () => void;
+    brandCod: number;
+  }) => void;
+  createOrder: (data: { client: Client; priceList: PriceList }) => void;
+  sendOrder: (data: { isDraft: boolean }) => void;
   exitOrder: () => void;
+  setPaymentCondition: (d: {
+    paymentCondition: PaymentCondition;
+    stockLocationPeriod: string;
+    brandCod: number;
+  }) => void;
 };
 
 type StoreProviderProps = {
   children: ReactNode;
 };
 
-export const pricesList = [
-  {
-    name: "28 DDL",
-    value: 28,
-  },
-  {
-    name: "300 - CARTAO DE CREDITO",
-    value: 300,
-  },
-  {
-    name: "42 DDL",
-    value: 42,
-  },
-  {
-    name: "56 DDL",
-    value: 56,
-  },
-];
-
 export const StoreContext = createContext({} as StoreContextData);
 
 export function StoreProvider({ children }: StoreProviderProps) {
-  const { pathname, push } = useRouter();
-  const { "order-client": orderClient, "order-price-list": orderPriceList } =
-    parseCookies();
+  const { push } = useRouter();
 
   const {
-    isOpen: isOpenSeleteClient,
-    onOpen: onOpenSeleteClient,
-    onClose: onCloseSeleteClient,
-  } = useDisclosure();
+    onGet: onGetStoragePriceList,
+    onSet: onSetStoragePriceList,
+    onRemove: onRemoveStoragePriceList,
+  } = useLocalStore("@Order-price-list");
   const {
-    isOpen: isOpenSeleteListPrice,
-    onOpen: onOpenSeleteListPrice,
-    onClose: onCloseSeleteListPrice,
-  } = useDisclosure();
+    onGet: onGetStorageClient,
+    onSet: onSetStorageClient,
+    onRemove: onRemoveStorageClient,
+  } = useLocalStore("@Order-client");
+  const {
+    onGet: onGetStorageOrder,
+    onSet: onSetStorageOrder,
+    onRemove: onRemoveStorageOrder,
+  } = useLocalStore("@Order-cart");
 
-  const [client, setClient] = useState<Client | undefined>(undefined);
-  const [priceList, setPriceList] = useState<PriceList | undefined>(undefined);
+  const [client, setClient] = useState<Client>({} as Client);
+  const [priceList, setPriceList] = useState<PriceList>({} as PriceList);
   const [orders, setOrders] = useState<Order[]>([]);
 
   const totalItems = orders.reduce(
     (previousValue, currentValue) => previousValue + currentValue.items.length,
     0
   );
+  const totalAmount = orders.reduce(
+    (previousValue, currentValue) => previousValue + currentValue.amount,
+    0
+  );
+  const totalAmountFormat = totalAmount.toLocaleString("pt-br", {
+    style: "currency",
+    currency: "BRL",
+  });
+
+  const validOrders =
+    orders
+      ?.map((order) => (order.paymentCondition ? 1 : 0))
+      .filter((f) => f === 1)?.length === orders?.length;
 
   useEffect(() => {
-    if (orderClient) setClient(JSON.parse(orderClient));
-    if (orderPriceList) setPriceList(JSON.parse(orderPriceList));
+    const clientStorage = onGetStorageClient();
+    const orderStorage = onGetStorageOrder();
+    const priceListStorage = onGetStoragePriceList();
+
+    if (clientStorage) setClient(clientStorage);
+    if (priceListStorage) setPriceList(priceListStorage);
+    if (orderStorage) setOrders(orderStorage ?? []);
   }, []);
 
-  useEffect(() => {
-    if (!!orderPriceList && !!orderClient) {
-      onCloseSeleteClient();
-      onCloseSeleteListPrice();
-    } else {
-      if (
-        ["/pedidos/novo/produtos/[codigo]", "/pedidos/novo"].includes(pathname)
-      ) {
-        if (!client?.codigo && !isOpenSeleteClient) onOpenSeleteClient();
-        if (!!client?.codigo && !priceList?.codigo && !isOpenSeleteListPrice)
-          onOpenSeleteListPrice();
-      } else {
-        onCloseSeleteClient();
-        onCloseSeleteListPrice();
-      }
-    }
-  }, [pathname, client, priceList, isOpenSeleteClient, isOpenSeleteListPrice]);
+  function createOrder({
+    client: clientData,
+    priceList: priceListData,
+  }: {
+    client: Client;
+    priceList: PriceList;
+  }) {
+    onSetStoragePriceList(priceListData);
+    onSetStorageClient(clientData);
+    setClient(clientData);
+    setPriceList(priceListData);
 
-  function createOrder() {
     push("/pedidos/novo");
   }
+
   function exitOrder() {
     push("/pedidos");
 
-    setTimeout(reset, 1000);
-  }
-
-  function getStockProduct({
-    product,
-    stockLocationPeriod,
-  }: {
-    product: Product;
-    stockLocationPeriod: string;
-  }) {
-    return (
-      product.locaisEstoque?.find((f) => f.periodo === stockLocationPeriod)
-        ?.quantidade ?? 0
-    );
+    setTimeout(reset, 2000);
   }
 
   function addItem({
     product,
     qtd,
     stockLocation,
+    brand,
   }: {
     product: Product;
     stockLocation: StockLocation;
+    brand: Brand;
     qtd: number;
   }): void {
     const getOrders = orders;
     const findStockLocation = getOrders.find(
-      (order) => order.stockLocation.periodo === stockLocation.periodo
+      (f) =>
+        f.stockLocation.periodo === stockLocation.periodo &&
+        f.brand?.codigo === brand?.codigo
     );
 
     const findPriceList = product?.listaPreco?.find(
@@ -173,15 +176,6 @@ export function StoreProvider({ children }: StoreProviderProps) {
     });
 
     if (findStockLocation) {
-      findStockLocation.amount += amount;
-      findStockLocation.amountFormat = findStockLocation.amount.toLocaleString(
-        "pt-br",
-        {
-          style: "currency",
-          currency: "BRL",
-        }
-      );
-
       const findItem = findStockLocation.items.find(
         (i) => i.product.codigo === product.codigo
       );
@@ -200,6 +194,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
         });
       }
 
+      onSetStorageOrder(getOrders);
       setOrders(getOrders);
     } else {
       const orderCreate: Order = {
@@ -207,6 +202,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
           descricao: stockLocation.descricao,
           periodo: stockLocation.periodo,
         },
+        brand: brand,
         qtd: qtd,
         amount,
         amountFormat,
@@ -221,24 +217,157 @@ export function StoreProvider({ children }: StoreProviderProps) {
       };
 
       setOrders((oldData) => [...oldData, orderCreate]);
+      onSetStorageOrder([...orders, orderCreate]);
     }
+
+    recalculatePriceOrders();
+  }
+
+  function removeItem({
+    productCod,
+    stockLocationPeriod,
+    brandCod,
+  }: {
+    productCod: number;
+    brandCod: number;
+    stockLocationPeriod: string;
+  }) {
+    const findOrder = orders.find(
+      (f) =>
+        f.stockLocation.periodo === stockLocationPeriod &&
+        f.brand.codigo === brandCod
+    );
+
+    if (!findOrder) throw new Error("Order not found");
+
+    if (findOrder.items.length === 1) {
+      onSetStorageOrder(orders.filter((f) => f !== findOrder));
+      setOrders((oldOrder) => oldOrder.filter((f) => f !== findOrder));
+
+      return recalculatePriceOrders();
+    }
+
+    onSetStorageOrder(
+      orders.filter((order) =>
+        order === findOrder
+          ? {
+              ...order,
+              items: order.items.filter((f) => f.product.codigo !== productCod),
+            }
+          : order
+      )
+    );
+    setOrders((oldOrder) =>
+      oldOrder.map((order) =>
+        order === findOrder
+          ? {
+              ...order,
+              items: order.items.filter((f) => f.product.codigo !== productCod),
+            }
+          : order
+      )
+    );
+
+    return recalculatePriceOrders();
+  }
+
+  function recalculatePriceOrders() {
+    setOrders((oldOrder) =>
+      oldOrder.map((order) => ({
+        ...order,
+        amount: order.items.reduce(
+          (previousValue, currentValue) => previousValue + currentValue.amount,
+          0
+        ),
+        amountFormat: order.items
+          .reduce(
+            (previousValue, currentValue) =>
+              previousValue + currentValue.amount,
+            0
+          )
+          .toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          }),
+      }))
+    );
   }
 
   function reset() {
-    destroyCookie(undefined, "order-client");
-    destroyCookie(undefined, "order-price-list");
+    onRemoveStoragePriceList();
+    onRemoveStorageClient();
+    onRemoveStorageOrder();
+
     setOrders([]);
-    setClient(undefined);
-    setPriceList(undefined);
+    setClient({} as Client);
+    setPriceList({} as PriceList);
   }
 
-  function handleSetClient(clientData: Client) {
-    setClient(clientData);
-    setCookie(undefined, "order-client", JSON.stringify(clientData));
+  function setPaymentCondition({
+    brandCod,
+    paymentCondition,
+    stockLocationPeriod,
+  }: {
+    paymentCondition: PaymentCondition;
+    stockLocationPeriod: string;
+    brandCod: number;
+  }) {
+    onSetStorageOrder(
+      orders.map((order) => {
+        if (
+          order.stockLocation.periodo === stockLocationPeriod &&
+          order.brand.codigo === brandCod
+        ) {
+          return { ...order, paymentCondition };
+        }
+        return order;
+      })
+    );
+
+    setOrders((prev) =>
+      prev.map((order) => {
+        if (
+          order.stockLocation.periodo === stockLocationPeriod &&
+          order.brand.codigo === brandCod
+        ) {
+          return { ...order, paymentCondition };
+        }
+
+        return order;
+      })
+    );
   }
-  function handleSetPriceList(priceListData: PriceList) {
-    setPriceList(priceListData);
-    setCookie(undefined, "order-price-list", JSON.stringify(priceListData));
+
+  async function sendOrder({ isDraft }: { isDraft: boolean }) {
+    for (const order of orders) {
+      await api.post("/orders", {
+        vendedorCodigo: 2091,
+        clienteCodigo: client.codigo,
+        condicaoPagamentoCodigo: order.paymentCondition?.codigo,
+        tabelaPrecoCodigo: priceList.codigo,
+        marcaCodigo: order.brand.codigo,
+        periodoEstoque: order.stockLocation.periodo,
+        eRascunho: isDraft,
+        itens: order.items.map((item) => {
+          const findPriceList = item?.product.listaPreco?.find(
+            (f) => Number(f.codigo) === Number(priceList?.codigo)
+          );
+
+          const amount = findPriceList?.valor
+            ? findPriceList?.valor
+            : item.qtd / item.amount;
+
+          return {
+            produtoCodigo: item.product.codigo,
+            quantidade: item.qtd,
+            valorUnitario: amount,
+          };
+        }),
+      });
+    }
+
+    push("/pedidos");
+    setTimeout(reset, 2000);
   }
 
   return (
@@ -246,30 +375,19 @@ export function StoreProvider({ children }: StoreProviderProps) {
       value={{
         client,
         priceList,
-        addItem,
-        reset,
         orders,
         totalItems,
-        getStockProduct,
+        totalAmount,
+        totalAmountFormat,
+        validOrders,
+        addItem,
+        sendOrder,
         createOrder,
         exitOrder,
+        removeItem,
+        setPaymentCondition,
       }}
     >
-      {isOpenSeleteClient && (
-        <ModalSelectClient
-          isOpen={isOpenSeleteClient}
-          onClose={onCloseSeleteClient}
-          setClient={handleSetClient}
-        />
-      )}
-      {isOpenSeleteListPrice && (
-        <ModalSelectPriceList
-          isOpen={isOpenSeleteListPrice}
-          onClose={onCloseSeleteListPrice}
-          setPriceList={handleSetPriceList}
-        />
-      )}
-
       {children}
     </StoreContext.Provider>
   );

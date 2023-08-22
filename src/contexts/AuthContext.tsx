@@ -8,6 +8,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { Me } from "../@types/me";
 import { api } from "../service/apiClient";
 
 type User = {
@@ -32,7 +33,7 @@ type AuthContextData = {
   signOut: () => void;
   sso: (token: string) => Promise<void>;
   reset(p: ResetProps): Promise<ReponseSignIn | void>;
-  user?: User;
+  user?: Me;
   isAuthenticated: boolean;
 };
 
@@ -64,37 +65,15 @@ export function signOut() {
 export function AuthProvider({ children }: AuthProviderProps) {
   const { "nextauth.token": token } = parseCookies();
 
-  const [user, setUser] = useState<User>();
+  const [user, setUser] = useState<Me>();
   const isAuthenticated = !!user && !!token;
 
   useEffect(() => {
     if (token) {
       api
-        .get("/auth/me")
+        .get<Me>("/auth/me")
         .then((response) => {
-          const {
-            codigo,
-            nome,
-            nomeGuerra,
-            email,
-            codGerente,
-            codSupervisor,
-            eAtivo,
-            eGerente,
-            eSupervisor,
-          } = response.data;
-
-          setUser({
-            codigo,
-            nome,
-            nomeGuerra,
-            email,
-            codGerente,
-            codSupervisor,
-            eAtivo,
-            eGerente,
-            eSupervisor,
-          });
+          setUser(response.data);
         })
         .catch(() => {
           signOut();

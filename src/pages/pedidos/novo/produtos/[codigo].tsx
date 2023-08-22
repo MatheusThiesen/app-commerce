@@ -6,6 +6,7 @@ import {
   Button,
   Divider,
   Flex,
+  Icon,
   Spinner,
   Stack,
   Table,
@@ -13,19 +14,21 @@ import {
   Td,
   Text,
   Tr,
-  useNumberInput,
+  useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { IoChevronForwardSharp } from "react-icons/io5";
+import { FaCartPlus } from "react-icons/fa";
 import ReactSelect from "react-select";
 import { Me } from "../../../../@types/me";
+import { Cart } from "../../../../components/Cart";
 import { InputQuantity } from "../../../../components/Form/InputQuantity";
 import { HeaderNavigation } from "../../../../components/HeaderNavigation";
 import { ProductImageCarouse } from "../../../../components/ProductImageCarouse";
+import { ShoppingButton } from "../../../../components/ShoppingButton";
 import { VariationsProduct } from "../../../../components/VariationsProduct";
 import { useLoading } from "../../../../contexts/LoadingContext";
 import { useStore } from "../../../../contexts/StoreContext";
@@ -46,33 +49,28 @@ export default function Produto(props: ProdutoProps) {
   const { setLoading } = useLoading();
   const toast = useToast();
 
+  const { totalItems, orders, client } = useStore();
+
+  const {
+    isOpen: isOpenOrder,
+    onOpen: onOpenOrder,
+    onClose: onCloseOrder,
+  } = useDisclosure();
+
   const { codigo } = router.query;
   const [images, setImages] = useState<string[]>([]);
   const [stockLocationSelected, setStockLocationSelected] = useState<
     StockLocation | undefined
   >();
 
-  const { data: product, isLoading } = useProductOne(Number(codigo));
+  const { data: product, isLoading } = useProductOne(
+    Number(codigo),
+    client?.codigo
+  );
 
-  const { priceList, addItem, getStockProduct } = useStore();
+  const { priceList, addItem } = useStore();
 
-  const {
-    getInputProps: inputQuantityInputProps,
-    getIncrementButtonProps: inputQuantityIncrementButtonProps,
-    getDecrementButtonProps: inputQuantityDecrementButtonProps,
-    valueAsNumber: quantity,
-  } = useNumberInput({
-    step: product?.qtdEmbalagem ?? 0,
-    defaultValue:
-      product && stockLocationSelected
-        ? getStockProduct({
-            product,
-            stockLocationPeriod: stockLocationSelected?.periodo,
-          })
-        : 0,
-    min: 0,
-    max: stockLocationSelected?.quantidade ?? 0,
-  });
+  const [quantity, setQuantity] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -88,6 +86,24 @@ export default function Produto(props: ProdutoProps) {
     })();
   }, [product]);
 
+  useEffect(() => {
+    if (product && stockLocationSelected) {
+      const findOrder = orders.find(
+        (f) => f.stockLocation.periodo === stockLocationSelected.periodo
+      );
+
+      if (!findOrder) return setQuantity(0);
+
+      const findItem = findOrder.items.find(
+        (f) => f.product.codigo === product.codigo
+      );
+
+      if (!findItem) return setQuantity(0);
+
+      setQuantity(findItem.qtd);
+    }
+  }, [product, stockLocationSelected, orders]);
+
   async function handleAddProductStore() {
     if (!product || !stockLocationSelected) {
       return toast({
@@ -102,6 +118,7 @@ export default function Produto(props: ProdutoProps) {
       product,
       qtd: quantity,
       stockLocation: stockLocationSelected,
+      brand: product.marca,
     });
 
     return toast({
@@ -153,8 +170,10 @@ export default function Produto(props: ProdutoProps) {
                 label: product?.descricaoAdicional,
               }}
               onChange={(e) => {
-                setLoading(true);
-                router.push(`/pedidos/novo/produtos/${e?.value}`);
+                if (e?.value !== product?.codigo) {
+                  setLoading(true);
+                  router.push(`/pedidos/novo/produtos/${e?.value}`);
+                }
               }}
             />
           </Box>
@@ -186,9 +205,12 @@ export default function Produto(props: ProdutoProps) {
           {stockLocationSelected && (
             <Box w="8rem">
               <InputQuantity
-                inputProps={inputQuantityInputProps}
-                incrementButtonProps={inputQuantityIncrementButtonProps}
-                decrementButtonProps={inputQuantityDecrementButtonProps}
+                value={quantity}
+                step={product?.qtdEmbalagem}
+                max={stockLocationSelected?.quantidade}
+                min={product?.qtdEmbalagem}
+                onDecremental={(qtd) => setQuantity(qtd)}
+                onIncremental={(qtd) => setQuantity(qtd)}
               />
               <Text
                 mt="1"
@@ -208,10 +230,11 @@ export default function Produto(props: ProdutoProps) {
         </Stack>
 
         <Button
-          colorScheme="red"
+          colorScheme="blue"
           mt="6"
           size="lg"
           w="full"
+          leftIcon={<Icon as={FaCartPlus} fontSize={30} />}
           aria-disabled={!stockLocationSelected || !(Number(quantity) > 0)}
           disabled={!stockLocationSelected || !(Number(quantity) > 0)}
           onClick={() =>
@@ -237,6 +260,31 @@ export default function Produto(props: ProdutoProps) {
         isGoBack
         title="Detalhes"
         user={{ name: props.me.email }}
+        Right={<ShoppingButton qtdItens={totalItems} onClick={onOpenOrder} />}
+        isNotNavigation
+        contentHeight={2}
+        content={
+          <Flex w="full" flexDir="column">
+            <Flex
+              w="full"
+              h="1.5rem"
+              bg="gray.50"
+              align="center"
+              justify="space-between"
+              px="2rem"
+            >
+              <Text fontWeight="light" fontSize="sm">
+                {!!client?.codigo
+                  ? `${client?.codigo} - ${client?.razaoSocial}`
+                  : "-"}
+              </Text>
+
+              <Text fontWeight="light" fontSize="sm">
+                {!!priceList?.codigo ? `${priceList?.descricao}` : "-"}
+              </Text>
+            </Flex>
+          </Flex>
+        }
       />
 
       {isLoading && product ? (
@@ -271,26 +319,24 @@ export default function Produto(props: ProdutoProps) {
                   cursor="pointer"
                   variant="link"
                 >
-                  Voltar à listagem
+                  Voltar
                 </Button>
 
                 <Divider h="1rem" mx="2" orientation="vertical" />
 
-                <Breadcrumb
-                  spacing="8px"
-                  separator={<IoChevronForwardSharp color="gray.500" />}
-                >
+                <Breadcrumb fontSize={"sm"}>
+                  {/* <BreadcrumbItem>
+                    <Link href="/produtos" >
+                      <BreadcrumbLink>
+                        {product?.genero?.descricao}
+                      </BreadcrumbLink>
+                    </Link>
+                  </BreadcrumbItem> */}
                   <BreadcrumbItem>
                     <Link href={`/produtos/${product?.codigo}`}>
                       <BreadcrumbLink>{product?.descricao}</BreadcrumbLink>
                     </Link>
                   </BreadcrumbItem>
-
-                  {/* <BreadcrumbItem>
-                <Link href="/produtos?genero=masculino">
-                  <BreadcrumbLink>Calçados</BreadcrumbLink>
-                </Link>
-              </BreadcrumbItem> */}
                 </Breadcrumb>
               </Flex>
 
@@ -488,20 +534,28 @@ export default function Produto(props: ProdutoProps) {
           </Flex>
         </>
       )}
+
+      <Cart isOpen={isOpenOrder} onClose={onCloseOrder} />
     </>
   );
 }
 
 export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
-  var me = {};
 
-  const response = await apiClient.get("/auth/me");
-  me = response.data;
+  const response = await apiClient.get<Me>("/auth/me");
+
+  if (response.data.eVendedor === false)
+    return {
+      redirect: {
+        destination: "/produtos",
+        permanent: true,
+      },
+    };
 
   return {
     props: {
-      me: me,
+      me: response.data,
     },
   };
 });

@@ -7,7 +7,7 @@ interface ModalOrderByProps extends OrderByMobileProps {
 }
 
 export const ModalOrderBy = ({
-  OrderByItems,
+  orderByItems,
   currentOrderByValue,
   setOrderBy,
   isOpen,
@@ -16,7 +16,7 @@ export const ModalOrderBy = ({
   return (
     <ModalList title="Ordenar por" isOpen={isOpen} onClose={onClose}>
       <OrderByMobile
-        OrderByItems={OrderByItems}
+        orderByItems={orderByItems}
         currentOrderByValue={currentOrderByValue}
         setOrderBy={setOrderBy}
       />

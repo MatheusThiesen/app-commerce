@@ -21,11 +21,16 @@ export function BottomNavigationProvider({
   const router = useRouter();
 
   const isActive = ![
+    "/pedidos/novo/produtos/[codigo]",
+    "/pedidos/novo/fechamento",
+    "/pedidos/novo",
+    "/pedidos/[codigo]",
+
     "/produtos/[codigo]",
     "/clientes/[codigo]",
-    "/pedidos/novo/produtos/[codigo]",
-    "/pedidos/novo",
+
     "/catalogo/[id]",
+
     "/conta",
   ].includes(router.pathname);
 

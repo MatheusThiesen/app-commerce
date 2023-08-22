@@ -34,6 +34,7 @@ export interface HeaderProps {
 
   Left?: ReactNode;
   Right?: ReactNode;
+  Center?: ReactNode;
 
   user?: {
     name: string;
@@ -45,6 +46,7 @@ export function HeaderNavigationComponent({
   title,
   Left,
   Right,
+  Center,
   content,
   contentHeight = 0,
   height = 3.5,
@@ -54,14 +56,14 @@ export function HeaderNavigationComponent({
   user,
   isNotNavigation = false,
 }: HeaderProps) {
-  const { signOut, isAuthenticated } = useAuth();
+  const { signOut, isAuthenticated, user: userAuth } = useAuth();
 
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
   if (!Left && isGoBack) {
     Left = (
-      <Flex ml="4" align="center">
+      <Flex ml="4" align="center" display={["flex", "flex", "flex", "none"]}>
         <Button
           p="0"
           bg="transparent"
@@ -138,7 +140,10 @@ export function HeaderNavigationComponent({
           <Flex flex={1} align="center">
             {Left && Left}
           </Flex>
-          {title ? (
+
+          {Center ? (
+            Center
+          ) : title ? (
             <Text color="white" fontSize={"medium"} fontWeight="bold">
               {title}
             </Text>
@@ -170,14 +175,14 @@ export function HeaderNavigationComponent({
       <Flex
         as="header"
         zIndex={10}
-        h={`${height + 1}rem`}
+        h={`${height + 2.6}rem`}
         w="full"
         alignItems="center"
         boxShadow={show ? "2xl" : "none"}
         position={isInativeEventScroll ? undefined : "fixed"}
         transition="all 0.2s"
         transform={
-          show ? "translateY(0)" : `translateY(calc(${height + 1}rem * -1))`
+          show ? "translateY(0)" : `translateY(calc(${height + 2.6}rem * -1))`
         }
         flexDir="column"
         display={["none", "none", "none", "flex"]}
@@ -188,64 +193,95 @@ export function HeaderNavigationComponent({
           h="full"
           justifyContent="space-between"
           align="center"
-          px={["30"]}
-          maxW="1120px"
+          px={["0.5rem"]}
+          maxW="1200px"
         >
-          {isAuthenticated && !isNotNavigation ? (
-            <Link href="/produtos" passHref>
-              <CharkraLink h="full">
-                <Image
-                  py="1"
-                  h="full"
-                  objectFit="contain"
-                  src="/assets/logo-white.png"
-                />
-              </CharkraLink>
-            </Link>
-          ) : (
-            <Image
-              py="1"
-              h="full"
-              objectFit="contain"
-              src="/assets/logo-white.png"
-            />
-          )}
+          <Flex align="center" h="full">
+            {Left && Left}
+            {isAuthenticated && !isNotNavigation ? (
+              <Link href="/produtos" passHref>
+                <CharkraLink h="full" display="flex" alignItems="center">
+                  <Image
+                    py="1"
+                    h="70%"
+                    objectFit="contain"
+                    src="/assets/logo-white.png"
+                  />
+                </CharkraLink>
+              </Link>
+            ) : (
+              <Image
+                py="1"
+                h="70%"
+                objectFit="contain"
+                src="/assets/logo-white.png"
+              />
+            )}
+          </Flex>
 
-          {isAuthenticated && !isNotNavigation && (
-            <Stack direction="row" h="full" spacing="10">
-              {/* <NavLink href="/inicio">Início</NavLink> */}
-              <NavLink href="/produtos">Produtos</NavLink>
-              <NavLink href="/clientes">Clientes</NavLink>
-              {/* <NavLink href="/pedidos">Pedidos</NavLink> */}
-            </Stack>
-          )}
+          <Flex flexDir="column" rowGap="0.6rem" flex={1} px="2rem">
+            {Center && Center}
 
-          {user && (
-            <Menu>
-              <MenuButton>
-                <Flex align={"center"}>
-                  <Avatar size="md" name={user?.name} bg="white" />
-                  <Text fontSize="sm" fontWeight="bold" ml="2" color="white">
-                    {user?.name}
-                  </Text>
-                </Flex>
-              </MenuButton>
-              <MenuList zIndex="1000">
-                <MenuGroup title="Perfil">
-                  <MenuItem>
-                    <Link href="/conta" passHref>
-                      <CharkraLink _hover={{ textDecoration: "none" }}>
-                        Minha conta
-                      </CharkraLink>
-                    </Link>
-                  </MenuItem>
-                  <MenuDivider />
-                  <MenuItem onClick={signOut}>Sair </MenuItem>
-                </MenuGroup>
-              </MenuList>
-            </Menu>
-          )}
+            {isAuthenticated && !isNotNavigation && (
+              <Stack direction="row" h="full" spacing="10">
+                <NavLink href="/inicio">Inicio</NavLink>
+                <NavLink href="/produtos">Produtos</NavLink>
+                <NavLink href="/clientes">Clientes</NavLink>
+                {/* {userAuth?.eVendedor && (
+                  <NavLink href="/pedidos">Pedidos</NavLink>
+                )} */}
+              </Stack>
+            )}
+          </Flex>
+
+          <Flex
+            flexDir="column"
+            rowGap={"0.5rem"}
+            align="flex-end"
+            justify="center"
+            h="full"
+            py="0.5rem"
+          >
+            <Box>{Right && Right}</Box>
+
+            {user && !isNotNavigation && (
+              <Menu>
+                <MenuButton>
+                  <Flex align={"center"}>
+                    <Avatar size="sm" name={user?.name} bg="white" />
+                    <Text
+                      fontSize="smaller"
+                      fontWeight="bold"
+                      ml="2"
+                      color="white"
+                    >
+                      {user?.name}
+                    </Text>
+                  </Flex>
+                </MenuButton>
+                <MenuList zIndex="9999">
+                  <MenuGroup title="Perfil">
+                    <MenuItem>
+                      <Link href="/conta" passHref>
+                        <CharkraLink _hover={{ textDecoration: "none" }}>
+                          Minha conta
+                        </CharkraLink>
+                      </Link>
+                    </MenuItem>
+                    <MenuDivider />
+                    <MenuItem onClick={signOut}>Sair </MenuItem>
+                  </MenuGroup>
+                </MenuList>
+              </Menu>
+            )}
+          </Flex>
         </Flex>
+
+        {/* {content && (
+          <Box w="full" h="calc(100% - 3.5rem)">
+            {content}
+          </Box>
+        )} */}
       </Flex>
     </>
   );

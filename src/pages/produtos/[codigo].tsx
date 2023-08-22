@@ -96,8 +96,10 @@ export default function Produto(props: ProdutoProps) {
             label: product?.descricaoAdicional,
           }}
           onChange={(e) => {
-            setLoading(true);
-            router.push(`/produtos/${e?.value}`);
+            if (e?.value !== product?.codigo) {
+              setLoading(true);
+              router.push(`/pedidos/novo/produtos/${e?.value}`);
+            }
           }}
         />
       </Box>

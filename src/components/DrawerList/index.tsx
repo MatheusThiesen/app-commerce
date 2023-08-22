@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Drawer,
-  DrawerBody,
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
@@ -31,12 +30,12 @@ export function DrawerList({
   return (
     <Drawer
       onClose={onClose}
-      size={["full", "full", "full", "lg"]}
+      size={["full", "full", "full", "xl"]}
       isOpen={isOpen}
     >
       <DrawerOverlay />
       <DrawerContent>
-        <DrawerHeader>
+        <DrawerHeader borderBottom={"1px"} borderColor="#ccc">
           <Stack>
             <Box>
               <Button variant="unstyled" onClick={onClose}>
@@ -50,9 +49,7 @@ export function DrawerList({
           </Stack>
         </DrawerHeader>
 
-        <DrawerBody bg="gray.50" p="0">
-          {children}
-        </DrawerBody>
+        {children}
       </DrawerContent>
     </Drawer>
   );

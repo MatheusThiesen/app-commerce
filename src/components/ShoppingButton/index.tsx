@@ -7,7 +7,13 @@ interface ShoppingButtonProps extends ButtonProps {
 
 export const ShoppingButton = ({ qtdItens, ...rest }: ShoppingButtonProps) => {
   return (
-    <Button mr="4" variant="unstyled" position="relative" {...(rest as any)}>
+    <Button
+      mr={["2", "2", "2", "4"]}
+      variant="unstyled"
+      position="relative"
+      display="flex"
+      {...(rest as any)}
+    >
       {qtdItens > 0 && (
         <Flex
           w="1.3rem"
@@ -15,8 +21,8 @@ export const ShoppingButton = ({ qtdItens, ...rest }: ShoppingButtonProps) => {
           bg="white"
           borderRadius="full"
           position="absolute"
-          top="-0.1rem"
-          left="-1rem"
+          top="-0.5rem"
+          left="1.5rem"
           justify="center"
           align="center"
         >
@@ -25,8 +31,14 @@ export const ShoppingButton = ({ qtdItens, ...rest }: ShoppingButtonProps) => {
           </Text>
         </Flex>
       )}
-
       <Icon as={AiOutlineShoppingCart} color="white" fontSize={"2rem"} />
+      <Text
+        color="white"
+        display={["none", "none", "block", "block"]}
+        ml="0.5rem"
+      >
+        Carrinho
+      </Text>
     </Button>
   );
 };

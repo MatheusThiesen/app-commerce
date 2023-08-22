@@ -1,7 +1,7 @@
 import { Box, Flex, List, ListItem, Text } from "@chakra-ui/react";
 import { memo } from "react";
 export interface OrderByMobileProps {
-  OrderByItems: OrderByItem[];
+  orderByItems: OrderByItem[];
   setOrderBy: (e: string | number) => void;
   currentOrderByValue?: string | number;
 }
@@ -12,13 +12,13 @@ interface OrderByItem {
 }
 
 function OrderByMobileComponent({
-  OrderByItems,
+  orderByItems,
   setOrderBy,
   currentOrderByValue,
 }: OrderByMobileProps) {
   return (
     <List>
-      {OrderByItems.map((item, index) => (
+      {orderByItems.map((item, index) => (
         <ListItem
           bg="white"
           key={item.value}

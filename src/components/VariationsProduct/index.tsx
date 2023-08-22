@@ -31,7 +31,9 @@ export function VariationsProduct({
             minW="4rem"
             h="4rem"
             borderRadius="md"
-            onClick={onClick && onClick}
+            onClick={() => {
+              currentReference !== variation.referencia && onClick && onClick();
+            }}
             cursor={
               currentReference === variation.referencia ? "auto" : "pointer"
             }

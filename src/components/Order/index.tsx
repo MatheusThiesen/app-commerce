@@ -1,48 +1,91 @@
-import { Box, Link as ChakraLink, Flex, Tag, Text } from "@chakra-ui/react";
-import Link from "next/link";
+import { Box, Flex, Icon, Tag, Text } from "@chakra-ui/react";
+import {
+  selectStatusColor,
+  selectStatusIcon,
+} from "../../hooks/queries/useOrder";
 
-export const Order = () => {
+interface Props {
+  code?: number;
+  paymentCondition: string;
+  client: string;
+  totalValue: string;
+  date: string;
+  eRascunho: boolean;
+  status?: {
+    code: number;
+    description: string;
+  };
+}
+
+export const Order = ({
+  code,
+  paymentCondition,
+  client,
+  totalValue,
+  date,
+  eRascunho,
+  status,
+}: Props) => {
   return (
-    <Link href={`/pedidos/detalhe/${"order.id"}`} passHref>
-      <ChakraLink
-        w="full"
-        bg="white"
-        display={"block"}
-        p="4"
-        borderRadius={"md"}
-        _hover={{
-          filter: "brightness(0.95)",
-          cursor: "pointer",
-        }}
-      >
-        <Flex justify={["space-between", "flex-start"]}>
-          <Tag size="md" variant="solid" color="white" bg="red.500">
-            #{"order.code"}
-          </Tag>
+    <Box w="full" bg="white" display={"block"} p="4" borderRadius={"md"}>
+      <Flex justify={["space-between"]}>
+        <Flex align="center" flexDir="row" columnGap={"2"}>
+          <Icon
+            as={selectStatusIcon(eRascunho ? 99 : status?.code)}
+            color={selectStatusColor(eRascunho ? 99 : status?.code)}
+            fontSize="4xl"
+          />
 
-          <Text fontWeight="light" ml={["0", "1rem"]} fontSize="sm">
-            {"order.createAt"}
-          </Text>
+          <Tag
+            size="sm"
+            variant="solid"
+            color="white"
+            bg={selectStatusColor(eRascunho ? 99 : status?.code)}
+            // opacity={0.8}
+            textTransform="uppercase"
+          >
+            {eRascunho
+              ? "RASCUNHO"
+              : status?.description
+              ? status?.description
+              : "-"}
+          </Tag>
         </Flex>
 
+        <Text fontWeight="light" ml={["0", "1rem"]} fontSize="sm">
+          {date}
+        </Text>
+      </Flex>
+      {code && (
         <Box mt="1.5">
           <Text fontWeight="light" fontSize="small" color="gray.500">
-            CLIENTE
+            PEDIDO
           </Text>
-          <Text>{`${"order.client.brandName"} - ${"order.client.cnpj"}`}</Text>
+          <Text>#{code}</Text>
         </Box>
-        <Box mt="1.5">
-          <Text fontWeight="light" fontSize="small" color="gray.500">
-            VALOR
-          </Text>
-          <Text fontWeight="bold" fontSize="lg">
-            {"order.totalValue"}
-          </Text>
-          <Text fontWeight="light" fontSize="small">
-            {"order.paymentTerms"}
-          </Text>
-        </Box>
-      </ChakraLink>
-    </Link>
+      )}
+      <Box mt="1.5">
+        <Text fontWeight="light" fontSize="small" color="gray.500">
+          CLIENTE
+        </Text>
+        <Text>{client}</Text>
+      </Box>
+      <Box mt="1.5">
+        <Text fontWeight="light" fontSize="small" color="gray.500">
+          CONDIÇÃO PAGAMENTO
+        </Text>
+        <Text fontWeight="normal" fontSize="md">
+          {paymentCondition}
+        </Text>
+      </Box>
+      <Box mt="1.5">
+        <Text fontWeight="light" fontSize="small" color="gray.500">
+          VALOR
+        </Text>
+        <Text fontWeight="bold" fontSize="lg">
+          {totalValue}
+        </Text>
+      </Box>
+    </Box>
   );
 };

@@ -11,9 +11,9 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import Router from "next/router";
 import { IoArrowBack } from "react-icons/io5";
-import { PriceList, pricesList } from "../../contexts/StoreContext";
+import { PriceList } from "../../contexts/StoreContext";
+import { usePriceList } from "../../hooks/queries/usePriceList";
 import { OrderByMobile } from "../OrderByMobile";
 
 interface ModalSelectPriceListProps {
@@ -29,13 +29,17 @@ export function ModalSelectPriceList({
   setPriceList,
   currentValue,
 }: ModalSelectPriceListProps) {
+  const { data } = usePriceList();
+
   function handleSelectPriceList(codigo: number | string) {
-    const findPriceList = pricesList.find((f) => f.value === Number(codigo));
+    const findPriceList = data?.priceLists.find(
+      (f) => f.codigo === Number(codigo)
+    );
 
     if (findPriceList) {
       setPriceList({
-        codigo: findPriceList.value,
-        descricao: findPriceList.name,
+        codigo: findPriceList.codigo,
+        descricao: findPriceList.descricao,
       });
       onClose();
     }
@@ -47,8 +51,6 @@ export function ModalSelectPriceList({
       size={["full", "full", "full", "4xl"]}
       isOpen={isOpen}
       scrollBehavior="inside"
-      closeOnEsc={false}
-      closeOnOverlayClick={false}
     >
       <ModalOverlay />
       <ModalContent>
@@ -58,16 +60,13 @@ export function ModalSelectPriceList({
               <Button
                 variant="unstyled"
                 onClick={() => {
-                  Router.back();
-                  setTimeout(() => {
-                    onClose();
-                  }, 200);
+                  onClose();
                 }}
                 display={"flex"}
                 alignItems="center"
               >
                 <Icon as={IoArrowBack} fontSize="1.8rem" mr="2" />
-                Voltar
+                Fechar
               </Button>
             </Box>
 
@@ -79,7 +78,12 @@ export function ModalSelectPriceList({
 
         <ModalBody bg="gray.50" borderBottomRadius="md" p="0">
           <OrderByMobile
-            OrderByItems={pricesList}
+            orderByItems={
+              data?.priceLists.map((item) => ({
+                name: item.descricao,
+                value: item.codigo,
+              })) ?? []
+            }
             currentOrderByValue={currentValue}
             setOrderBy={handleSelectPriceList}
           />
