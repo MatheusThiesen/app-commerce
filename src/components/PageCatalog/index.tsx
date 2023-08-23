@@ -7,6 +7,7 @@ import {
   UnorderedList,
 } from "@chakra-ui/react";
 import { memo } from "react";
+import { defaultNoImage } from "../../global/parameters";
 import { ProductPage } from "../../hooks/queries/useCatalog";
 
 interface PageCatalogProps {
@@ -41,7 +42,10 @@ const InfoProduct = ({
       )}
 
       {description && (
-        <Text fontSize="2.5rem" lineHeight="2.8rem">
+        <Text
+          fontSize={["1.8rem", "1.8rem", "1.8rem", "2.5rem"]}
+          lineHeight={["1.8rem", "1.8rem", "1.8rem", "2.8rem"]}
+        >
           {description}
         </Text>
       )}
@@ -59,9 +63,11 @@ export function PageCatalog({ product, date }: PageCatalogProps) {
     <Flex
       justify="space-between"
       flexDir={"column"}
-      maxW={["100%", "100%"]}
-      minH={["auto", "auto", "auto", "35rem"]}
-      // maxH={"100vh"}
+      w="100%"
+      h="100%"
+      maxW={"100%"}
+      maxH="100%"
+      minH={["auto", "auto", "auto", "80vh"]}
       bg="white"
       px="4"
       py="4"
@@ -79,7 +85,7 @@ export function PageCatalog({ product, date }: PageCatalogProps) {
           align={"center"}
           justify="center"
           maxH={["26rem", "26rem", "100%", "100%"]}
-          h={["18rem", "22rem", "auto", "auto"]}
+          h={["10rem", "22rem", "auto", "auto"]}
         >
           <Image
             w={["75%", "75%", "75%", "100%"]}
@@ -88,8 +94,7 @@ export function PageCatalog({ product, date }: PageCatalogProps) {
             objectFit="contain"
             onError={({ currentTarget }) => {
               currentTarget.onerror = null; // prevents looping
-              currentTarget.src =
-                "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
+              currentTarget.src = defaultNoImage;
             }}
           />
         </Flex>
@@ -120,8 +125,7 @@ export function PageCatalog({ product, date }: PageCatalogProps) {
                     objectFit="contain"
                     onError={({ currentTarget }) => {
                       currentTarget.onerror = null; // prevents looping
-                      currentTarget.src =
-                        "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
+                      currentTarget.src = defaultNoImage;
                     }}
                   />
                 </Box>
@@ -185,12 +189,16 @@ export function PageCatalog({ product, date }: PageCatalogProps) {
         as="footer"
         align={"flex-end"}
         justify={"space-between"}
-        mt={["4rem", "4rem", "4rem", "0"]}
+        mt={["1rem", "2rem", "4rem", "0"]}
       >
-        <Text as="span" fontWeight="bold" fontSize="sm">
+        <Text
+          as="p"
+          fontWeight="bold"
+          fontSize={["0.675rem", "0.675rem", "sm", "sm"]}
+        >
           * PRODUTOS ESTÃO SUJEITOS A ALTERAÇÕES CONFORME DISPONIBILIDADE *
         </Text>
-        <Text as="span" fontSize="smaller">
+        <Text as="p" fontSize={["0.675rem", "0.675rem", "0.675rem", "smaller"]}>
           Data de criação {date}
         </Text>
       </Flex>

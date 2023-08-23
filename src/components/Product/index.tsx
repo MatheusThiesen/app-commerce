@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { memo } from "react";
 import { BsBookmark, BsBookmarkFill } from "react-icons/bs";
+import { defaultNoImage } from "../../global/parameters";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
 
 export interface ProductProps {
@@ -110,8 +111,7 @@ export function ProductComponent({
                 objectFit="contain"
                 onError={({ currentTarget }) => {
                   currentTarget.onerror = null; // prevents looping
-                  currentTarget.src =
-                    "https://alpar.sfo3.digitaloceanspaces.com/Alpar/no-image.jpg";
+                  currentTarget.src = defaultNoImage;
                 }}
               />
             </Flex>
@@ -153,5 +153,5 @@ export function ProductComponent({
 }
 
 export const Product = memo(ProductComponent, (prevProps, nextProps) =>
-  Object.is(prevProps.product, nextProps.product)
+  Object.is(prevProps.product.cod, nextProps.product.cod)
 );

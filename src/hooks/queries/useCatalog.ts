@@ -1,5 +1,5 @@
 import { AxiosError } from "axios";
-import { useInfiniteQuery } from "react-query";
+import { useInfiniteQuery, useQuery } from "react-query";
 import { api } from "../../service/apiClient";
 
 export type getCatalogProps = {
@@ -98,6 +98,7 @@ export function useCatalog({ id, pagesize }: UseCatalogProps) {
     ["catalog", id, pagesize],
     ({ pageParam = 1 }) => getCatalog({ id, pagesize, page: pageParam }),
     {
+      refetchOnWindowFocus: false,
       // getPreviousPageParam: (firstPage, allPages) => undefined,
       getNextPageParam: (lastPage) => {
         if (!lastPage.hasNextPage) return undefined;
@@ -106,4 +107,22 @@ export function useCatalog({ id, pagesize }: UseCatalogProps) {
       },
     }
   );
+}
+
+export async function getCatalogTotalCount(
+  id?: string
+): Promise<{ total: number }> {
+  if (!id) return { total: 0 };
+
+  const { data } = await api.get<{ total: number }>(
+    `/catalog/totalCount/${id}`,
+    {}
+  );
+
+  return data;
+}
+export function useCatalogTotalCount(id?: string) {
+  return useQuery(["catalogTotalCount", id], () => getCatalogTotalCount(id), {
+    staleTime: 1000 * 60 * 5, // 5 Minutos
+  });
 }

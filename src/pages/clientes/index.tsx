@@ -141,6 +141,16 @@ export default function Clientes({ me }: ClientProps) {
             </Button>
           </Flex>
         }
+        Center={
+          <Box width={"100%"} paddingX={["0.5rem", "0.5rem", "0.5rem", "0"]}>
+            <Search
+              size="md"
+              setSearch={setSearch}
+              search={search}
+              placeholder="Buscar na Alpar do Brasil por clientes"
+            />
+          </Box>
+        }
       />
 
       {isLoadingFilters ? (
@@ -150,7 +160,7 @@ export default function Clientes({ me }: ClientProps) {
       ) : (
         <>
           <Flex
-            pt={["6.5rem", "6.5rem", "6.5rem", "7rem"]}
+            pt={["6.5rem", "6.5rem", "6.5rem", "8rem"]}
             pb={["7rem"]}
             justify="center"
             w="full"
@@ -162,8 +172,6 @@ export default function Clientes({ me }: ClientProps) {
                 display={["none", "none", "none", "flex"]}
                 flexDirection="column"
               >
-                <Search mb="4" setSearch={setSearch} search={search} />
-
                 <Box borderRadius="md">
                   <FilterSelectedList
                     filters={filters}
@@ -272,14 +280,12 @@ export default function Clientes({ me }: ClientProps) {
             dataFilters={dataFilters}
             filters={filters}
             setFilters={setFilters}
-          >
-            <Search mb="4" setSearch={setSearch} search={search} />
-          </ModalFilter>
+          />
 
           <ModalOrderBy
             isOpen={isOpenOrderBy}
             onClose={onCloseOrderBy}
-            OrderByItems={clientOrderByItems}
+            orderByItems={clientOrderByItems}
             currentOrderByValue={orderBy}
             setOrderBy={(orderByValue) => {
               setOrderBy(String(orderByValue));

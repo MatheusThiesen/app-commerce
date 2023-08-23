@@ -28,6 +28,9 @@ export type Client = {
   email?: string;
   email2?: string;
 
+  titulo?: {
+    id: string;
+  }[];
   conceito?: {
     codigo: string;
     descricao: string;

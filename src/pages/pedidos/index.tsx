@@ -13,81 +13,32 @@ import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { IoMdAddCircle } from "react-icons/io";
-import { SiMicrosoftexcel } from "react-icons/si";
-import { FilterList } from "../../@types/api-queries";
+import { useInView } from "react-intersection-observer";
 import { Me } from "../../@types/me";
+
+import { setupAPIClient } from "../../service/api";
+import { withSSRAuth } from "../../utils/withSSRAuth";
+
+import { useLoading } from "../../contexts/LoadingContext";
+import { useStore } from "../../contexts/StoreContext";
+
+import { Client } from "../../hooks/queries/useClients";
+import { useOrders } from "../../hooks/queries/useOrder";
+import { useOrdersFilters } from "../../hooks/queries/useOrdersFilters";
+
+import { Alert } from "../../components/Alert";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ListFilter, SelectedFilter } from "../../components/ListFilter";
+import { LoadingInfiniteScroll } from "../../components/LoadingInfiniteScroll";
 import { ModalList } from "../../components/ModalList";
+import { ModalSelectClient } from "../../components/ModalSelectClient";
+import { ModalSelectPriceList } from "../../components/ModalSelectPriceList";
 import { Order } from "../../components/Order";
 import { OrderBy } from "../../components/OrderBy";
 import { OrderByMobile } from "../../components/OrderByMobile";
-import { useStore } from "../../contexts/StoreContext";
-import { useClients } from "../../hooks/queries/useClients";
-import { setupAPIClient } from "../../service/api";
-import { api } from "../../service/apiClient";
-import { withSSRAuth } from "../../utils/withSSRAuth";
-
-const orders = [
-  {
-    id: "1",
-    createAt: "04 de Janeiro 2022",
-    code: "35591",
-    totalValue: "R$ 1.000,00",
-    paymentTerms: "VENDA 56 - 30/60/90 DIAS",
-    brand: {
-      name: "LA MARTINA",
-    },
-    client: {
-      code: "35591",
-      cnpj: "04.896.434/0001-72",
-      brandName: "A LEANDRO BAZAR E PAPELARIA",
-      address: {
-        street: "AV. DORIVAL CÂNDIDO LUZ DE OLIVEIRA, 8018",
-        city: "BOM PRINCÍPIO,GRAVATAÍ - RS",
-      },
-    },
-  },
-  {
-    id: "2",
-    createAt: "04 de Janeiro 2022",
-    code: "35591",
-    totalValue: "R$ 1.000,00",
-    paymentTerms: "VENDA 56 - 30/60/90 DIAS",
-    brand: {
-      name: "LA MARTINA",
-    },
-    client: {
-      code: "35591",
-      cnpj: "04.896.434/0001-72",
-      brandName: "A LEANDRO BAZAR E PAPELARIA",
-      address: {
-        street: "AV. DORIVAL CÂNDIDO LUZ DE OLIVEIRA, 8018",
-        city: "BOM PRINCÍPIO,GRAVATAÍ - RS",
-      },
-    },
-  },
-  {
-    id: "3",
-    createAt: "04 de Janeiro 2022",
-    code: "35591",
-    totalValue: "R$ 1.000,00",
-    paymentTerms: "VENDA 56 - 30/60/90 DIAS",
-    brand: {
-      name: "LA MARTINA",
-    },
-    client: {
-      code: "35591",
-      cnpj: "04.896.434/0001-72",
-      brandName: "A LEANDRO BAZAR E PAPELARIA",
-      address: {
-        street: "AV. DORIVAL CÂNDIDO LUZ DE OLIVEIRA, 8018",
-        city: "BOM PRINCÍPIO,GRAVATAÍ - RS",
-      },
-    },
-  },
-];
+import { PanelLayout } from "../../components/PanelLayout";
+import { Search } from "../../components/Search";
 
 interface OrdersProps {
   me: Me;
@@ -95,20 +46,12 @@ interface OrdersProps {
 
 const OrderByItems = [
   {
-    name: "Maior Código",
-    value: "codigo.desc",
+    name: "Digitação decrescente",
+    value: "createdAt.desc",
   },
   {
-    name: "Menor Código",
-    value: "codigo.asc",
-  },
-  {
-    name: "Alfabética A>Z",
-    value: "razaoSocial.asc",
-  },
-  {
-    name: "Alfabética Z>A",
-    value: "razaoSocial.desc",
+    name: "Digitação crescente",
+    value: "createdAt.asc",
   },
 ];
 
@@ -124,34 +67,54 @@ export default function Orders({ me }: OrdersProps) {
     onClose: onCloseOrderBy,
   } = useDisclosure();
 
-  const [dataFilters, setDataFilters] = useState<FilterList[]>([]);
-  const [isLoadingFilters, setIsLoadingFilters] = useState<boolean>(true);
+  const {
+    isOpen: isOpenSeleteClient,
+    onOpen: onOpenSeleteClient,
+    onClose: onCloseSeleteClient,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenSeleteListPrice,
+    onOpen: onOpenSeleteListPrice,
+    onClose: onCloseSeleteListPrice,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenAlertBilletClient,
+    onOpen: onOpenAlertBilletClient,
+    onClose: onCloseAlertBilletClient,
+  } = useDisclosure();
+
+  const { ref, inView } = useInView();
+
+  const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<SelectedFilter[]>([]);
   const [orderBy, setOrderBy] = useState<string>(() => {
-    return "codigo.desc";
+    return "createdAt.desc";
   });
+  const [client, setClient] = useState<Client | undefined>(undefined);
+  const { setLoading } = useLoading();
 
-  const { setClient, setPriceList } = useStore();
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useClients({
+    useOrders({
       pagesize: 10,
       orderby: orderBy,
       filters: filters,
+      search: search,
     });
 
+  const { data: dataFilters, isLoading: isLoadingFilters } = useOrdersFilters(
+    {}
+  );
+
+  const { createOrder } = useStore();
+
   useEffect(() => {
-    (async () => {
-      const { data } = await api.get<FilterList[]>("/clients/filters");
-      setDataFilters(data);
-
-      setIsLoadingFilters(false);
-    })();
-  }, []);
-
-  function handleCreateOrder() {
-    setClient({} as any);
-    setPriceList({} as any);
-  }
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage]);
+  useEffect(() => {
+    setLoading(isLoading);
+  }, [isLoading]);
 
   return (
     <>
@@ -163,13 +126,27 @@ export default function Orders({ me }: OrdersProps) {
         user={{ name: me?.email }}
         title="Pedidos"
         Right={
-          <Link href={`/pedidos/novo`} passHref>
-            <ChakraLink mr="4" onClick={handleCreateOrder}>
-              <IoMdAddCircle color="white" fontSize={"1.8rem"} />
-            </ChakraLink>
-          </Link>
+          <Button
+            onClick={onOpenSeleteClient}
+            variant="unstyled"
+            display={["flex", "flex", "flex", "none"]}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <IoMdAddCircle color="white" fontSize={"1.8rem"} />
+          </Button>
         }
         contentHeight={2.5}
+        Center={
+          <Box width={"100%"} paddingX={["0.5rem", "0.5rem", "0.5rem", "0"]}>
+            <Search
+              size="md"
+              setSearch={setSearch}
+              search={search}
+              placeholder="Buscar na Alpar do Brasil por pedidos"
+            />
+          </Box>
+        }
         content={
           <Flex w="full" justify="space-around">
             <Button
@@ -208,137 +185,199 @@ export default function Orders({ me }: OrdersProps) {
         }
       />
 
-      {isLoadingFilters ? (
-        <Flex h="100vh" w="100%" justify="center" align="center">
-          <Spinner ml="4" size="xl" />
-        </Flex>
-      ) : (
-        <>
+      <PanelLayout isLoading={isLoadingFilters}>
+        <Flex w="full" maxW="1200px">
           <Flex
-            pt={["6.5rem", "6.5rem", "6.5rem", "7rem"]}
-            pb={["7rem"]}
-            justify="center"
-            w="full"
-          >
-            <Flex w="full" maxW="1200px">
-              <Flex
-                w="22rem"
-                mr="3rem"
-                display={["none", "none", "none", "flex"]}
-                flexDirection="column"
-              >
-                <Box borderRadius="md">
-                  <FilterSelectedList
-                    filters={filters}
-                    setFilters={setFilters}
-                  />
-
-                  {dataFilters && (
-                    <ListFilter
-                      filters={dataFilters}
-                      selectedFilter={filters}
-                      onChangeSelectedFilter={(a) => {
-                        setFilters(a);
-                      }}
-                      isOpen
-                    />
-                  )}
-                </Box>
-              </Flex>
-
-              <Box w="full">
-                <Flex display={["none", "none", "none", "block"]}>
-                  <Text
-                    as="h1"
-                    fontSize="4xl"
-                    fontWeight="bold"
-                    color="gray.700"
-                    lineHeight="2rem"
-                  >
-                    Pedidos
-                    {isLoading && <Spinner ml="4" size="md" />}
-                    <Button type="button" ml="2" onClick={() => {}}>
-                      <Icon
-                        as={SiMicrosoftexcel}
-                        fontSize="1.5rem"
-                        color="#147b45"
-                        ml="-1"
-                      />
-                    </Button>
-                    <Button type="button" ml="2" onClick={handleCreateOrder}>
-                      <Link href={`/pedidos/novo`} passHref>
-                        <ChakraLink>
-                          <Icon
-                            as={IoMdAddCircle}
-                            color="red.500"
-                            fontSize={"1.8rem"}
-                          />
-                        </ChakraLink>
-                      </Link>
-                    </Button>
-                  </Text>
-
-                  <Flex justifyContent="space-between" mt="1" mb="2">
-                    <Text fontSize="md" color="gray.600">
-                      Total {data?.pages[data?.pages.length - 1].total}{" "}
-                      resultados
-                    </Text>
-
-                    <OrderBy
-                      onChange={setOrderBy}
-                      currentValue={orderBy}
-                      data={OrderByItems}
-                    />
-                  </Flex>
-                </Flex>
-
-                <Stack>
-                  {orders.map((order) => (
-                    <Order />
-                  ))}
-                </Stack>
-              </Box>
-            </Flex>
-          </Flex>
-
-          <ModalList
-            title="Filtros"
-            isOpen={isOpenFilter}
-            onClose={onCloseFilter}
+            w="22rem"
+            mr="3rem"
+            display={["none", "none", "none", "flex"]}
+            flexDirection="column"
           >
             <Box borderRadius="md">
               <FilterSelectedList filters={filters} setFilters={setFilters} />
 
-              <Box p="6">
-                {dataFilters && (
-                  <ListFilter
-                    filters={dataFilters}
-                    selectedFilter={filters}
-                    onChangeSelectedFilter={(a) => {
-                      setFilters(a);
-                    }}
-                  />
-                )}
-              </Box>
+              {dataFilters && (
+                <ListFilter
+                  filters={dataFilters.filters}
+                  selectedFilter={filters}
+                  onChangeSelectedFilter={(a) => {
+                    setFilters(a);
+                  }}
+                  isOpen
+                />
+              )}
             </Box>
-          </ModalList>
+          </Flex>
 
-          <ModalList
-            title="Ordenar por"
-            isOpen={isOpenOrderBy}
-            onClose={onCloseOrderBy}
-          >
-            <OrderByMobile
-              OrderByItems={OrderByItems}
-              currentOrderByValue={orderBy}
-              setOrderBy={(orderByValue) => {
-                setOrderBy(String(orderByValue));
-                onCloseOrderBy();
-              }}
-            />
-          </ModalList>
-        </>
-      )}
+          <Box w="full">
+            <Flex display={["none", "none", "none", "block"]}>
+              <Text
+                as="h1"
+                fontSize="4xl"
+                fontWeight="bold"
+                color="gray.700"
+                lineHeight="2rem"
+              >
+                Pedidos
+                {isLoading && <Spinner ml="4" size="md" />}
+                <Button type="button" ml="2" onClick={onOpenSeleteClient}>
+                  <Icon
+                    as={IoMdAddCircle}
+                    color="red.500"
+                    fontSize={"1.8rem"}
+                  />
+                </Button>
+              </Text>
+
+              <Flex justifyContent="space-between" mt="1" mb="2">
+                <Text fontSize="md" color="gray.600">
+                  Total {data?.pages[data?.pages.length - 1].total} resultados
+                </Text>
+
+                <OrderBy
+                  onChange={setOrderBy}
+                  currentValue={orderBy}
+                  data={OrderByItems}
+                />
+              </Flex>
+            </Flex>
+
+            <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
+              <>
+                <Stack mb="1rem">
+                  {data?.pages.map((page) =>
+                    page?.orders.map((order, i) =>
+                      i === page?.orders?.length - 3 ? (
+                        <Link
+                          key={order.codigo}
+                          href={`/pedidos/${order.codigo}`}
+                          passHref
+                        >
+                          <ChakraLink
+                            ref={ref}
+                            _hover={{
+                              filter: "brightness(0.95)",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <Order
+                              code={order.codigoErp}
+                              client={`${order.cliente.razaoSocial} - ${order.cliente.cnpjFormat}`}
+                              date={order.createdAtFormat}
+                              paymentCondition={
+                                order.condicaoPagamento.descricao
+                              }
+                              totalValue={order.valorTotalFormat}
+                              status={
+                                order.situacaoPedido && {
+                                  code: order.situacaoPedido?.codigo,
+                                  description: order.situacaoPedido?.descricao,
+                                }
+                              }
+                              eRascunho={order.eRascunho}
+                            />
+                          </ChakraLink>
+                        </Link>
+                      ) : (
+                        <Link
+                          key={order.codigo}
+                          href={`/pedidos/${order.codigo}`}
+                          passHref
+                        >
+                          <ChakraLink
+                            _hover={{
+                              filter: "brightness(0.95)",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <Order
+                              code={order.codigoErp}
+                              client={`${order.cliente.razaoSocial} - ${order.cliente.cnpjFormat}`}
+                              date={order.createdAtFormat}
+                              paymentCondition={
+                                order.condicaoPagamento.descricao
+                              }
+                              totalValue={order.valorTotalFormat}
+                              eRascunho={order.eRascunho}
+                              status={
+                                order.situacaoPedido && {
+                                  code: order.situacaoPedido?.codigo,
+                                  description: order.situacaoPedido?.descricao,
+                                }
+                              }
+                            />
+                          </ChakraLink>
+                        </Link>
+                      )
+                    )
+                  )}
+                </Stack>
+              </>
+            </LoadingInfiniteScroll>
+          </Box>
+        </Flex>
+      </PanelLayout>
+
+      <ModalList title="Filtros" isOpen={isOpenFilter} onClose={onCloseFilter}>
+        <Box borderRadius="md">
+          <FilterSelectedList filters={filters} setFilters={setFilters} />
+
+          <Box p="6">
+            {dataFilters && (
+              <ListFilter
+                filters={dataFilters.filters}
+                selectedFilter={filters}
+                onChangeSelectedFilter={(a) => {
+                  setFilters(a);
+                }}
+              />
+            )}
+          </Box>
+        </Box>
+      </ModalList>
+
+      <ModalList
+        title="Ordenar por"
+        isOpen={isOpenOrderBy}
+        onClose={onCloseOrderBy}
+      >
+        <OrderByMobile
+          orderByItems={OrderByItems}
+          currentOrderByValue={orderBy}
+          setOrderBy={(orderByValue) => {
+            setOrderBy(String(orderByValue));
+            onCloseOrderBy();
+          }}
+        />
+      </ModalList>
+
+      <Alert
+        title="Cliente bloqueado"
+        description="possui títulos atrasados com mais de 7 dias."
+        isOpen={isOpenAlertBilletClient}
+        onClose={onCloseAlertBilletClient}
+      />
+
+      <ModalSelectClient
+        isOpen={isOpenSeleteClient}
+        onClose={onCloseSeleteClient}
+        setClient={(data) => {
+          if (!!data?.titulo?.length && data?.titulo?.length >= 1) {
+            onOpenAlertBilletClient();
+          } else {
+            onOpenSeleteListPrice();
+            setClient(data);
+          }
+        }}
+      />
+
+      <ModalSelectPriceList
+        isOpen={isOpenSeleteListPrice}
+        onClose={onCloseSeleteListPrice}
+        setPriceList={(data) => {
+          if (client) createOrder({ client, priceList: data });
+        }}
+      />
     </>
   );
 }
@@ -346,7 +385,15 @@ export default function Orders({ me }: OrdersProps) {
 export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
 
-  const response = await apiClient.get("/auth/me");
+  const response = await apiClient.get<Me>("/auth/me");
+
+  if (response.data.eVendedor === false)
+    return {
+      redirect: {
+        destination: "/produtos",
+        permanent: true,
+      },
+    };
 
   return {
     props: {

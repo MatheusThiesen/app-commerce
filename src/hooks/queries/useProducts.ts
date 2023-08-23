@@ -12,6 +12,11 @@ export type StockLocation = {
   quantidade?: number;
 };
 
+export type Brand = {
+  codigo: number;
+  descricao: string;
+};
+
 export type Product = {
   codigo: number;
   codigoAlternativo: string;
@@ -35,10 +40,7 @@ export type Product = {
   imagens?: {
     nome: string;
   }[];
-  marca: {
-    codigo: number;
-    descricao: string;
-  };
+  marca: Brand;
   colecao?: {
     codigo: number;
     descricao: string;
@@ -174,6 +176,7 @@ export async function getProducts({
 }
 export async function getProductOne(
   cod: number,
+  clientCod?: number,
   ctx: GetServerSidePropsContext | undefined = undefined
 ): Promise<Product> {
   var apiClient = api;
@@ -182,7 +185,9 @@ export async function getProductOne(
     apiClient = setupAPIClient(ctx);
   }
 
-  const { data } = await apiClient.get<Product>(`/products/${cod}`);
+  const { data } = await apiClient.get<Product>(`/products/${cod}`, {
+    params: { clientCod },
+  });
 
   const product: Product = {
     ...data,
@@ -242,9 +247,16 @@ export function useProducts({
 }
 export function useProductOne(
   codigo: number,
+  clientCod?: number,
   ctx: GetServerSidePropsContext | undefined = undefined
 ) {
-  return useQuery(["product", codigo], () => getProductOne(codigo, ctx), {});
+  return useQuery(
+    ["product", codigo, clientCod],
+    () => getProductOne(codigo, clientCod, ctx),
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
 }
 
 export const productsOrderBy = [

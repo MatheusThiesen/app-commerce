@@ -18,7 +18,7 @@ export function NavLink({ href, children, ...rest }: NavLinkProps) {
         flexDirection="column"
         alignItems="center"
         justifyContent="center"
-        fontSize="large"
+        fontSize="md"
         _hover={{ textDecoration: "none" }}
         {...(rest as any)}
       >

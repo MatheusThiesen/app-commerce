@@ -3,6 +3,7 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
+  Button,
   Divider,
   Flex,
   Spinner,
@@ -24,7 +25,7 @@ import { IoChevronForwardSharp } from "react-icons/io5";
 import ReactSelect from "react-select";
 import { Me } from "../../@types/me";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
-import { ProductCarousel } from "../../components/ProductCarousel";
+import { ProductImageCarouse } from "../../components/ProductImageCarouse";
 import { VariationsProduct } from "../../components/VariationsProduct";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useProductOne } from "../../hooks/queries/useProducts";
@@ -95,8 +96,10 @@ export default function Produto(props: ProdutoProps) {
             label: product?.descricaoAdicional,
           }}
           onChange={(e) => {
-            setLoading(true);
-            router.push(`/produtos/${e?.value}`);
+            if (e?.value !== product?.codigo) {
+              setLoading(true);
+              router.push(`/pedidos/novo/produtos/${e?.value}`);
+            }
           }}
         />
       </Box>
@@ -202,14 +205,15 @@ export default function Produto(props: ProdutoProps) {
                 align="center"
                 display={["none", "none", "none", "flex"]}
               >
-                <Box
+                <Button
                   onClick={() => router.back()}
                   h="full"
                   color="gray.600"
                   cursor="pointer"
+                  variant="link"
                 >
                   Voltar à listagem
-                </Box>
+                </Button>
 
                 <Divider h="1rem" mx="2" orientation="vertical" />
 
@@ -251,7 +255,7 @@ export default function Produto(props: ProdutoProps) {
                   w={["100%", "100%", "100%", "65%"]}
                   pr={["0", "0", "0", "2"]}
                 >
-                  <ProductCarousel
+                  <ProductImageCarouse
                     bg="white"
                     h="26rem"
                     banners={

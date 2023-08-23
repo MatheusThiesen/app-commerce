@@ -3,6 +3,11 @@ import {
   Button,
   Flex,
   Icon,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   SimpleGrid,
   Slide,
   Spinner,
@@ -12,6 +17,7 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
+import * as ExcelJS from "exceljs";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
@@ -44,7 +50,8 @@ import {
   useQueryParamsFilterList,
 } from "../../hooks/useQueryParamsFilterList";
 import { setupAPIClient } from "../../service/api";
-import { exportXlsx } from "../../utils/exportXlsx";
+import getImageByUrl from "../../utils/getImageByUrl";
+import { groupByObj } from "../../utils/groupByObj";
 import { withSSRAuth } from "../../utils/withSSRAuth";
 
 interface ProductsProps {
@@ -65,6 +72,7 @@ export default function Produtos({ me }: ProductsProps) {
     onSelectedAllProduct: onSelectedAllProductCatalog,
     onGenerateCatalog,
   } = useProductCatalog();
+  const [stockLocation, setStockLocation] = useState(false);
 
   const {
     isOpen: isOpenFilter,
@@ -76,7 +84,6 @@ export default function Produtos({ me }: ProductsProps) {
     onOpen: onOpenOrderBy,
     onClose: onCloseOrderBy,
   } = useDisclosure();
-
   const { isOpen, onToggle } = useDisclosure();
 
   const { setQueryParams } = useQueryParams({ router });
@@ -99,7 +106,6 @@ export default function Produtos({ me }: ProductsProps) {
   >(() => {
     return router.query.distinct ? String(router.query.distinct) : "";
   });
-  const [stockLocation, setStockLocation] = useState(false);
 
   useQueryParamsFilterList({
     router,
@@ -150,11 +156,11 @@ export default function Produtos({ me }: ProductsProps) {
     setLoading(isLoading);
   }, [isLoading]);
 
-  async function handleExportList() {
+  async function handleExportList({ noImage = false }: { noImage?: boolean }) {
     //@ts-ignore
     toastIdRef.current = toast({
       position: "top-right",
-      duration: 100000,
+      duration: 1000 * 60 * 60 * 1,
       render: () => (
         <Box
           bg="blue.400"
@@ -181,42 +187,349 @@ export default function Produtos({ me }: ProductsProps) {
         filters: filters,
         orderby: orderBy,
         pagesize: 100000,
+        search: search,
         isReport: true,
       });
 
-      const normalizedProducts = responseProducts.products.map((product) => {
-        let data = {};
+      const stocks: { descricao: string; periodo: string }[] = [];
 
+      for (const product of responseProducts.products) {
         if (product.locaisEstoque) {
           for (const stock of product.locaisEstoque) {
-            data = { ...data, [stock.descricao]: stock.quantidade };
+            const findStock = stocks.find((s) => s.periodo === stock.periodo);
+
+            if (!findStock)
+              stocks.push({
+                descricao: stock.descricao,
+                periodo: stock.periodo,
+              });
           }
         }
+      }
 
-        return {
-          "Cód. Produto": product.codigo ?? "-",
-          "Cód. Agrupador": product.codigoAlternativo ?? "-",
-          Referência: product.referencia ?? "-",
-          Descrição: product.descricao ?? "-",
-          PDV: product.precoVenda ?? "-",
-          Grade: product.descricaoAdicional ?? "-",
-          Marca: product.marca.descricao ?? "-",
-          Coleção: product.colecao?.descricao ?? "-",
-          Linha: product.linha?.descricao ?? "-",
-          Grupo: product.grupo?.descricao ?? "-",
-          Subgrupo: product.subGrupo?.descricao ?? "-",
-          Gênero: product.genero?.descricao ?? "-",
-          ...data,
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet("My Sheet");
+
+      sheet.getRow(1).height = 25;
+      sheet.getRow(1).font = {
+        name: "Roboto",
+        family: 4,
+        size: 16,
+        bold: true,
+      };
+
+      const columns = [
+        {
+          header: "Foto",
+          key: "image",
+          width: 20,
+        },
+
+        {
+          header: "Cód. Produto",
+          key: "productCod",
+          width: 25,
+
+          alignment: {
+            horizontal: "center",
+            vertical: "middle",
+          },
+        },
+        {
+          header: "Cód. Agrupador",
+          key: "alterativeCode",
+          width: 24,
+        },
+        {
+          header: "Referência",
+          key: "reference",
+          width: 20,
+        },
+        {
+          header: "Descrição",
+          key: "description",
+          width: 30,
+        },
+        {
+          header: "Cor",
+          key: "colors",
+          width: 12,
+        },
+        {
+          header: "Marca",
+          key: "brand",
+          width: 10,
+        },
+        {
+          header: "Coleção",
+          key: "collection",
+          width: 15,
+        },
+        {
+          header: "Linha",
+          key: "line",
+          width: 10,
+        },
+        {
+          header: "Grupo",
+          key: "group",
+          width: 10,
+        },
+        {
+          header: "Subgrupo",
+          key: "subgroup",
+          width: 18,
+        },
+        {
+          header: "Gênero",
+          key: "genre",
+          width: 13,
+        },
+        {
+          header: "Grade/Tamanho",
+          key: "grid",
+          width: 26,
+        },
+        {
+          header: "PDV Sugerido",
+          key: "pdv",
+          width: 25,
+        },
+
+        ...stocks.map((stock) => ({
+          header: stock.descricao,
+          key: stock.periodo,
+          width: 23,
+        })),
+
+        {
+          header: "Acondicionamento",
+          key: "packageQuantity",
+          width: 30,
+        },
+
+        {
+          header: "Lista 28 DDL",
+          key: "list28",
+          width: 26,
+        },
+        {
+          header: "Quantidade Grades",
+          key: "qtd",
+          width: 30,
+        },
+        {
+          header: "Total",
+          key: "total",
+          width: 26,
+          numFmt: "numFmt = '$#,##0.00;[Red]-$#,##0.00';",
+        },
+      ];
+
+      //@ts-ignore
+      sheet.columns = noImage
+        ? columns.filter((f) => f.key !== "image")
+        : columns;
+
+      const getImages: { reference: string; imageBase64: string }[] = [];
+
+      if (!noImage) {
+        const promiseAllImages = Promise.all(
+          groupByObj(responseProducts.products, (p) => p.referencia).map(
+            async (productGroup) => {
+              const reference = productGroup.value as string;
+
+              const product = productGroup.data[0];
+
+              const getImageBase64 = await getImageByUrl(
+                `${spaceImages}/Produtos/${
+                  product.imagens && product.imagens[0]
+                    ? product.imagens[0].nome
+                    : product.referencia + "_01"
+                }_smaller`
+              );
+
+              getImages.push({
+                reference: reference,
+                imageBase64: getImageBase64,
+              });
+            }
+          )
+        );
+        await promiseAllImages;
+      }
+
+      const promise = Promise.all(
+        responseProducts.products.map(async (product, index) => {
+          let data = {};
+
+          if (product.locaisEstoque) {
+            for (const stock of product.locaisEstoque) {
+              data = { ...data, [stock.periodo]: stock.quantidade };
+            }
+          }
+
+          sheet.addRow({
+            productCod: product.codigo ?? "-",
+            alterativeCode: product.codigoAlternativo ?? "-",
+            reference: product.referencia ?? "-",
+            description: product.descricao ?? "-",
+            colors:
+              product?.corPrimaria && product?.corSecundaria
+                ? `${product?.corPrimaria.descricao} / ${product.corSecundaria.cor.descricao}`
+                : product?.corPrimaria
+                ? `${product?.corPrimaria.descricao}`
+                : "-",
+            brand: product.marca.descricao ?? "-",
+            collection: product.colecao?.descricao ?? "-",
+            line: product.linha?.descricao ?? "-",
+            group: product.grupo?.descricao ?? "-",
+            subgroup: product.subGrupo?.descricao ?? "-",
+            genre: product.genero?.descricao ?? "-",
+            grid: product.descricaoAdicional ?? "-",
+            pdv: product.precoVenda ?? "-",
+            packageQuantity: product?.qtdEmbalagem
+              ? product.qtdEmbalagem // `- ${product.qtdEmbalagem} +`
+              : "-",
+            list28: product.listaPreco?.find((f) => f.codigo === 28)?.valor,
+            ...data,
+          });
+
+          if (!noImage) {
+            const imageId = workbook.addImage({
+              base64:
+                getImages.find((f) => f.reference === product.referencia)
+                  ?.imageBase64 ?? "",
+              extension: "jpeg",
+            });
+
+            sheet.addImage(imageId, {
+              tl: { col: 0, row: index + 1 },
+              ext: { width: 110, height: 85 },
+              editAs: "oneCells",
+            });
+          }
+        })
+      );
+
+      let columnLocationTotal = "";
+      let columnLocationQtd = "";
+      let columnLocationList28 = "";
+      let columnLocationPackageQuantity = "";
+
+      let columnCurrent: number[] = [];
+
+      sheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
+        row.eachCell({ includeEmpty: true }, function (cell, columnNumber) {
+          //@ts-ignore
+          let columnKey = cell["_column"]["_key"];
+
+          if (rowNumber === 1) {
+            if (columnKey === "pdv") {
+              columnCurrent.push(columnNumber);
+            }
+
+            if (columnKey === "total") {
+              columnCurrent.push(columnNumber);
+
+              // @ts-ignore
+              columnLocationTotal = cell["_address"].replaceAll(
+                /[^a-zA-Z]/g,
+                ""
+              );
+            }
+            if (columnKey === "qtd") {
+              // @ts-ignore
+              columnLocationQtd = cell["_address"].replaceAll(/[^a-zA-Z]/g, "");
+            }
+            if (columnKey === "list28") {
+              columnCurrent.push(columnNumber);
+
+              // @ts-ignore
+              columnLocationList28 = cell["_address"].replaceAll(
+                /[^a-zA-Z]/g,
+                ""
+              );
+            }
+            if (columnKey === "packageQuantity") {
+              // @ts-ignore
+              columnLocationPackageQuantity = cell["_address"].replaceAll(
+                /[^a-zA-Z]/g,
+                ""
+              );
+            }
+          }
+        });
+      });
+
+      columnCurrent.forEach(
+        (index) =>
+          (sheet.getColumn(index).numFmt = "R$#,##0.00;[Red]-R$#,##0.00")
+      );
+
+      responseProducts.products.forEach((_, index) => {
+        const column = index + 2;
+
+        // @ts-ignore
+        sheet.getCell(`${columnLocationTotal}${column}`).value = {
+          formula: `${columnLocationQtd}${column} * ${columnLocationPackageQuantity}${column} * SUM(${columnLocationList28}${column})`,
         };
       });
 
-      const now = new Date().toLocaleString("pt-br", {
-        dateStyle: "short",
+      sheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
+        row.eachCell({ includeEmpty: true }, function (cell, colNumber) {
+          //@ts-ignore
+          let columnKey = cell["_column"]["_key"];
+
+          cell.alignment = {
+            vertical: "middle",
+            horizontal: "center",
+            wrapText: true,
+          };
+
+          if (rowNumber !== 1) {
+            row.height = 90;
+          }
+
+          if (rowNumber === 1) {
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "4473c5" },
+            };
+
+            cell.font.color = { argb: "ffffff" };
+
+            if (["qtd", "total"].includes(columnKey)) {
+              cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "22a883" },
+              };
+            }
+          }
+
+          // cell.border = {
+          //   top: { style: "thin" },
+          //   left: { style: "thin" },
+          //   bottom: { style: "thin" },
+          //   right: { style: "thin" },
+          // };
+        });
       });
 
-      await exportXlsx({
-        filename: `Produtos-${now}`,
-        data: normalizedProducts,
+      await promise;
+
+      workbook.xlsx.writeBuffer().then(function (data) {
+        const blob = new Blob([data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = "produtos.xlsx";
+        anchor.click();
+        window.URL.revokeObjectURL(url);
       });
 
       if (toastIdRef.current) {
@@ -287,6 +600,43 @@ export default function Produtos({ me }: ProductsProps) {
             </Button>
           </Flex>
         }
+        Right={
+          <Box display={["block", "block", "block", "none"]}>
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                aria-label="Options"
+                icon={<SiMicrosoftexcel />}
+                fontSize="1.5rem"
+                color="white"
+                ml="-1"
+                variant="ghost"
+                colorScheme="whiteAlpha"
+              />
+              <MenuList>
+                <MenuItem fontSize="md" onClick={() => handleExportList({})}>
+                  Exportar listagem com Imagem
+                </MenuItem>
+                <MenuItem
+                  fontSize="md"
+                  onClick={() => handleExportList({ noImage: true })}
+                >
+                  Exportar listagem sem Imagem
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Box>
+        }
+        Center={
+          <Box width={"100%"} paddingX={["0.5rem", "0.5rem", "0.5rem", "0"]}>
+            <Search
+              size={"md"}
+              setSearch={setSearch}
+              search={search}
+              placeholder="Buscar na Alpar do Brasil por produtos"
+            />
+          </Box>
+        }
       />
 
       <PanelLayout isLoading={isLoadingProductsFilters}>
@@ -296,8 +646,6 @@ export default function Produtos({ me }: ProductsProps) {
           display={["none", "none", "none", "flex"]}
           flexDirection="column"
         >
-          <Search mb="4" setSearch={setSearch} search={search} />
-
           <Flex
             justify="space-between"
             bg="white"
@@ -344,14 +692,28 @@ export default function Produtos({ me }: ProductsProps) {
               data: productsOrderBy,
             }}
           >
-            <Button type="button" ml="2" onClick={handleExportList}>
-              <Icon
-                as={SiMicrosoftexcel}
-                fontSize="1.5rem"
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                aria-label="Options"
+                icon={<SiMicrosoftexcel />}
+                variant="outline"
                 color="#147b45"
-                ml="-1"
+                fontSize="1.5rem"
+                ml="2"
               />
-            </Button>
+              <MenuList>
+                <MenuItem fontSize="md" onClick={() => handleExportList({})}>
+                  Exportar listagem com Imagem
+                </MenuItem>
+                <MenuItem
+                  fontSize="md"
+                  onClick={() => handleExportList({ noImage: true })}
+                >
+                  Exportar listagem sem Imagem
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </HeaderToList>
 
           <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
@@ -373,7 +735,7 @@ export default function Produtos({ me }: ProductsProps) {
                             product.imagens && product.imagens[0]
                               ? product.imagens[0].nome
                               : product.referencia + "_01"
-                          }`,
+                          }_smaller`,
                         }}
                         onClickProduct={() => setLoading(true)}
                       />
@@ -393,7 +755,7 @@ export default function Produtos({ me }: ProductsProps) {
                             product.imagens && product.imagens[0]
                               ? product.imagens[0].nome
                               : product.referencia + "_01"
-                          }`,
+                          }_smaller`,
                         }}
                         onClickProduct={() => setLoading(true)}
                       />
@@ -414,8 +776,6 @@ export default function Produtos({ me }: ProductsProps) {
         setFilters={setFilters}
       >
         <>
-          <Search mb="4" setSearch={setSearch} search={search} />
-
           <Flex
             justify="space-between"
             bg="white"
@@ -441,7 +801,7 @@ export default function Produtos({ me }: ProductsProps) {
       <ModalOrderBy
         isOpen={isOpenOrderBy}
         onClose={onCloseOrderBy}
-        OrderByItems={productsOrderBy}
+        orderByItems={productsOrderBy}
         currentOrderByValue={orderBy}
         setOrderBy={(orderByValue) => {
           setOrderBy(String(orderByValue));
@@ -508,7 +868,7 @@ export default function Produtos({ me }: ProductsProps) {
                     onClick={() =>
                       onGenerateCatalog({
                         orderBy: orderBy,
-                        groupProduct: groupProduct !== undefined,
+                        groupProduct: groupProduct === "codigoAlternativo",
                         stockLocation: stockLocation,
                         filters: JSON.stringify(
                           filters.filter((f) =>

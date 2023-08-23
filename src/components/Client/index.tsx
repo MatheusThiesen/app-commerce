@@ -7,16 +7,7 @@ interface ClientComponentProps {
 
 export const Client = ({ client }: ClientComponentProps) => {
   return (
-    <Box
-      w="full"
-      display="block"
-      bg="white"
-      p="3"
-      borderRadius="lg"
-      _hover={{
-        filter: "brightness(0.95)",
-      }}
-    >
+    <Box w="full" display="block" bg="white" p="3" borderRadius="lg">
       <Flex columnGap="1" align="center" justify="space-between">
         <Tag
           size="md"

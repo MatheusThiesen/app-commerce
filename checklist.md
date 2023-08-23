@@ -7,17 +7,22 @@
 
 # Filtros
 
-- [ ] HOOK para salvar no query do navegador
-- [ ] Filtros com Search para (Referencia & Cod. Alternativo)
+- [x] HOOK para salvar no query do navegador
+- [x] Filtros com Search para (Referencia & Cod. Alternativo)
 
 # Ordenação
 
-- [ ] HOOK para salvar no query do navegador
+- [x] HOOK para salvar no query do navegador
 
 # Ideias
 
-- [ ] Trazer dados de clientes
-- [ ] Montar carteira de clientes do vendedor
+- [x] Trazer dados de clientes
+- [x] Montar carteira de clientes do vendedor
+- [x] SSO com portal
 - [ ] Fazer orçamento de pedidos
-- [ ] SSO com portal
 - [ ] Montar tela inicial
+
+# Pedido
+
+- [ ] Alertar que o pedido nao esta batendo os requisitos com ícones
+- [ ] Pop-up no momento de sair do pedido, informando se o mesmo deseja sair, ou guardar rascunho (Criar FLAG de orçamento na listagem)

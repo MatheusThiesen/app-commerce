@@ -11,7 +11,6 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import Router from "next/router";
 import { useEffect, useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
 import { useInView } from "react-intersection-observer";
@@ -55,8 +54,6 @@ export function ModalSelectClient({
       size={["full", "full", "full", "4xl"]}
       isOpen={isOpen}
       scrollBehavior="inside"
-      closeOnEsc={false}
-      closeOnOverlayClick={false}
     >
       <ModalOverlay />
       <ModalContent>
@@ -66,17 +63,13 @@ export function ModalSelectClient({
               <Button
                 variant="unstyled"
                 onClick={() => {
-                  Router.back();
-
-                  setTimeout(() => {
-                    onClose();
-                  }, 500);
+                  onClose();
                 }}
                 display={"flex"}
                 alignItems="center"
               >
                 <Icon as={IoArrowBack} fontSize="1.8rem" mr="2" />
-                Voltar
+                Fechar
               </Button>
             </Box>
 
@@ -84,7 +77,11 @@ export function ModalSelectClient({
               <Text fontSize="2xl">Selecionar Cliente</Text>
             </Flex>
 
-            <Search setSearch={setSearch} search={search} />
+            <Search
+              setSearch={setSearch}
+              search={search}
+              placeholder="Buscar cliente"
+            />
           </Stack>
         </ModalHeader>
 

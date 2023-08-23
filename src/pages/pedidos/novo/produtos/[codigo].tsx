@@ -4,9 +4,9 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Button,
-  Link as CharkraLink,
   Divider,
   Flex,
+  Icon,
   Spinner,
   Stack,
   Table,
@@ -14,19 +14,23 @@ import {
   Td,
   Text,
   Tr,
-  useNumberInput,
+  useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { IoChevronForwardSharp } from "react-icons/io5";
+import { FaCartPlus } from "react-icons/fa";
 import ReactSelect from "react-select";
 import { Me } from "../../../../@types/me";
+import { Cart } from "../../../../components/Cart";
 import { InputQuantity } from "../../../../components/Form/InputQuantity";
 import { HeaderNavigation } from "../../../../components/HeaderNavigation";
-import { ProductCarousel } from "../../../../components/ProductCarousel";
+import { ProductImageCarouse } from "../../../../components/ProductImageCarouse";
+import { ShoppingButton } from "../../../../components/ShoppingButton";
 import { VariationsProduct } from "../../../../components/VariationsProduct";
+import { useLoading } from "../../../../contexts/LoadingContext";
 import { useStore } from "../../../../contexts/StoreContext";
 import {
   StockLocation,
@@ -42,27 +46,31 @@ interface ProdutoProps {
 
 export default function Produto(props: ProdutoProps) {
   const router = useRouter();
+  const { setLoading } = useLoading();
+  const toast = useToast();
+
+  const { totalItems, orders, client } = useStore();
+
+  const {
+    isOpen: isOpenOrder,
+    onOpen: onOpenOrder,
+    onClose: onCloseOrder,
+  } = useDisclosure();
+
   const { codigo } = router.query;
   const [images, setImages] = useState<string[]>([]);
   const [stockLocationSelected, setStockLocationSelected] = useState<
     StockLocation | undefined
   >();
 
-  const { data: product, isLoading } = useProductOne(Number(codigo));
+  const { data: product, isLoading } = useProductOne(
+    Number(codigo),
+    client?.codigo
+  );
 
-  const { priceList } = useStore();
+  const { priceList, addItem } = useStore();
 
-  const {
-    getInputProps: inputQuantityInputProps,
-    getIncrementButtonProps: inputQuantityIncrementButtonProps,
-    getDecrementButtonProps: inputQuantityDecrementButtonProps,
-    value: quantity,
-  } = useNumberInput({
-    step: product?.qtdEmbalagem ?? 0,
-    defaultValue: product?.qtdEmbalagem ?? 0,
-    min: product?.qtdEmbalagem ?? 0,
-    max: 120,
-  });
+  const [quantity, setQuantity] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -72,14 +80,59 @@ export default function Produto(props: ProdutoProps) {
         });
 
         setImages(getImages ?? [""]);
+        setLoading(false);
+        setStockLocationSelected(undefined);
       }
     })();
   }, [product]);
 
+  useEffect(() => {
+    if (product && stockLocationSelected) {
+      const findOrder = orders.find(
+        (f) => f.stockLocation.periodo === stockLocationSelected.periodo
+      );
+
+      if (!findOrder) return setQuantity(0);
+
+      const findItem = findOrder.items.find(
+        (f) => f.product.codigo === product.codigo
+      );
+
+      if (!findItem) return setQuantity(0);
+
+      setQuantity(findItem.qtd);
+    }
+  }, [product, stockLocationSelected, orders]);
+
+  async function handleAddProductStore() {
+    if (!product || !stockLocationSelected) {
+      return toast({
+        title: "Informe o produto e disponibilidade",
+        status: "warning",
+        position: "top",
+        isClosable: true,
+      });
+    }
+
+    addItem({
+      product,
+      qtd: quantity,
+      stockLocation: stockLocationSelected,
+      brand: product.marca,
+    });
+
+    return toast({
+      title: "Produto adicionado no carrinho",
+      status: "success",
+      position: "top",
+      isClosable: true,
+    });
+  }
+
   const InfoProduct = () => {
     return (
       <>
-        <Text as="span" fontSize="2xl" fontWeight="medium">
+        <Text as="span" fontSize="3xl" fontWeight="medium">
           {product?.listaPreco?.find(
             (f) => Number(f.codigo) === Number(priceList?.codigo)
           )?.valorFormat ?? "-"}
@@ -100,6 +153,7 @@ export default function Produto(props: ProdutoProps) {
             variationsProduct={product.variacoes}
             currentReference={product?.referencia ?? ""}
             uri={`/pedidos/novo/produtos`}
+            onClick={() => setLoading(true)}
           />
         )}
 
@@ -115,9 +169,12 @@ export default function Produto(props: ProdutoProps) {
                 value: product?.codigo,
                 label: product?.descricaoAdicional,
               }}
-              onChange={(e) =>
-                router.push(`/pedidos/novo/produtos/${e?.value}`)
-              }
+              onChange={(e) => {
+                if (e?.value !== product?.codigo) {
+                  setLoading(true);
+                  router.push(`/pedidos/novo/produtos/${e?.value}`);
+                }
+              }}
             />
           </Box>
           <Box>
@@ -128,12 +185,13 @@ export default function Produto(props: ProdutoProps) {
                 value: localEstoque.periodo,
                 label: localEstoque.descricao,
               }))}
-              onChange={(e) =>
-                setStockLocationSelected({
-                  periodo: e?.value ?? "",
-                  descricao: e?.label ?? "",
-                })
-              }
+              onChange={(e) => {
+                const findStockLocation = product?.locaisEstoque?.find(
+                  (f) => String(f.periodo) === String(e?.value)
+                );
+
+                setStockLocationSelected(findStockLocation);
+              }}
               value={
                 stockLocationSelected
                   ? {
@@ -147,31 +205,43 @@ export default function Produto(props: ProdutoProps) {
           {stockLocationSelected && (
             <Box w="8rem">
               <InputQuantity
-                inputProps={inputQuantityInputProps}
-                incrementButtonProps={inputQuantityIncrementButtonProps}
-                decrementButtonProps={inputQuantityDecrementButtonProps}
+                value={quantity}
+                step={product?.qtdEmbalagem}
+                max={stockLocationSelected?.quantidade}
+                min={product?.qtdEmbalagem}
+                onDecremental={(qtd) => setQuantity(qtd)}
+                onIncremental={(qtd) => setQuantity(qtd)}
               />
               <Text
-                mt="4"
+                mt="1"
                 as={"span"}
                 fontSize="sm"
                 fontWeight="light"
                 color="gray.500"
+                display="block"
+                textAlign="center"
               >
-                128 disponível
+                {stockLocationSelected?.quantidade
+                  ? `${stockLocationSelected?.quantidade} disponível`
+                  : "-"}
               </Text>
-              {/* <Text>Ultimo disponível</Text> */}
             </Box>
           )}
         </Stack>
 
         <Button
-          colorScheme="red"
+          colorScheme="blue"
           mt="6"
           size="lg"
           w="full"
-          aria-disabled={!stockLocationSelected}
-          disabled={!stockLocationSelected}
+          leftIcon={<Icon as={FaCartPlus} fontSize={30} />}
+          aria-disabled={!stockLocationSelected || !(Number(quantity) > 0)}
+          disabled={!stockLocationSelected || !(Number(quantity) > 0)}
+          onClick={() =>
+            !stockLocationSelected || !(Number(quantity) > 0)
+              ? () => {}
+              : handleAddProductStore()
+          }
         >
           Adicionar ao carrinho
         </Button>
@@ -190,6 +260,31 @@ export default function Produto(props: ProdutoProps) {
         isGoBack
         title="Detalhes"
         user={{ name: props.me.email }}
+        Right={<ShoppingButton qtdItens={totalItems} onClick={onOpenOrder} />}
+        isNotNavigation
+        contentHeight={2}
+        content={
+          <Flex w="full" flexDir="column">
+            <Flex
+              w="full"
+              h="1.5rem"
+              bg="gray.50"
+              align="center"
+              justify="space-between"
+              px="2rem"
+            >
+              <Text fontWeight="light" fontSize="sm">
+                {!!client?.codigo
+                  ? `${client?.codigo} - ${client?.razaoSocial}`
+                  : "-"}
+              </Text>
+
+              <Text fontWeight="light" fontSize="sm">
+                {!!priceList?.codigo ? `${priceList?.descricao}` : "-"}
+              </Text>
+            </Flex>
+          </Flex>
+        }
       />
 
       {isLoading && product ? (
@@ -217,29 +312,31 @@ export default function Produto(props: ProdutoProps) {
                 align="center"
                 display={["none", "none", "none", "flex"]}
               >
-                <Link href="/produtos">
-                  <CharkraLink h="full" color="gray.600">
-                    Voltar à listagem
-                  </CharkraLink>
-                </Link>
+                <Button
+                  onClick={() => router.back()}
+                  h="full"
+                  color="gray.600"
+                  cursor="pointer"
+                  variant="link"
+                >
+                  Voltar
+                </Button>
 
                 <Divider h="1rem" mx="2" orientation="vertical" />
 
-                <Breadcrumb
-                  spacing="8px"
-                  separator={<IoChevronForwardSharp color="gray.500" />}
-                >
+                <Breadcrumb fontSize={"sm"}>
+                  {/* <BreadcrumbItem>
+                    <Link href="/produtos" >
+                      <BreadcrumbLink>
+                        {product?.genero?.descricao}
+                      </BreadcrumbLink>
+                    </Link>
+                  </BreadcrumbItem> */}
                   <BreadcrumbItem>
                     <Link href={`/produtos/${product?.codigo}`}>
                       <BreadcrumbLink>{product?.descricao}</BreadcrumbLink>
                     </Link>
                   </BreadcrumbItem>
-
-                  {/* <BreadcrumbItem>
-                <Link href="/produtos?genero=masculino">
-                  <BreadcrumbLink>Calçados</BreadcrumbLink>
-                </Link>
-              </BreadcrumbItem> */}
                 </Breadcrumb>
               </Flex>
 
@@ -268,7 +365,7 @@ export default function Produto(props: ProdutoProps) {
                       <Spinner ml={["0", "0", "0", "4"]} size="xl" />
                     </Flex>
                   ) : (
-                    <ProductCarousel
+                    <ProductImageCarouse
                       bg="white"
                       h="26rem"
                       banners={
@@ -437,20 +534,28 @@ export default function Produto(props: ProdutoProps) {
           </Flex>
         </>
       )}
+
+      <Cart isOpen={isOpenOrder} onClose={onCloseOrder} />
     </>
   );
 }
 
 export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
-  var me = {};
 
-  const response = await apiClient.get("/auth/me");
-  me = response.data;
+  const response = await apiClient.get<Me>("/auth/me");
+
+  if (response.data.eVendedor === false)
+    return {
+      redirect: {
+        destination: "/produtos",
+        permanent: true,
+      },
+    };
 
   return {
     props: {
-      me: me,
+      me: response.data,
     },
   };
 });

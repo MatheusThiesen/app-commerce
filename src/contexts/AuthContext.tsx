@@ -8,6 +8,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { Me } from "../@types/me";
 import { api } from "../service/apiClient";
 
 type User = {
@@ -32,7 +33,7 @@ type AuthContextData = {
   signOut: () => void;
   sso: (token: string) => Promise<void>;
   reset(p: ResetProps): Promise<ReponseSignIn | void>;
-  user?: User;
+  user?: Me;
   isAuthenticated: boolean;
 };
 
@@ -52,19 +53,11 @@ type ResetProps = {
 
 export const AuthContext = createContext({} as AuthContextData);
 
-const base_url =
-  process.env.NODE_ENV !== "development"
-    ? "https://app.alpardobrasil.com.br"
-    : "http://localhost:3000";
 const route_home = "/produtos";
-
-let authChannel: BroadcastChannel;
 
 export function signOut() {
   destroyCookie(undefined, "nextauth.token");
   destroyCookie(undefined, "nextauth.refreshToken");
-
-  // authChannel.postMessage("signOut");
 
   Router.push("/");
 }
@@ -72,58 +65,15 @@ export function signOut() {
 export function AuthProvider({ children }: AuthProviderProps) {
   const { "nextauth.token": token } = parseCookies();
 
-  const [user, setUser] = useState<User>();
+  const [user, setUser] = useState<Me>();
   const isAuthenticated = !!user && !!token;
 
-  // useEffect(() => {
-  //   authChannel = new BroadcastChannel("auth");
-
-  //   authChannel.onmessage = (message) => {
-  //     switch (message.data) {
-  //       case "signOut":
-  //         signOut();
-  //         // authChannel.close();
-  //         break;
-  //       case "signIn":
-  //         window.location.replace(`${base_url}${route_home}`);
-  //         break;
-
-  //       default:
-  //         break;
-  //     }
-  //   };
-  // }, []);
-
   useEffect(() => {
-    const { "nextauth.token": token } = parseCookies();
-
     if (token) {
       api
-        .get("/auth/me")
+        .get<Me>("/auth/me")
         .then((response) => {
-          const {
-            codigo,
-            nome,
-            nomeGuerra,
-            email,
-            codGerente,
-            codSupervisor,
-            eAtivo,
-            eGerente,
-            eSupervisor,
-          } = response.data;
-
-          setUser({
-            codigo,
-            nome,
-            nomeGuerra,
-            email,
-            codGerente,
-            codSupervisor,
-            eAtivo,
-            eGerente,
-            eSupervisor,
-          });
+          setUser(response.data);
         })
         .catch(() => {
           signOut();
