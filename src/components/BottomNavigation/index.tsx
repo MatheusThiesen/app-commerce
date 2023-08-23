@@ -2,8 +2,8 @@ import { Flex, List, ListItem } from "@chakra-ui/react";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { BsBoxSeam } from "react-icons/bs";
 import { FiUsers } from "react-icons/fi";
-import { IoBagHandleOutline } from "react-icons/io5";
-import { MainNavLink } from "./MainNavLink";
+import { IoHomeOutline } from "react-icons/io5";
+import { useAuth } from "../../contexts/AuthContext";
 import { NavLink } from "./NavLink";
 
 interface BottomNavigationPros {
@@ -11,6 +11,8 @@ interface BottomNavigationPros {
 }
 
 export function BottomNavigation({ height }: BottomNavigationPros) {
+  const { user } = useAuth();
+
   return (
     <Flex
       as="nav"
@@ -33,26 +35,29 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
           justifyContent="space-around"
           alignItems="center"
         >
-          {/* <ListItem h="full">
+          <ListItem h="full">
             <NavLink href="/inicio" icon={IoHomeOutline}>
               Inicio
             </NavLink>
-          </ListItem> */}
+          </ListItem>
           <ListItem h="full">
             <NavLink href="/clientes" icon={FiUsers}>
               Clientes
             </NavLink>
           </ListItem>
 
+          {/* {user?.eVendedor && (
+            <ListItem h="full">
+              <MainNavLink href="/pedidos" icon={IoBagHandleOutline}>
+                Pedidos
+              </MainNavLink>
+            </ListItem>
+          )} */}
+
           <ListItem h="full">
-            <MainNavLink href="/pedidos" icon={IoBagHandleOutline}>
-              Pedidos
-            </MainNavLink>
-          </ListItem>
-          <ListItem h="full">
-            <MainNavLink href="/produtos" icon={BsBoxSeam}>
+            <NavLink href="/produtos" icon={BsBoxSeam}>
               Produtos
-            </MainNavLink>
+            </NavLink>
           </ListItem>
           <ListItem h="full">
             <NavLink href="/mais" icon={BiDotsHorizontalRounded}>
