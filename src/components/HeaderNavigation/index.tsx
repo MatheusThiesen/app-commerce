@@ -214,7 +214,7 @@ export function HeaderNavigationComponent({
               {/* <NavLink href="/inicio">Início</NavLink> */}
               <NavLink href="/produtos">Produtos</NavLink>
               <NavLink href="/clientes">Clientes</NavLink>
-              {/* <NavLink href="/pedidos">Pedidos</NavLink> */}
+              <NavLink href="/pedidos">Pedidos</NavLink>
             </Stack>
           )}
 
