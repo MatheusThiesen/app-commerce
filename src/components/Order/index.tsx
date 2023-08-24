@@ -61,20 +61,22 @@ export const Order = ({
           <Text fontWeight="light" fontSize="small" color="gray.500">
             PEDIDO
           </Text>
-          <Text>#{code}</Text>
+          <Text fontWeight="bold" fontSize="md">
+            {code}
+          </Text>
         </Box>
       )}
       <Box mt="1.5">
         <Text fontWeight="light" fontSize="small" color="gray.500">
           CLIENTE
         </Text>
-        <Text>{client}</Text>
+        <Text fontWeight="bold">{client}</Text>
       </Box>
       <Box mt="1.5">
         <Text fontWeight="light" fontSize="small" color="gray.500">
           CONDIÇÃO PAGAMENTO
         </Text>
-        <Text fontWeight="normal" fontSize="md">
+        <Text fontWeight="bold" fontSize="md">
           {paymentCondition}
         </Text>
       </Box>

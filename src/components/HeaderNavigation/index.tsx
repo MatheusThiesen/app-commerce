@@ -227,9 +227,9 @@ export function HeaderNavigationComponent({
                 <NavLink href="/inicio">Inicio</NavLink>
                 <NavLink href="/produtos">Produtos</NavLink>
                 <NavLink href="/clientes">Clientes</NavLink>
-                {/* {userAuth?.eVendedor && (
+                {userAuth?.eVendedor && (
                   <NavLink href="/pedidos">Pedidos</NavLink>
-                )} */}
+                )}
               </Stack>
             )}
           </Flex>
