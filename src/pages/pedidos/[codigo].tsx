@@ -112,7 +112,7 @@ export default function Order({ me }: Props) {
                 <Flex
                   w="full"
                   flexDir="column"
-                  justify="center"
+                  justify="start"
                   bg="white"
                   p="3"
                   borderRadius="lg"
@@ -189,7 +189,7 @@ export default function Order({ me }: Props) {
                       >
                         {seller.vendedor.codigo}
                       </Tag>
-                      <Text fontSize="lg" fontWeight="light">
+                      <Text fontSize="md" fontWeight="light">
                         {seller.tipo === 1 ? "VENDEDOR" : "PREPOSTO"}
                       </Text>
                     </HStack>
