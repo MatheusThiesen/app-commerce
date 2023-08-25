@@ -119,7 +119,10 @@ export function Cart({ isOpen, onClose }: CartProps) {
         </Accordion>
       </DrawerBody>
 
-      <DrawerFooter boxShadow="dark-lg" pb={["5rem", "5rem", "1rem", "1rem"]}>
+      <DrawerFooter
+        boxShadow="dark-lg"
+        pb={["5.5rem", "5.5rem", "1rem", "1rem"]}
+      >
         <Flex flexDir="column" w="full">
           <Flex justify="space-between">
             <Text
