@@ -103,7 +103,7 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
           justify="center"
           h={
             type === "small"
-              ? "24"
+              ? "44"
               : type === "medium"
               ? ["28", "44", "56", "64"]
               : ["36", "56", "64", "80"]
@@ -152,65 +152,67 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
           </Flex>
         )}
 
-        <Flex
-          flexDir={["column", "column", "column", "row"]}
-          justify="space-evenly"
-          pl={["0", "0", "0", "1rem"]}
-        >
-          {!product.isGroupProduct && (
+        {type !== "small" && (
+          <Flex
+            flexDir={["column", "column", "column", "row"]}
+            justify="space-evenly"
+            pl={["0", "0", "0", "1rem"]}
+          >
+            {!product.isGroupProduct && (
+              <Box mt="2">
+                <Text fontSize="lg" mb="4" mt="4">
+                  DISPONIBILIDADE
+                </Text>
+
+                <Table size={type === "medium" ? "xs" : "sm"} variant="striped">
+                  <Tbody>
+                    {product.grids.map((grid) =>
+                      grid?.stocks?.map((stock) => (
+                        <Tr>
+                          <Td fontSize={type === "medium" ? "xs" : "sm"}>
+                            {grid.name}
+                          </Td>
+                          <Td
+                            fontSize={type === "medium" ? "xs" : "sm"}
+                          >{`${stock.description} : ${stock.qtd} qtd`}</Td>
+                        </Tr>
+                      ))
+                    )}
+                  </Tbody>
+                </Table>
+              </Box>
+            )}
+
             <Box mt="2">
               <Text fontSize="lg" mb="4" mt="4">
-                DISPONIBILIDADE
+                CARACTERÍSTICAS GERAIS
               </Text>
 
-              <Table size={type === "small" ? "xs" : "sm"} variant="striped">
+              <Table size={type === "medium" ? "xs" : "sm"} variant="striped">
                 <Tbody>
-                  {product.grids.map((grid) =>
-                    grid?.stocks?.map((stock) => (
-                      <Tr>
-                        <Td fontSize={type === "small" ? "xs" : "sm"}>
-                          {grid.name}
-                        </Td>
-                        <Td
-                          fontSize={type === "small" ? "xs" : "sm"}
-                        >{`${stock.description} : ${stock.qtd} qtd`}</Td>
-                      </Tr>
-                    ))
-                  )}
+                  <Tr>
+                    <Td fontSize={type === "medium" ? "xs" : "sm"}>Marca</Td>
+                    <Td fontSize={type === "medium" ? "xs" : "sm"}>
+                      {product.brand}
+                    </Td>
+                  </Tr>
+                  <Tr>
+                    <Td fontSize={type === "medium" ? "xs" : "sm"}>Gênero</Td>
+                    <Td fontSize={type === "medium" ? "xs" : "sm"}>
+                      {product.genre}
+                    </Td>
+                  </Tr>
+                  <Tr>
+                    <Td fontSize={type === "medium" ? "xs" : "sm"}>Linha</Td>
+                    <Td fontSize={type === "medium" ? "xs" : "sm"}>
+                      {product.line}
+                    </Td>
+                  </Tr>
                 </Tbody>
               </Table>
             </Box>
-          )}
-
-          <Box mt="2">
-            <Text fontSize="lg" mb="4" mt="4">
-              CARACTERÍSTICAS GERAIS
-            </Text>
-
-            <Table size={type === "small" ? "xs" : "sm"} variant="striped">
-              <Tbody>
-                <Tr>
-                  <Td fontSize={type === "small" ? "xs" : "sm"}>Marca</Td>
-                  <Td fontSize={type === "small" ? "xs" : "sm"}>
-                    {product.brand}
-                  </Td>
-                </Tr>
-                <Tr>
-                  <Td fontSize={type === "small" ? "xs" : "sm"}>Gênero</Td>
-                  <Td fontSize={type === "small" ? "xs" : "sm"}>
-                    {product.genre}
-                  </Td>
-                </Tr>
-                <Tr>
-                  <Td fontSize={type === "small" ? "xs" : "sm"}>Linha</Td>
-                  <Td fontSize={type === "small" ? "xs" : "sm"}>
-                    {product.line}
-                  </Td>
-                </Tr>
-              </Tbody>
-            </Table>
-          </Box>
-        </Flex>
+          </Flex>
+        )}
       </Flex>
     </Flex>
   );
