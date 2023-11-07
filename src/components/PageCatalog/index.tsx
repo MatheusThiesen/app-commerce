@@ -1,4 +1,17 @@
-import { Box, Flex, Image, Table, Tbody, Td, Text, Tr } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Image,
+  Stack,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "@chakra-ui/react";
 import { memo } from "react";
 import { defaultNoImage } from "../../global/parameters";
 import { ProductPage } from "../../hooks/queries/useCatalog";
@@ -164,22 +177,50 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
                   DISPONIBILIDADE
                 </Text>
 
-                <Table size={type === "medium" ? "xs" : "sm"} variant="striped">
-                  <Tbody>
-                    {product.grids.map((grid) =>
-                      grid?.stocks?.map((stock) => (
-                        <Tr>
-                          <Td fontSize={type === "medium" ? "xs" : "sm"}>
-                            {grid.name}
-                          </Td>
-                          <Td
-                            fontSize={type === "medium" ? "xs" : "sm"}
-                          >{`${stock.description} : ${stock.qtd} qtd`}</Td>
-                        </Tr>
-                      ))
-                    )}
-                  </Tbody>
-                </Table>
+                <Stack
+                  direction="row"
+                  flexWrap="wrap"
+                  gap="2"
+                  justify="center"
+                  align="center"
+                >
+                  {product.grids.map((grid) => {
+                    return (
+                      <TableContainer
+                        borderWidth="1px"
+                        borderColor="blackAlpha.400"
+                        borderRadius="md"
+                      >
+                        <Table
+                          size={type === "medium" ? "xs" : "sm"}
+                          variant="simple"
+                        >
+                          <Thead>
+                            <Tr>
+                              <Th fontSize={type === "medium" ? "xs" : "sm"}>
+                                TAM. {grid.name}
+                              </Th>
+                            </Tr>
+                          </Thead>
+                          <Tbody>
+                            {grid?.stocks?.map((stock) => (
+                              <Tr>
+                                <Td
+                                  fontSize={type === "medium" ? "xs" : "sm"}
+                                  textAlign="center"
+                                >
+                                  {stock.description === "Pronta Entrega"
+                                    ? `${stock.description} : ${stock.qtd} qtd`
+                                    : `${stock.description}`}
+                                </Td>
+                              </Tr>
+                            ))}
+                          </Tbody>
+                        </Table>
+                      </TableContainer>
+                    );
+                  })}
+                </Stack>
               </Box>
             )}
 
@@ -188,7 +229,7 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
                 CARACTERÍSTICAS GERAIS
               </Text>
 
-              <Table size={type === "medium" ? "xs" : "sm"} variant="striped">
+              <Table size={type === "medium" ? "xs" : "sm"} variant="simple">
                 <Tbody>
                   <Tr>
                     <Td fontSize={type === "medium" ? "xs" : "sm"}>Marca</Td>
