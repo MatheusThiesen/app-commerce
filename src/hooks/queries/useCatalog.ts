@@ -6,6 +6,7 @@ export type getCatalogProps = {
   id?: string;
   page: number;
   pagesize?: number;
+  search?: string;
 };
 
 export type UseCatalogProps = Omit<getCatalogProps, `page`>;
@@ -52,12 +53,18 @@ export type ProductPage = {
   }[];
 };
 
-export async function getCatalog({ id, page, pagesize }: getCatalogProps) {
+export async function getCatalog({
+  id,
+  page,
+  pagesize,
+  search,
+}: getCatalogProps) {
   try {
     const { data } = await api.get<CatalogApiResponse>(`/catalog/${id}`, {
       params: {
         page: page - 1,
         pagesize,
+        search,
       },
     });
 
@@ -93,10 +100,11 @@ export async function getCatalog({ id, page, pagesize }: getCatalogProps) {
   }
 }
 
-export function useCatalog({ id, pagesize }: UseCatalogProps) {
+export function useCatalog({ id, pagesize, search }: UseCatalogProps) {
   return useInfiniteQuery(
-    ["catalog", id, pagesize],
-    ({ pageParam = 1 }) => getCatalog({ id, pagesize, page: pageParam }),
+    ["catalog", id, pagesize, search],
+    ({ pageParam = 1 }) =>
+      getCatalog({ id, pagesize, search, page: pageParam }),
     {
       refetchOnWindowFocus: false,
       // getPreviousPageParam: (firstPage, allPages) => undefined,
@@ -110,19 +118,28 @@ export function useCatalog({ id, pagesize }: UseCatalogProps) {
 }
 
 export async function getCatalogTotalCount(
-  id?: string
+  id?: string,
+  search?: string
 ): Promise<{ total: number }> {
   if (!id) return { total: 0 };
 
   const { data } = await api.get<{ total: number }>(
     `/catalog/totalCount/${id}`,
-    {}
+    {
+      params: {
+        search,
+      },
+    }
   );
 
   return data;
 }
-export function useCatalogTotalCount(id?: string) {
-  return useQuery(["catalogTotalCount", id], () => getCatalogTotalCount(id), {
-    staleTime: 1000 * 60 * 5, // 5 Minutos
-  });
+export function useCatalogTotalCount(id?: string, search?: string) {
+  return useQuery(
+    ["catalogTotalCount", id, search],
+    () => getCatalogTotalCount(id, search),
+    {
+      staleTime: 1000 * 60 * 5, // 5 Minutos
+    }
+  );
 }

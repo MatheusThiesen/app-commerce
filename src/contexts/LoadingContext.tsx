@@ -11,6 +11,8 @@ import {
 type LoadingContextData = {
   isLoading: boolean;
   setLoading: Dispatch<SetStateAction<boolean>>;
+
+  setTheme: (t: "dark" | "light") => void;
 };
 
 type AuthProviderProps = {
@@ -21,17 +23,18 @@ export const LoadingContext = createContext({} as LoadingContextData);
 
 export function LoadingProvider({ children }: AuthProviderProps) {
   const [isLoading, setLoading] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("light");
 
   return (
-    <LoadingContext.Provider value={{ isLoading, setLoading }}>
+    <LoadingContext.Provider value={{ isLoading, setLoading, setTheme }}>
       {isLoading && (
         <Center
           position="fixed"
           w="100vw"
           h="100vh"
-          bg="white"
+          bg={theme === "dark" ? "black" : "white"}
           zIndex={99999}
-          opacity={0.75}
+          opacity={0.7}
         >
           <Spinner
             thickness="4px"
