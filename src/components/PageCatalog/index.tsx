@@ -177,13 +177,7 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
                   DISPONIBILIDADE
                 </Text>
 
-                <Stack
-                  direction="row"
-                  flexWrap="wrap"
-                  gap="2"
-                  justify="center"
-                  align="center"
-                >
+                <Stack direction="row" flexWrap="wrap" gap="2" justify="center">
                   {product.grids.map((grid) => {
                     return (
                       <TableContainer
