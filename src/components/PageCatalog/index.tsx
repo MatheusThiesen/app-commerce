@@ -184,11 +184,10 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
                         borderWidth="1px"
                         borderColor="blackAlpha.400"
                         borderRadius="md"
+                        px="1"
+                        pt="1"
                       >
-                        <Table
-                          size={type === "medium" ? "xs" : "sm"}
-                          variant="simple"
-                        >
+                        <Table size={"xs"} variant="simple">
                           <Thead>
                             <Tr>
                               <Th fontSize={type === "medium" ? "xs" : "sm"}>
