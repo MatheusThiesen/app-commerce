@@ -101,7 +101,7 @@ export function ProductOrderComponent({
       >
         <Text
           as={"span"}
-          fontSize="sm"
+          fontSize="md"
           fontWeight="light"
           color="gray.600"
           display="block"
