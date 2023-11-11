@@ -227,9 +227,10 @@ export function HeaderNavigationComponent({
                 <NavLink href="/inicio">Inicio</NavLink>
                 <NavLink href="/produtos">Produtos</NavLink>
                 <NavLink href="/clientes">Clientes</NavLink>
-                {/* {userAuth?.eVendedor && (
-                  <NavLink href="/pedidos">Pedidos</NavLink>
-                )} */}
+                {userAuth?.eVendedor &&
+                  userAuth.email === "matheus.thiesen@alpardobrasil.com.br" && (
+                    <NavLink href="/pedidos">Pedidos</NavLink>
+                  )}
               </Stack>
             )}
           </Flex>

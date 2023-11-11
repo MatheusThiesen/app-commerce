@@ -2,8 +2,9 @@ import { Flex, List, ListItem } from "@chakra-ui/react";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { BsBoxSeam } from "react-icons/bs";
 import { FiUsers } from "react-icons/fi";
-import { IoHomeOutline } from "react-icons/io5";
+import { IoBagHandleOutline, IoHomeOutline } from "react-icons/io5";
 import { useAuth } from "../../contexts/AuthContext";
+import { MainNavLink } from "./MainNavLink";
 import { NavLink } from "./NavLink";
 
 interface BottomNavigationPros {
@@ -46,13 +47,14 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
             </NavLink>
           </ListItem>
 
-          {/* {user?.eVendedor && (
-            <ListItem h="full">
-              <MainNavLink href="/pedidos" icon={IoBagHandleOutline}>
-                Pedidos
-              </MainNavLink>
-            </ListItem>
-          )} */}
+          {user?.eVendedor &&
+            user.email === "matheus.thiesen@alpardobrasil.com.br" && (
+              <ListItem h="full">
+                <MainNavLink href="/pedidos" icon={IoBagHandleOutline}>
+                  Pedidos
+                </MainNavLink>
+              </ListItem>
+            )}
 
           <ListItem h="full">
             <NavLink href="/produtos" icon={BsBoxSeam}>
