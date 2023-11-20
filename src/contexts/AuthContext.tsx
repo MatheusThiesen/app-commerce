@@ -11,18 +11,6 @@ import {
 import { Me } from "../@types/me";
 import { api } from "../service/apiClient";
 
-type User = {
-  codigo: number;
-  nome: string;
-  nomeGuerra: string;
-  email: string;
-  codGerente?: number;
-  codSupervisor?: number;
-  eAtivo: boolean;
-  eGerente: boolean;
-  eSupervisor: boolean;
-};
-
 type SignCredentials = {
   email: string;
   password: string;

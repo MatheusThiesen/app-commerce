@@ -11,6 +11,7 @@ import { Client } from "../hooks/queries/useClients";
 import { Brand, Product, StockLocation } from "../hooks/queries/useProducts";
 import { useLocalStore } from "../hooks/useLocalStore";
 import { api } from "../service/apiClient";
+import { useAuth } from "./AuthContext";
 
 export type PriceList = {
   codigo: number;
@@ -78,6 +79,7 @@ export const StoreContext = createContext({} as StoreContextData);
 
 export function StoreProvider({ children }: StoreProviderProps) {
   const { push } = useRouter();
+  const { user } = useAuth();
 
   const {
     onGet: onGetStoragePriceList,
@@ -341,7 +343,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
   async function sendOrder({ isDraft }: { isDraft: boolean }) {
     for (const order of orders) {
       await api.post("/orders", {
-        vendedorCodigo: 2091,
+        vendedorCodigo: user?.vendedorCodigo,
         clienteCodigo: client.codigo,
         condicaoPagamentoCodigo: order.paymentCondition?.codigo,
         tabelaPrecoCodigo: priceList.codigo,
