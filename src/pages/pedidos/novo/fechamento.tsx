@@ -1,10 +1,14 @@
 import Head from "next/head";
 import Router from "next/router";
+import { useEffect, useState } from "react";
+import ReactSelect from "react-select";
 
 import { Me } from "../../../@types/me";
 import { setupAPIClient } from "../../../service/api";
 import { withSSRAuth } from "../../../utils/withSSRAuth";
 
+import { BiCartDownload } from "react-icons/bi";
+import { IoArrowBack } from "react-icons/io5";
 import { MdShoppingCartCheckout } from "react-icons/md";
 
 import { Client } from "../../../components/Client";
@@ -23,12 +27,12 @@ import {
   Flex,
   Icon,
   Stack,
+  Switch,
   Text,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import { BiCartDownload } from "react-icons/bi";
-import { IoArrowBack } from "react-icons/io5";
-import ReactSelect from "react-select";
+import { InputSelect } from "../../../components/Form/InputSelect";
+
+import { Input } from "../../../components/Form/Input";
 import { useBrands } from "../../../hooks/queries/useBrands";
 import { api } from "../../../service/apiClient";
 
@@ -317,6 +321,33 @@ export default function CheckoutOrder({ me }: Props) {
                 );
               })}
             </Accordion>
+          </Box>
+
+          <Box>
+            <Flex align="start">
+              <Text fontSize="lg" fontWeight="light" mb={"1"} mr="2">
+                DIFERENCIADO
+              </Text>
+              <Switch
+                isChecked={true}
+                onChange={(e) => console.log(e)}
+                size="lg"
+                colorScheme="blue"
+              />
+            </Flex>
+
+            <Box bg="white" p="3" borderRadius="lg">
+              <Stack px="4" py="6">
+                <InputSelect name="type" label="Tipo de desconto">
+                  <option value="">Selecionar...</option>
+                  <option value="0">Valor fixo</option>
+                  <option value="1">Percentual</option>
+                </InputSelect>
+
+                <Input label="Valor do desconto" name="value" />
+                <Input label="Percentual de desconto" name="percent" />
+              </Stack>
+            </Box>
           </Box>
 
           <Flex flexDir="column" w="full">

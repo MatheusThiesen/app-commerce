@@ -24,7 +24,10 @@ import { useEffect, useRef, useState } from "react";
 import { IoBook } from "react-icons/io5";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
+
 import { Me } from "../../@types/me";
+import { Accordion } from "../../components/Accordion";
+import { FilterRangeAmount } from "../../components/FilterRangeAmount";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { HeaderToList } from "../../components/HeaderToList";
@@ -669,9 +672,57 @@ export default function Produtos({ me }: ProductsProps) {
           <Box borderRadius="md">
             <FilterSelectedList filters={filters} setFilters={setFilters} />
 
+            {productsFilters?.filters.find((f) => f.name === "salePrices")
+              ?.name && (
+              <Accordion isOpen title="Preço de venda" mb="2">
+                <FilterRangeAmount
+                  onChangeRange={([min, max]) => {
+                    const newFilters = [
+                      {
+                        name: "salePrices",
+                        field: `PDV mínimo (${min.toLocaleString("pt-br", {
+                          style: "currency",
+                          currency: "BRL",
+                        })})`,
+                        value: min,
+                      },
+                      {
+                        name: "salePrices",
+                        field: `PDV máximo (${max.toLocaleString("pt-br", {
+                          style: "currency",
+                          currency: "BRL",
+                        })})`,
+                        value: max,
+                      },
+                    ];
+                    const normalized = filters.filter(
+                      (f) => f.name !== "salePrices"
+                    );
+                    setFilters([...normalized, ...newFilters]);
+                  }}
+                  defaultMin={
+                    Number(
+                      productsFilters?.filters.find(
+                        (f) => f.name === "salePrices"
+                      )?.data[0].value
+                    ) ?? 0
+                  }
+                  defaultMax={
+                    Number(
+                      productsFilters?.filters.find(
+                        (f) => f.name === "salePrices"
+                      )?.data[1].value
+                    ) ?? 0
+                  }
+                />
+              </Accordion>
+            )}
+
             {productsFilters?.filters && (
               <ListFilter
-                filters={productsFilters.filters}
+                filters={productsFilters.filters?.filter(
+                  (f) => !["salePrices"].includes(f.name)
+                )}
                 selectedFilter={filters}
                 onChangeSelectedFilter={(a) => {
                   setFilters(a);
@@ -771,7 +822,11 @@ export default function Produtos({ me }: ProductsProps) {
       <ModalFilter
         isOpen={isOpenFilter}
         onClose={onCloseFilter}
-        dataFilters={productsFilters?.filters ?? []}
+        dataFilters={
+          productsFilters?.filters?.filter(
+            (f) => !["salePrices"].includes(f.name)
+          ) ?? []
+        }
         filters={filters}
         setFilters={setFilters}
       >
@@ -795,6 +850,52 @@ export default function Produtos({ me }: ProductsProps) {
               colorScheme="red"
             />
           </Flex>
+
+          {productsFilters?.filters.find((f) => f.name === "salePrices")
+            ?.name && (
+            <Accordion isOpen title="Preço de venda" mb="2">
+              <FilterRangeAmount
+                onChangeRange={([min, max]) => {
+                  const newFilters = [
+                    {
+                      name: "salePrices",
+                      field: `PDV mínimo (${min.toLocaleString("pt-br", {
+                        style: "currency",
+                        currency: "BRL",
+                      })})`,
+                      value: min,
+                    },
+                    {
+                      name: "salePrices",
+                      field: `PDV máximo (${max.toLocaleString("pt-br", {
+                        style: "currency",
+                        currency: "BRL",
+                      })})`,
+                      value: max,
+                    },
+                  ];
+                  const normalized = filters.filter(
+                    (f) => f.name !== "salePrices"
+                  );
+                  setFilters([...normalized, ...newFilters]);
+                }}
+                defaultMin={
+                  Number(
+                    productsFilters?.filters.find(
+                      (f) => f.name === "salePrices"
+                    )?.data[0].value
+                  ) ?? 0
+                }
+                defaultMax={
+                  Number(
+                    productsFilters?.filters.find(
+                      (f) => f.name === "salePrices"
+                    )?.data[1].value
+                  ) ?? 0
+                }
+              />
+            </Accordion>
+          )}
         </>
       </ModalFilter>
 

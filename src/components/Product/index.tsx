@@ -11,7 +11,7 @@ export interface ProductProps {
   name: string;
   descriptionAdditional: string;
   amount: string;
-  pdv?: string;
+  subInfo?: string;
   reference: string;
   uri: string;
 }
@@ -130,14 +130,14 @@ export function ProductComponent({
                 >
                   Referência {reference}
                 </Text>
-                {product.pdv && (
+                {product.subInfo && (
                   <Text
                     as="span"
                     fontSize="smaller"
                     color="gray.600"
                     fontWeight="light"
                   >
-                    PDV {product.pdv}
+                    {product.subInfo}
                   </Text>
                 )}
               </Flex>

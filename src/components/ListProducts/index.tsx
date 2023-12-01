@@ -55,11 +55,11 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
                     name: product.descricao,
                     descriptionAdditional: product.descricaoAdicional,
                     reference: product.referencia,
-                    amount:
+                    subInfo:
                       product.listaPreco?.find(
                         (f) => Number(f.codigo) === Number(priceList?.codigo)
                       )?.valorFormat ?? "-",
-                    pdv: product.precoVendaFormat ?? "-",
+                    amount: "PDV " + product.precoVendaFormat ?? "-",
                     uri: `${spaceImages}/Produtos/${
                       product.imagens && product.imagens[0]
                         ? product.imagens[0].nome
@@ -77,11 +77,11 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
                   name: product.descricao,
                   descriptionAdditional: product.descricaoAdicional,
                   reference: product.referencia,
-                  amount:
+                  subInfo:
                     product.listaPreco?.find(
                       (f) => Number(f.codigo) === Number(priceList?.codigo)
                     )?.valorFormat ?? "-",
-                  pdv: product.precoVendaFormat ?? "-",
+                  amount: "PDV " + product.precoVendaFormat ?? "-",
                   uri: `${spaceImages}/Produtos/${
                     product.imagens && product.imagens[0]
                       ? product.imagens[0].nome

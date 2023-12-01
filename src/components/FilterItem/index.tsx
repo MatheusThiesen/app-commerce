@@ -189,11 +189,6 @@ export function FilterItem({
               height={150}
               itemCount={filteredList.length}
               itemSize={25}
-              // itemSize={
-              //   ["subGrupoId", "grupoCodigo", "concept"].includes(name)
-              //     ? 40
-              //     : 25
-              // }
               width={100}
               style={{
                 width: "100%",

@@ -23,14 +23,23 @@ export type PaymentCondition = {
   descricao: string;
 };
 
+export type differentiated = {
+  isActive: boolean;
+
+  descontoPercentual: number;
+  descontoValor: number;
+  tipoValor: number;
+};
+
 interface Order {
   stockLocation: StockLocation;
   brand: Brand;
+  paymentCondition?: PaymentCondition;
   items: Item[];
+
   qtd: number;
   amount: number;
   amountFormat: string;
-  paymentCondition?: PaymentCondition;
 }
 
 interface Item {

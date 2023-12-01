@@ -25,7 +25,9 @@ import {
   useQueryParamsFilterList,
 } from "../../../hooks/useQueryParamsFilterList";
 
+import { Accordion } from "../../../components/Accordion";
 import { Cart } from "../../../components/Cart";
+import { FilterRangeAmount } from "../../../components/FilterRangeAmount";
 import { FilterSelectedList } from "../../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../../components/HeaderNavigation";
 import { HeaderToList } from "../../../components/HeaderToList";
@@ -273,6 +275,52 @@ export default function Order({ me }: OrderProps) {
           <Box borderRadius="md">
             <FilterSelectedList filters={filters} setFilters={setFilters} />
 
+            {productsFilters?.filters.find((f) => f.name === "salePrices")
+              ?.name && (
+              <Accordion isOpen title="Preço de venda" mb="2">
+                <FilterRangeAmount
+                  onChangeRange={([min, max]) => {
+                    const newFilters = [
+                      {
+                        name: "salePrices",
+                        field: `PDV mínimo (${min.toLocaleString("pt-br", {
+                          style: "currency",
+                          currency: "BRL",
+                        })})`,
+                        value: min,
+                      },
+                      {
+                        name: "salePrices",
+                        field: `PDV máximo (${max.toLocaleString("pt-br", {
+                          style: "currency",
+                          currency: "BRL",
+                        })})`,
+                        value: max,
+                      },
+                    ];
+                    const normalized = filters.filter(
+                      (f) => f.name !== "salePrices"
+                    );
+                    setFilters([...normalized, ...newFilters]);
+                  }}
+                  defaultMin={
+                    Number(
+                      productsFilters?.filters.find(
+                        (f) => f.name === "salePrices"
+                      )?.data[0].value
+                    ) ?? 0
+                  }
+                  defaultMax={
+                    Number(
+                      productsFilters?.filters.find(
+                        (f) => f.name === "salePrices"
+                      )?.data[1].value
+                    ) ?? 0
+                  }
+                />
+              </Accordion>
+            )}
+
             {productsFilters?.filters && (
               <ListFilter
                 filters={productsFilters?.filters}
@@ -316,7 +364,11 @@ export default function Order({ me }: OrderProps) {
       <ModalFilter
         isOpen={isOpenFilter}
         onClose={onCloseFilter}
-        dataFilters={productsFilters?.filters ?? []}
+        dataFilters={
+          productsFilters?.filters?.filter(
+            (f) => !["salePrices"].includes(f.name)
+          ) ?? []
+        }
         filters={filters}
         setFilters={setFilters}
       >
@@ -340,6 +392,51 @@ export default function Order({ me }: OrderProps) {
               colorScheme="red"
             />
           </Flex>
+          {productsFilters?.filters.find((f) => f.name === "salePrices")
+            ?.name && (
+            <Accordion isOpen title="Preço de venda" mb="2">
+              <FilterRangeAmount
+                onChangeRange={([min, max]) => {
+                  const newFilters = [
+                    {
+                      name: "salePrices",
+                      field: `PDV mínimo (${min.toLocaleString("pt-br", {
+                        style: "currency",
+                        currency: "BRL",
+                      })})`,
+                      value: min,
+                    },
+                    {
+                      name: "salePrices",
+                      field: `PDV máximo (${max.toLocaleString("pt-br", {
+                        style: "currency",
+                        currency: "BRL",
+                      })})`,
+                      value: max,
+                    },
+                  ];
+                  const normalized = filters.filter(
+                    (f) => f.name !== "salePrices"
+                  );
+                  setFilters([...normalized, ...newFilters]);
+                }}
+                defaultMin={
+                  Number(
+                    productsFilters?.filters.find(
+                      (f) => f.name === "salePrices"
+                    )?.data[0].value
+                  ) ?? 0
+                }
+                defaultMax={
+                  Number(
+                    productsFilters?.filters.find(
+                      (f) => f.name === "salePrices"
+                    )?.data[1].value
+                  ) ?? 0
+                }
+              />
+            </Accordion>
+          )}
         </>
       </ModalFilter>
 
