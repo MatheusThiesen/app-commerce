@@ -34,6 +34,7 @@ export type differentiated = {
 interface Order {
   stockLocation: StockLocation;
   brand: Brand;
+  differentiated?: differentiated;
   paymentCondition?: PaymentCondition;
   items: Item[];
 

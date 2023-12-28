@@ -250,7 +250,7 @@ export default function CheckoutOrder({ me }: Props) {
 
                     <AccordionPanel borderTop="1px" borderColor="gray.100">
                       <Box mt="1rem">
-                        <Text mb="2" fontSize="sm" fontWeight="bold">
+                        <Text mb="2" fontSize="md" fontWeight="bold">
                           Condição de pagamento
                         </Text>
                         <ReactSelect
@@ -278,6 +278,34 @@ export default function CheckoutOrder({ me }: Props) {
                               });
                           }}
                         />
+                      </Box>
+
+                      <Box mt="1rem">
+                        <Text fontSize="md" fontWeight="bold" mb={"1"} mr="2">
+                          Diferenciado
+                        </Text>
+                        <Switch
+                          isChecked={order.differentiated?.isActive}
+                          onChange={(e) => {}}
+                          size="lg"
+                          colorScheme="blue"
+                        />
+
+                        {order.differentiated?.isActive && (
+                          <Stack>
+                            <InputSelect name="type" label="Tipo de desconto">
+                              <option value="">Selecionar...</option>
+                              <option value="0">Valor fixo</option>
+                              <option value="1">Percentual</option>
+                            </InputSelect>
+
+                            <Input label="Valor do desconto" name="value" />
+                            <Input
+                              label="Percentual de desconto"
+                              name="percent"
+                            />
+                          </Stack>
+                        )}
                       </Box>
 
                       <Accordion
@@ -321,33 +349,6 @@ export default function CheckoutOrder({ me }: Props) {
                 );
               })}
             </Accordion>
-          </Box>
-
-          <Box>
-            <Flex align="start">
-              <Text fontSize="lg" fontWeight="light" mb={"1"} mr="2">
-                DIFERENCIADO
-              </Text>
-              <Switch
-                isChecked={true}
-                onChange={(e) => console.log(e)}
-                size="lg"
-                colorScheme="blue"
-              />
-            </Flex>
-
-            <Box bg="white" p="3" borderRadius="lg">
-              <Stack px="4" py="6">
-                <InputSelect name="type" label="Tipo de desconto">
-                  <option value="">Selecionar...</option>
-                  <option value="0">Valor fixo</option>
-                  <option value="1">Percentual</option>
-                </InputSelect>
-
-                <Input label="Valor do desconto" name="value" />
-                <Input label="Percentual de desconto" name="percent" />
-              </Stack>
-            </Box>
           </Box>
 
           <Flex flexDir="column" w="full">
