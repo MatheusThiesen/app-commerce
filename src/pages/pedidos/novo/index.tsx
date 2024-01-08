@@ -323,7 +323,9 @@ export default function Order({ me }: OrderProps) {
 
             {productsFilters?.filters && (
               <ListFilter
-                filters={productsFilters?.filters}
+                filters={productsFilters.filters?.filter(
+                  (f) => !["salePrices", "concept"].includes(f.name)
+                )}
                 selectedFilter={filters}
                 onChangeSelectedFilter={(a) => {
                   setFilters(a);
@@ -366,7 +368,7 @@ export default function Order({ me }: OrderProps) {
         onClose={onCloseFilter}
         dataFilters={
           productsFilters?.filters?.filter(
-            (f) => !["salePrices"].includes(f.name)
+            (f) => !["salePrices", "concept"].includes(f.name)
           ) ?? []
         }
         filters={filters}

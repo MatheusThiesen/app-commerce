@@ -198,7 +198,9 @@ export default function Orders({ me }: OrdersProps) {
 
               {dataFilters && (
                 <ListFilter
-                  filters={dataFilters.filters}
+                  filters={dataFilters.filters.filter(
+                    (f) => !["salePrices"].includes(f.name)
+                  )}
                   selectedFilter={filters}
                   onChangeSelectedFilter={(a) => {
                     setFilters(a);
@@ -325,7 +327,9 @@ export default function Orders({ me }: OrdersProps) {
           <Box p="6">
             {dataFilters && (
               <ListFilter
-                filters={dataFilters.filters}
+                filters={dataFilters.filters.filter(
+                  (f) => !["salePrices"].includes(f.name)
+                )}
                 selectedFilter={filters}
                 onChangeSelectedFilter={(a) => {
                   setFilters(a);
