@@ -8,6 +8,7 @@ import { useInView } from "react-intersection-observer";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useStore } from "../../contexts/StoreContext";
 import { spaceImages } from "../../global/parameters";
+import { useLocalStore } from "../../hooks/useLocalStore";
 import { LoadingInfiniteScroll } from "../LoadingInfiniteScroll";
 import { Product } from "../Product";
 
@@ -22,6 +23,12 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
   const { ref, inView } = useInView();
   const { setLoading } = useLoading();
   const { priceList } = useStore();
+  const {
+    data: scrollPosition,
+    onRemove: onRemoveScrollPosition,
+    onSet: onSetScrollPosition,
+  } = useLocalStore("@ScrollY-Products-Order");
+
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useProducts({
       pagesize: 40,
@@ -30,6 +37,15 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
       distinct,
       search,
     });
+
+  function setPositionScroll() {
+    onSetScrollPosition(window.scrollY.toString());
+  }
+
+  async function handleClickProduct() {
+    setPositionScroll();
+    setLoading(true);
+  }
 
   useEffect(() => {
     setLoading(isLoading);
@@ -41,6 +57,16 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
     }
   }, [inView, fetchNextPage, hasNextPage]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      const scrollY = Number(scrollPosition);
+      if (!isNaN(scrollY)) {
+        window.scrollTo({ top: scrollY, behavior: "smooth" });
+        onRemoveScrollPosition();
+      }
+    }, 500);
+  }, [scrollPosition]);
+
   return (
     <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
       <SimpleGrid columns={[2, 2, 3, 4]} spacing="1" mb="1rem">
@@ -49,6 +75,7 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
             i === page?.products.length - 4 ? (
               <Box key={product.codigo} ref={ref}>
                 <Product
+                  onClickProduct={handleClickProduct}
                   href="pedidos/novo/produtos"
                   product={{
                     cod: product.codigo,
@@ -69,6 +96,7 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
               </Box>
             ) : (
               <Product
+                onClickProduct={handleClickProduct}
                 href="pedidos/novo/produtos"
                 key={product.codigo}
                 product={{

@@ -46,6 +46,7 @@ import {
   useProducts,
 } from "../../hooks/queries/useProducts";
 import { useProductsFilters } from "../../hooks/queries/useProductsFilters";
+import { useLocalStore } from "../../hooks/useLocalStore";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
 import { useQueryParams } from "../../hooks/useQueryParams";
 import {
@@ -90,6 +91,11 @@ export default function Produtos({ me }: ProductsProps) {
   const { isOpen, onToggle } = useDisclosure();
 
   const { setQueryParams } = useQueryParams({ router });
+  const {
+    data: scrollPosition,
+    onRemove: onRemoveScrollPosition,
+    onSet: onSetScrollPosition,
+  } = useLocalStore("@ScrollY-Products");
 
   const [search, setSearch] = useState<string>(() => {
     return router.query.search ? String(router.query.search) : "";
@@ -127,37 +133,14 @@ export default function Produtos({ me }: ProductsProps) {
   const { data: productsFilters, isLoading: isLoadingProductsFilters } =
     useProductsFilters({});
 
-  useEffect(() => {
-    if (isActivatedCatalog && !isOpen) {
-      onToggle();
-    }
-    if (!isActivatedCatalog && isOpen) {
-      onToggle();
-    }
-  }, [isActivatedCatalog]);
+  function setPositionScroll() {
+    onSetScrollPosition(window.scrollY.toString());
+  }
 
-  useEffect(() => {
-    if (inView && hasNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, fetchNextPage, hasNextPage]);
-
-  useEffect(() => {
-    setQueryParams({ type: "set", data: { field: "orderby", value: orderBy } });
-  }, [orderBy]);
-  useEffect(() => {
-    setQueryParams({ type: "set", data: { field: "search", value: search } });
-  }, [search]);
-  useEffect(() => {
-    setQueryParams({
-      type: "set",
-      data: { field: "distinct", value: groupProduct },
-    });
-  }, [groupProduct]);
-
-  useEffect(() => {
-    setLoading(isLoading);
-  }, [isLoading]);
+  async function handleClickProduct() {
+    setPositionScroll();
+    setLoading(true);
+  }
 
   async function handleExportList({ noImage = false }: { noImage?: boolean }) {
     //@ts-ignore
@@ -557,6 +540,45 @@ export default function Produtos({ me }: ProductsProps) {
     }
   }
 
+  useEffect(() => {
+    if (isActivatedCatalog && !isOpen) {
+      onToggle();
+    }
+    if (!isActivatedCatalog && isOpen) {
+      onToggle();
+    }
+  }, [isActivatedCatalog]);
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage]);
+
+  useEffect(() => {
+    setQueryParams({ type: "set", data: { field: "orderby", value: orderBy } });
+  }, [orderBy]);
+  useEffect(() => {
+    setQueryParams({ type: "set", data: { field: "search", value: search } });
+  }, [search]);
+  useEffect(() => {
+    setQueryParams({
+      type: "set",
+      data: { field: "distinct", value: groupProduct },
+    });
+  }, [groupProduct]);
+
+  useEffect(() => {
+    setLoading(isLoading);
+  }, [isLoading]);
+  useEffect(() => {
+    const scrollY = Number(scrollPosition);
+    if (!isNaN(scrollY)) {
+      window.scrollTo({ top: scrollY, behavior: "smooth" });
+      onRemoveScrollPosition();
+    }
+  }, [scrollPosition]);
+
   return (
     <>
       <Head>
@@ -788,7 +810,7 @@ export default function Produtos({ me }: ProductsProps) {
                               : product.referencia + "_01"
                           }_smaller`,
                         }}
-                        onClickProduct={() => setLoading(true)}
+                        onClickProduct={handleClickProduct}
                       />
                     </Box>
                   ) : (
@@ -808,7 +830,7 @@ export default function Produtos({ me }: ProductsProps) {
                               : product.referencia + "_01"
                           }_smaller`,
                         }}
-                        onClickProduct={() => setLoading(true)}
+                        onClickProduct={handleClickProduct}
                       />
                     </Box>
                   )

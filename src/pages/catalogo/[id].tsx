@@ -227,7 +227,7 @@ export default function Catalog() {
                 <>
                   <Button
                     variant="unstyled"
-                    onClick={() => setPageSwipe((p) => p - 1)}
+                    onClick={() => setPageSwipe((p) => (p < 1 ? p : p - 1))}
                   >
                     <Icon color="white" fontSize="5xl" as={MdArrowBackIosNew} />
                   </Button>
@@ -256,7 +256,15 @@ export default function Catalog() {
 
                   <Button
                     variant="unstyled"
-                    onClick={() => setPageSwipe((p) => p + 1)}
+                    onClick={() =>
+                      setPageSwipe((p) => {
+                        if (p >= Number(total.data?.total) - 1) {
+                          return p;
+                        }
+
+                        return p + 1;
+                      })
+                    }
                   >
                     <Icon color="white" fontSize="5xl" as={MdArrowForwardIos} />
                   </Button>

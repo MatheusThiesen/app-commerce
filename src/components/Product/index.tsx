@@ -2,7 +2,10 @@ import { Box, Button, Flex, Icon, Image, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { memo } from "react";
-import { BsBookmark, BsBookmarkFill } from "react-icons/bs";
+import {
+  MdCollectionsBookmark,
+  MdOutlineCollectionsBookmark,
+} from "react-icons/md";
 import { defaultNoImage } from "../../global/parameters";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
 
@@ -80,7 +83,11 @@ export function ProductComponent({
               onClick={handleSelectedProductCatalog}
             >
               <Icon
-                as={isProductSelectedCatalog ? BsBookmarkFill : BsBookmark}
+                as={
+                  isProductSelectedCatalog
+                    ? MdCollectionsBookmark
+                    : MdOutlineCollectionsBookmark
+                }
                 fontSize="20"
                 color={isProductSelectedCatalog ? "blue.600" : "gray.700"}
               />
