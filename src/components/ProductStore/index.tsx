@@ -67,8 +67,8 @@ export function ProductStoreComponent({
                   : ["4rem", "4rem", "8rem", "8rem", "8rem"]
               }
               src={`${spaceImages}/Produtos/${
-                product.imagens && product.imagens[0]
-                  ? product.imagens[0].nome
+                product?.imagemPreview
+                  ? product.imagemPreview
                   : product.referencia + "_01"
               }_smaller`}
               objectFit="contain"

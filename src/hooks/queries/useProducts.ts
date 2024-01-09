@@ -36,10 +36,15 @@ export type Product = {
   precoVendaFormat: string;
   precoVendaEmpresa: number;
   precoVendaEmpresaFormat: string;
+  precoTabela28?: number;
+  precoTabela42?: number;
+  precoTabela56?: number;
+  precoTabela300?: number;
+  precoTabela28Format?: string;
+  precoTabela42Format?: string;
+  precoTabela56Format?: string;
+  precoTabela300Format?: string;
   locaisEstoque?: StockLocation[];
-  imagens?: {
-    nome: string;
-  }[];
   marca: Brand;
   colecao?: {
     codigo: number;
@@ -83,6 +88,7 @@ export type Product = {
     valor: number;
     valorFormat: string;
   }[];
+  imagemPreview?: string;
 };
 
 export interface VariationsProduct {
@@ -159,6 +165,30 @@ export async function getProducts({
             currency: "BRL",
           })
         : "R$ -",
+      precoTabela28Format: product?.precoTabela28
+        ? product?.precoTabela28.toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          })
+        : "-",
+      precoTabela42Format: product?.precoTabela42
+        ? product?.precoTabela42.toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          })
+        : "-",
+      precoTabela56Format: product?.precoTabela56
+        ? product?.precoTabela56.toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          })
+        : "-",
+      precoTabela300Format: product?.precoTabela300
+        ? product?.precoTabela300.toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          })
+        : "-",
       listaPreco: product.listaPreco?.map((list) => ({
         ...list,
         valorFormat: list.valor.toLocaleString("pt-br", {

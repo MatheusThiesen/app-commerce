@@ -56,13 +56,12 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
                     descriptionAdditional: product.descricaoAdicional,
                     reference: product.referencia,
                     subInfo:
-                      product.listaPreco?.find(
-                        (f) => Number(f.codigo) === Number(priceList?.codigo)
-                      )?.valorFormat ?? "-",
+                      //@ts-ignore
+                      product[`precoTabela${priceList?.codigo}Format`],
                     amount: "PDV " + product.precoVendaFormat ?? "-",
                     uri: `${spaceImages}/Produtos/${
-                      product.imagens && product.imagens[0]
-                        ? product.imagens[0].nome
+                      product?.imagemPreview
+                        ? product.imagemPreview
                         : product.referencia + "_01"
                     }_smaller`,
                   }}
@@ -78,13 +77,12 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
                   descriptionAdditional: product.descricaoAdicional,
                   reference: product.referencia,
                   subInfo:
-                    product.listaPreco?.find(
-                      (f) => Number(f.codigo) === Number(priceList?.codigo)
-                    )?.valorFormat ?? "-",
+                    //@ts-ignore
+                    product[`precoTabela${priceList?.codigo}Format`],
                   amount: "PDV " + product.precoVendaFormat ?? "-",
                   uri: `${spaceImages}/Produtos/${
-                    product.imagens && product.imagens[0]
-                      ? product.imagens[0].nome
+                    product?.imagemPreview
+                      ? product.imagemPreview
                       : product.referencia + "_01"
                   }_smaller`,
                 }}
