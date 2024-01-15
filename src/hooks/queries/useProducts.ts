@@ -88,6 +88,9 @@ export type Product = {
     valor: number;
     valorFormat: string;
   }[];
+  imagens?: {
+    nome: string;
+  }[];
   imagemPreview?: string;
 };
 

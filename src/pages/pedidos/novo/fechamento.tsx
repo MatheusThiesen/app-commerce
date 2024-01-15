@@ -281,16 +281,6 @@ export default function CheckoutOrder({ me }: Props) {
                       </Box>
 
                       <Box mt="1rem">
-                        <Text fontSize="md" fontWeight="bold" mb={"1"} mr="2">
-                          Diferenciado
-                        </Text>
-                        <Switch
-                          isChecked={order.differentiated?.isActive}
-                          onChange={(e) => {}}
-                          size="lg"
-                          colorScheme="blue"
-                        />
-
                         {order.differentiated?.isActive && (
                           <Stack>
                             <InputSelect name="type" label="Tipo de desconto">
@@ -344,6 +334,39 @@ export default function CheckoutOrder({ me }: Props) {
                           </AccordionPanel>
                         </AccordionItem>
                       </Accordion>
+
+                      <Text fontSize="md" fontWeight="bold" mb={"1"} mr="2">
+                        Diferenciado
+                      </Text>
+                      <Switch
+                        isChecked={order.differentiated?.isActive}
+                        onChange={(e) => {}}
+                        size="lg"
+                        colorScheme="blue"
+                      />
+
+                      <Flex justify="space-between" mt="8">
+                        <Text
+                          fontSize={["sm", "sm", "md", "md"]}
+                          color="gray.700"
+                        >{`Quantidade`}</Text>
+                        <Text
+                          fontSize={["sm", "sm", "md", "md"]}
+                          color="gray.700"
+                        >{`${order.items.length} itens`}</Text>
+                      </Flex>
+                      <Flex justify="space-between">
+                        <Text
+                          mb="4"
+                          fontWeight="bold"
+                          fontSize={["md", "md", "lg", "lg"]}
+                        >{`Valor total`}</Text>
+                        <Text
+                          mb="4"
+                          fontWeight="bold"
+                          fontSize={["md", "md", "lg", "lg"]}
+                        >{`${order.amountFormat}`}</Text>
+                      </Flex>
                     </AccordionPanel>
                   </AccordionItem>
                 );

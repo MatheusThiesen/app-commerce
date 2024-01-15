@@ -4,6 +4,7 @@ import { spaceImages } from "../global/parameters";
 
 interface useImagesProductProps {
   reference: string;
+  images?: string[];
 }
 
 type ResponseXmlToJson = {
@@ -16,7 +17,12 @@ type ResponseXmlToJson = {
 
 export const useImagesProduct = async ({
   reference,
+  images: imagesStorage,
 }: useImagesProductProps) => {
+  if (imagesStorage && imagesStorage.length > 0) {
+    return imagesStorage.map((item) => `${spaceImages}/Produtos/${item}`);
+  }
+
   var images: string[] = [];
   const response = await axios(
     `${spaceImages}/?prefix=Produtos%2F${reference}&max-keys=10`,

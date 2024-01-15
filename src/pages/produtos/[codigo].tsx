@@ -50,6 +50,7 @@ export default function Produto(props: ProdutoProps) {
       if (product) {
         const getImages = await useImagesProduct({
           reference: product.referencia,
+          images: product.imagens?.map((item) => item.nome),
         });
 
         setImages(getImages ?? [""]);

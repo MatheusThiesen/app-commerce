@@ -349,6 +349,18 @@ export function StoreProvider({ children }: StoreProviderProps) {
       })
     );
   }
+  
+  function setIsDifferentiated({}:
+    paymentCondition: PaymentCondition;
+    stockLocationPeriod: string;
+    brandCod: number;
+  ) {
+    
+  }
+
+  function sketchOrder() {
+    //Lista de produto que sofreram alterações;
+  }
 
   async function sendOrder({ isDraft }: { isDraft: boolean }) {
     for (const order of orders) {
