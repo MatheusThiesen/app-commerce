@@ -3,9 +3,13 @@ import { Client as ClientProps } from "../../hooks/queries/useClients";
 
 interface ClientComponentProps {
   client: ClientProps;
+  colorTag?: string;
 }
 
-export const Client = ({ client }: ClientComponentProps) => {
+export const Client = ({
+  client,
+  colorTag = "red.500",
+}: ClientComponentProps) => {
   return (
     <Box w="full" display="block" bg="white" p="3" borderRadius="lg">
       <Flex columnGap="1" align="center" justify="space-between">
@@ -13,7 +17,7 @@ export const Client = ({ client }: ClientComponentProps) => {
           size="md"
           variant="solid"
           color="white"
-          bg="red.500"
+          bg={colorTag}
           borderRadius="lg"
         >
           {client.codigo}

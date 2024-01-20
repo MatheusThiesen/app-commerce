@@ -63,6 +63,7 @@ export const InputBase: ForwardRefRenderFunction<
           borderColor="gray.100"
           bgColor="gray.50"
           variant="filled"
+          borderRadius="md"
           _hover={{
             bgColor: "gray.50",
           }}

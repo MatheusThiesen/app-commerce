@@ -29,6 +29,7 @@ import {
 import { Client } from "../../components/Client";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductOrder } from "../../components/ProductOrder";
+import { useStore } from "../../contexts/StoreContext";
 
 interface Props {
   me: Me;
@@ -36,6 +37,7 @@ interface Props {
 
 export default function Order({ me }: Props) {
   const router = useRouter();
+  const { sketchOrder } = useStore();
   const { setLoading } = useLoading();
   const { codigo } = router.query;
 
@@ -44,6 +46,10 @@ export default function Order({ me }: Props) {
   useEffect(() => {
     setLoading(isLoading);
   }, [isLoading]);
+
+  async function handleSketch() {
+    if (order?.codigo) await sketchOrder(order.codigo);
+  }
 
   return (
     <>
@@ -59,7 +65,7 @@ export default function Order({ me }: Props) {
         Right={
           order?.eRascunho && (
             <Button
-              onClick={() => {}}
+              onClick={handleSketch}
               variant="unstyled"
               display={["flex", "flex", "flex", "none"]}
               justifyContent="center"
@@ -136,7 +142,6 @@ export default function Order({ me }: Props) {
                       bg={selectStatusColor(
                         order.eRascunho ? 99 : order.situacaoPedido?.codigo
                       )}
-                      // opacity={0.8}
                       textTransform="uppercase"
                     >
                       {order.eRascunho
@@ -167,11 +172,17 @@ export default function Order({ me }: Props) {
                   bg="white"
                   borderRadius="lg"
                 >
-                  <Client client={order?.cliente} />
+                  <Client
+                    client={order?.cliente}
+                    colorTag={selectStatusColor(
+                      order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                    )}
+                  />
                 </Box>
 
                 {order.vendedores.map((seller) => (
                   <Box
+                    key={seller.vendedor.codigo}
                     w="full"
                     display="block"
                     bg="white"
@@ -184,7 +195,9 @@ export default function Order({ me }: Props) {
                         size="md"
                         variant="solid"
                         color="white"
-                        bg="red.500"
+                        bg={selectStatusColor(
+                          order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                        )}
                         borderRadius="lg"
                       >
                         {seller.vendedor.codigo}
@@ -251,6 +264,7 @@ export default function Order({ me }: Props) {
                 <Stack borderRadius="lg">
                   {order?.itens.map((item) => (
                     <ProductOrder
+                      key={item.codigo}
                       product={item.produto}
                       amount={item.valorTotalFormat}
                       qtd={item.quantidade}
@@ -266,7 +280,7 @@ export default function Order({ me }: Props) {
 
       {order?.eRascunho && (
         <Button
-          onClick={() => {}}
+          onClick={handleSketch}
           colorScheme="blue"
           rounded="full"
           position={["fixed"]}

@@ -7,6 +7,10 @@ import {
   useState,
 } from "react";
 
+import { Button, Icon, Stack } from "@chakra-ui/react";
+import { IoBagHandle } from "react-icons/io5";
+import { ModalAlertList } from "../components/ModalAlertList";
+import { ProductOrder } from "../components/ProductOrder";
 import { Client } from "../hooks/queries/useClients";
 import { Brand, Product, StockLocation } from "../hooks/queries/useProducts";
 import { useLocalStore } from "../hooks/useLocalStore";
@@ -23,24 +27,31 @@ export type PaymentCondition = {
   descricao: string;
 };
 
-export type differentiated = {
+export type Differentiated = {
   isActive: boolean;
 
-  descontoPercentual: number;
-  descontoValor: number;
-  tipoValor: number;
+  descontoPercentual?: string;
+  descontoValor?: number;
+  tipoValor?: "VALOR" | "PERCENTUAL";
+
+  amountDiscount?: number;
+  amountDiscountFormat?: string;
 };
 
-interface Order {
+export interface Order {
   stockLocation: StockLocation;
   brand: Brand;
-  differentiated?: differentiated;
+  differentiated?: Differentiated;
   paymentCondition?: PaymentCondition;
   items: Item[];
 
   qtd: number;
   amount: number;
   amountFormat: string;
+  amountWithDiscount: number;
+  amountWithDiscountFormat: string;
+
+  isSketch?: number;
 }
 
 interface Item {
@@ -49,6 +60,29 @@ interface Item {
   amount: number;
   amountFormat: string;
 }
+
+type SketchItem = {
+  quantidade: number;
+  valorUnitario: number;
+  sequencia: number;
+  produto: Product;
+};
+
+type GetSketchOrderValidResponse = {
+  pedido: {
+    cliente: Client;
+    marca: Brand;
+    condicaoPagamento: PaymentCondition;
+    periodoEstoque: StockLocation;
+    tabelaPreco: PriceList;
+  };
+
+  itens: {
+    atualizados: SketchItem[];
+    deletados: SketchItem[];
+    atuais: SketchItem[];
+  };
+};
 
 type StoreContextData = {
   client?: Client;
@@ -59,6 +93,8 @@ type StoreContextData = {
   totalAmountFormat: string;
 
   validOrders: boolean;
+
+  sketchOrder: (orderCode: number) => Promise<void>;
 
   addItem: (a: {
     product: Product;
@@ -78,6 +114,10 @@ type StoreContextData = {
     paymentCondition: PaymentCondition;
     stockLocationPeriod: string;
     brandCod: number;
+  }) => void;
+  setDifferentiated: (data: {
+    order: Order;
+    differentiated: Differentiated;
   }) => void;
 };
 
@@ -110,6 +150,10 @@ export function StoreProvider({ children }: StoreProviderProps) {
   const [client, setClient] = useState<Client>({} as Client);
   const [priceList, setPriceList] = useState<PriceList>({} as PriceList);
   const [orders, setOrders] = useState<Order[]>([]);
+
+  const [sketchEditItems, setSketchEditItems] = useState<SketchItem[]>([]);
+  const [sketchRemoveItems, setSketchRemoveItems] = useState<SketchItem[]>([]);
+  const [isAlertSketch, setIsAlertSketch] = useState<boolean>(false);
 
   const totalItems = orders.reduce(
     (previousValue, currentValue) => previousValue + currentValue.items.length,
@@ -218,6 +262,8 @@ export function StoreProvider({ children }: StoreProviderProps) {
         qtd: qtd,
         amount,
         amountFormat,
+        amountWithDiscount: 0,
+        amountWithDiscountFormat: "R$ 0,00",
         items: [
           {
             product,
@@ -349,45 +395,185 @@ export function StoreProvider({ children }: StoreProviderProps) {
       })
     );
   }
-  
-  function setIsDifferentiated({}:
-    paymentCondition: PaymentCondition;
-    stockLocationPeriod: string;
-    brandCod: number;
-  ) {
-    
+
+  function setDifferentiated({
+    differentiated,
+    order,
+  }: {
+    order: Order;
+    differentiated: Differentiated;
+  }) {
+    console.log(differentiated);
+
+    const ordersUpdated = orders.map((old) => {
+      if (order === old) {
+        const amountDiscount =
+          Number(order.differentiated?.amountDiscount) ?? 0;
+
+        const amountWithDiscount = order.amount - amountDiscount;
+        const amountWithDiscountFormat = amountWithDiscount.toLocaleString(
+          "pt-br",
+          {
+            style: "currency",
+            currency: "BRL",
+          }
+        );
+
+        return {
+          ...old,
+          amountWithDiscount,
+          amountWithDiscountFormat,
+          differentiated,
+        };
+      }
+
+      return old;
+    });
+
+    setOrders(ordersUpdated);
+    onSetStorageOrder(ordersUpdated);
   }
 
-  function sketchOrder() {
+  async function sketchOrder(orderCode: number) {
     //Lista de produto que sofreram alterações;
+    const getSketch = await api.post<GetSketchOrderValidResponse>(
+      `/orders/sketch/${orderCode}`
+    );
+
+    if (!getSketch) throw new Error();
+
+    const { pedido, itens } = getSketch.data;
+
+    if (itens.atuais.length <= 0) {
+      return alert("sem itens");
+    }
+
+    onSetStoragePriceList(pedido.tabelaPreco);
+    onSetStorageClient(pedido.cliente);
+    setClient(pedido.cliente);
+    setPriceList(pedido.tabelaPreco);
+
+    const amountOrder = itens.atuais.reduce(
+      (previousValue, currentValue) =>
+        previousValue + currentValue.valorUnitario,
+      0
+    );
+    const amountOrderFormat = amountOrder.toLocaleString("pt-br", {
+      style: "currency",
+      currency: "BRL",
+    });
+
+    const amountWithDiscount = 0;
+    const amountWithDiscountFormat = amountWithDiscount.toLocaleString(
+      "pt-br",
+      {
+        style: "currency",
+        currency: "BRL",
+      }
+    );
+
+    const orderCreate: Order = {
+      paymentCondition: pedido.condicaoPagamento,
+      stockLocation: {
+        descricao: pedido.periodoEstoque.descricao,
+        periodo: pedido.periodoEstoque.periodo,
+      },
+      brand: {
+        codigo: pedido.marca.codigo,
+        descricao: pedido.marca.descricao,
+      },
+      qtd: itens.atuais.length,
+      amount: amountOrder,
+      amountFormat: amountOrderFormat,
+      amountWithDiscount,
+      amountWithDiscountFormat,
+      isSketch: orderCode,
+      items: itens.atuais.map((item) => {
+        const amount = Number(item.valorUnitario) * item.quantidade;
+        const amountFormat = amount.toLocaleString("pt-br", {
+          style: "currency",
+          currency: "BRL",
+        });
+
+        return {
+          qtd: item.quantidade,
+          product: item.produto,
+          amount,
+          amountFormat: amountFormat,
+        };
+      }),
+    };
+
+    setSketchEditItems(itens.atualizados);
+    setSketchRemoveItems(itens.deletados);
+    setIsAlertSketch(true);
+    setOrders([orderCreate]);
+    recalculatePriceOrders();
+  }
+
+  async function handleRedirectSketch() {
+    setSketchEditItems([]);
+    setSketchRemoveItems([]);
+    setIsAlertSketch(false);
+
+    push("/pedidos/novo");
   }
 
   async function sendOrder({ isDraft }: { isDraft: boolean }) {
     for (const order of orders) {
-      await api.post("/orders", {
-        vendedorCodigo: user?.vendedorCodigo,
-        clienteCodigo: client.codigo,
-        condicaoPagamentoCodigo: order.paymentCondition?.codigo,
-        tabelaPrecoCodigo: priceList.codigo,
-        marcaCodigo: order.brand.codigo,
-        periodoEstoque: order.stockLocation.periodo,
-        eRascunho: isDraft,
-        itens: order.items.map((item) => {
-          const findPriceList = item?.product.listaPreco?.find(
-            (f) => Number(f.codigo) === Number(priceList?.codigo)
-          );
+      if (!!order.isSketch) {
+        await api.put(`/orders/${order.isSketch}`, {
+          vendedorCodigo: user?.vendedorCodigo,
+          clienteCodigo: client.codigo,
+          condicaoPagamentoCodigo: order.paymentCondition?.codigo,
+          tabelaPrecoCodigo: priceList.codigo,
+          marcaCodigo: order.brand.codigo,
+          periodoEstoque: order.stockLocation.periodo,
+          eRascunho: isDraft,
+          rascunhoCodigo: order.isSketch,
+          itens: order.items.map((item) => {
+            const findPriceList = item?.product.listaPreco?.find(
+              (f) => Number(f.codigo) === Number(priceList?.codigo)
+            );
 
-          const amount = findPriceList?.valor
-            ? findPriceList?.valor
-            : item.qtd / item.amount;
+            const amount = findPriceList?.valor
+              ? findPriceList?.valor
+              : item.qtd / item.amount;
 
-          return {
-            produtoCodigo: item.product.codigo,
-            quantidade: item.qtd,
-            valorUnitario: amount,
-          };
-        }),
-      });
+            return {
+              produtoCodigo: item.product.codigo,
+              quantidade: item.qtd,
+              valorUnitario: amount,
+            };
+          }),
+        });
+      } else {
+        await api.post("/orders", {
+          vendedorCodigo: user?.vendedorCodigo,
+          clienteCodigo: client.codigo,
+          condicaoPagamentoCodigo: order.paymentCondition?.codigo,
+          tabelaPrecoCodigo: priceList.codigo,
+          marcaCodigo: order.brand.codigo,
+          periodoEstoque: order.stockLocation.periodo,
+          eRascunho: isDraft,
+          rascunhoCodigo: order.isSketch,
+          itens: order.items.map((item) => {
+            const findPriceList = item?.product.listaPreco?.find(
+              (f) => Number(f.codigo) === Number(priceList?.codigo)
+            );
+
+            const amount = findPriceList?.valor
+              ? findPriceList?.valor
+              : item.qtd / item.amount;
+
+            return {
+              produtoCodigo: item.product.codigo,
+              quantidade: item.qtd,
+              valorUnitario: amount,
+            };
+          }),
+        });
+      }
     }
 
     push("/pedidos");
@@ -410,8 +596,76 @@ export function StoreProvider({ children }: StoreProviderProps) {
         exitOrder,
         removeItem,
         setPaymentCondition,
+        setDifferentiated,
+        sketchOrder,
       }}
     >
+      {isAlertSketch && (
+        <ModalAlertList
+          isOpen={isAlertSketch}
+          onClose={handleRedirectSketch}
+          title="Lista de produto que sofreram alterações"
+        >
+          <Stack py="4" px="4">
+            {sketchEditItems.map((item) => {
+              const unitAmount = item.valorUnitario;
+              const unitAmountFormat = unitAmount.toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
+              });
+              const amount = item.valorUnitario * item.quantidade;
+              const amountFormat = amount.toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
+              });
+
+              return (
+                <ProductOrder
+                  key={item.produto.codigo}
+                  product={item.produto}
+                  amount={amountFormat}
+                  qtd={item.quantidade}
+                  unitAmount={unitAmountFormat}
+                  isChange
+                />
+              );
+            })}
+
+            {sketchRemoveItems.map((item) => {
+              const unitAmount = item.valorUnitario;
+              const amount = item.valorUnitario * item.quantidade;
+              const unitAmountFormat = unitAmount.toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
+              });
+              const amountFormat = amount.toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
+              });
+
+              return (
+                <ProductOrder
+                  key={item.produto.codigo}
+                  product={item.produto}
+                  amount={amountFormat}
+                  qtd={item.quantidade}
+                  unitAmount={unitAmountFormat}
+                  isTrash
+                />
+              );
+            })}
+
+            <Button
+              onClick={handleRedirectSketch}
+              type="button"
+              colorScheme="blue"
+              leftIcon={<Icon as={IoBagHandle} type="button" />}
+            >
+              DIGITAR
+            </Button>
+          </Stack>
+        </ModalAlertList>
+      )}
       {children}
     </StoreContext.Provider>
   );

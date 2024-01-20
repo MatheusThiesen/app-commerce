@@ -1,4 +1,6 @@
-import { Flex, Image, Text } from "@chakra-ui/react";
+import { Box, Flex, Icon, Image, Text } from "@chakra-ui/react";
+import { IoIosCloseCircle } from "react-icons/io";
+import { RiEditCircleFill } from "react-icons/ri";
 import { defaultNoImage, spaceImages } from "../../global/parameters";
 import { Product } from "../../hooks/queries/useProducts";
 
@@ -7,6 +9,9 @@ interface ProductOrderComponentProps {
   unitAmount: string;
   qtd: number;
   product: Product;
+
+  isTrash?: boolean;
+  isChange?: boolean;
 }
 
 export function ProductOrderComponent({
@@ -14,6 +19,8 @@ export function ProductOrderComponent({
   amount,
   unitAmount,
   qtd,
+  isTrash = false,
+  isChange = false,
 }: ProductOrderComponentProps) {
   return (
     <Flex
@@ -25,7 +32,22 @@ export function ProductOrderComponent({
       bg="white"
       borderRadius="md"
       px="4"
+      borderWidth={isTrash || isChange ? "2px" : 0}
+      borderColor={isTrash ? "red.500" : "yellow.500"}
+      position="relative"
     >
+      {isTrash && (
+        <Box position="absolute" top={"-13px"} left={"-16px"}>
+          <Icon as={IoIosCloseCircle} color="red.500" fontSize={"1.5rem"} />
+        </Box>
+      )}
+
+      {isChange && (
+        <Box position="absolute" top={"-12px"} left={"-16px"}>
+          <Icon as={RiEditCircleFill} color="yellow.500" fontSize={"1.5rem"} />
+        </Box>
+      )}
+
       <Flex flex="1" h={"full"} align="flex-start">
         <Image
           maxW={["8rem", "8rem", "8rem", "8rem", "8rem"]}
@@ -45,7 +67,12 @@ export function ProductOrderComponent({
 
         <Flex ml="4" flexDir="column" align="center">
           <Flex flexDir="column" mb="1.5" as="a">
-            <Text mt={"4"} fontSize="md" fontWeight="400">
+            <Text
+              mt={"4"}
+              fontSize="md"
+              fontWeight="400"
+              textDecor={isTrash ? "line-through" : undefined}
+            >
               {product.descricao}
             </Text>
 
@@ -101,16 +128,21 @@ export function ProductOrderComponent({
       >
         <Text
           as={"span"}
-          fontSize="md"
-          fontWeight="light"
-          color="gray.600"
+          fontSize={isTrash || isChange ? "lg" : "md"}
+          fontWeight="bold"
+          color={isTrash ? "red.500" : isChange ? "yellow.500" : "gray.600"}
           display="block"
           textAlign="center"
+          textDecor={isTrash ? "line-through" : undefined}
         >
           {`${qtd} und`}
         </Text>
 
-        <Text fontWeight="normal" fontSize="lg">
+        <Text
+          fontWeight="normal"
+          fontSize="lg"
+          textDecor={isTrash ? "line-through" : undefined}
+        >
           {amount}
         </Text>
       </Flex>

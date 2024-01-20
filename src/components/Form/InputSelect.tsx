@@ -54,6 +54,7 @@ export const InputSelectBase: ForwardRefRenderFunction<
           focusBorderColor="gray.900"
           borderColor="gray.100"
           bgColor="gray.50"
+          borderRadius="md"
           variant="filled"
           _hover={{
             bgColor: "gray.50",

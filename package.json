@@ -51,7 +51,8 @@
     "valtio": "0.4.8",
     "xlsx": "^0.18.5",
     "xml2js": "^0.4.23",
-    "yup": "^0.32.11"
+    "yup": "^0.32.11",
+    "zod": "3.22.4"
   },
   "devDependencies": {
     "@faker-js/faker": "^6.1.2",

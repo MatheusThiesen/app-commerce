@@ -2,6 +2,7 @@ import Head from "next/head";
 import Router from "next/router";
 import { useEffect, useState } from "react";
 import ReactSelect from "react-select";
+import { z } from "zod";
 
 import { Me } from "../../../@types/me";
 import { setupAPIClient } from "../../../service/api";
@@ -14,7 +15,12 @@ import { MdShoppingCartCheckout } from "react-icons/md";
 import { Client } from "../../../components/Client";
 import { HeaderNavigation } from "../../../components/HeaderNavigation";
 import { ProductStore } from "../../../components/ProductStore";
-import { PaymentCondition, useStore } from "../../../contexts/StoreContext";
+import {
+  Differentiated,
+  Order,
+  PaymentCondition,
+  useStore,
+} from "../../../contexts/StoreContext";
 
 import {
   Accordion,
@@ -27,12 +33,9 @@ import {
   Flex,
   Icon,
   Stack,
-  Switch,
   Text,
 } from "@chakra-ui/react";
-import { InputSelect } from "../../../components/Form/InputSelect";
 
-import { Input } from "../../../components/Form/Input";
 import { useBrands } from "../../../hooks/queries/useBrands";
 import { api } from "../../../service/apiClient";
 
@@ -58,6 +61,23 @@ type PaymentConditionState = {
   brandCod: number;
 };
 
+const createDifferentiatedFormSchema = z
+  .object({
+    type: z.enum(["VALOR", "PERCENTUAL"]),
+    value: z.number(),
+    percent: z.number(),
+  })
+  .refine((data) => data.type === "PERCENTUAL" && !!data.value, {
+    message: "Valor é obrigatório",
+    path: ["value"],
+  })
+  .refine((data) => data.type === "PERCENTUAL" && !!data.percent, {
+    message: "Percentual é obrigatório",
+    path: ["percent"],
+  });
+
+type createDifferentiated = z.infer<typeof createDifferentiatedFormSchema>;
+
 export default function CheckoutOrder({ me }: Props) {
   const {
     orders,
@@ -68,6 +88,7 @@ export default function CheckoutOrder({ me }: Props) {
     validOrders,
     setPaymentCondition,
     sendOrder,
+    setDifferentiated,
   } = useStore();
 
   const [paymentConditionOrders, setPaymentConditionOrders] = useState<
@@ -110,6 +131,65 @@ export default function CheckoutOrder({ me }: Props) {
     if (findBrand) return findBrand.valorPedidoMinimo - orderAmount > 0;
 
     return true;
+  }
+
+  function onChangeInputDifferentiated(
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    order: Order
+  ) {
+    const { name, value } = event.target;
+
+    let differentiated: Differentiated = {
+      ...order.differentiated,
+      isActive: true,
+    };
+
+    switch (name) {
+      case "tipoValor":
+        if (value === "VALOR") {
+          differentiated.tipoValor = "VALOR";
+        }
+        if (value === "PERCENTUAL") {
+          differentiated.tipoValor = "PERCENTUAL";
+        }
+
+        differentiated.descontoPercentual = undefined;
+        differentiated.descontoValor = undefined;
+
+        break;
+      case "descontoValor":
+        const valueDiscount = Number(value.replace(/\D/g, "")) / 100;
+
+        differentiated.descontoValor = valueDiscount >= 0 ? valueDiscount : 0;
+
+        differentiated.amountDiscount = differentiated.descontoValor;
+        differentiated.amountDiscountFormat =
+          differentiated.descontoValor.toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          });
+
+        break;
+      case "descontoPercentual":
+        const valuePercentage = value
+          .replace(/[^0-9.,]/g, "")
+          .replace(",", ".");
+
+        if (Number(valuePercentage) >= 0 && Number(valuePercentage) <= 100) {
+          differentiated.descontoPercentual = valuePercentage;
+        }
+
+        if (Number(valuePercentage) < 0) {
+          differentiated.descontoPercentual = "0";
+        }
+
+        break;
+    }
+
+    setDifferentiated({
+      order: order,
+      differentiated: differentiated,
+    });
   }
 
   useEffect(() => {
@@ -280,24 +360,6 @@ export default function CheckoutOrder({ me }: Props) {
                         />
                       </Box>
 
-                      <Box mt="1rem">
-                        {order.differentiated?.isActive && (
-                          <Stack>
-                            <InputSelect name="type" label="Tipo de desconto">
-                              <option value="">Selecionar...</option>
-                              <option value="0">Valor fixo</option>
-                              <option value="1">Percentual</option>
-                            </InputSelect>
-
-                            <Input label="Valor do desconto" name="value" />
-                            <Input
-                              label="Percentual de desconto"
-                              name="percent"
-                            />
-                          </Stack>
-                        )}
-                      </Box>
-
                       <Accordion
                         defaultIndex={0}
                         allowToggle
@@ -334,16 +396,72 @@ export default function CheckoutOrder({ me }: Props) {
                           </AccordionPanel>
                         </AccordionItem>
                       </Accordion>
-
-                      <Text fontSize="md" fontWeight="bold" mb={"1"} mr="2">
+                      {/* PEDIDO DIFERENCIADO */}
+                      {/* <Text fontSize="md" fontWeight="bold" mb={"1"} mr="2">
                         Diferenciado
                       </Text>
                       <Switch
                         isChecked={order.differentiated?.isActive}
-                        onChange={(e) => {}}
+                        onChange={(e) => {
+                          setDifferentiated({
+                            order: order,
+                            differentiated: {
+                              isActive: !!e.target.checked,
+                            },
+                          });
+                        }}
                         size="lg"
                         colorScheme="blue"
                       />
+
+                      {order.differentiated?.isActive && (
+                        <Stack mt="4">
+                          <InputSelect
+                            name="tipoValor"
+                            label="Tipo de desconto"
+                            onChange={(event) =>
+                              onChangeInputDifferentiated(event, order)
+                            }
+                            value={order.differentiated.tipoValor}
+                          >
+                            <option value="">Selecionar...</option>
+                            <option value="VALOR">Valor fixo</option>
+                            <option value="PERCENTUAL">Percentual</option>
+                          </InputSelect>
+
+                          {order.differentiated.tipoValor === "PERCENTUAL" && (
+                            <Input
+                              label="Percentual de desconto"
+                              name="descontoPercentual"
+                              onChange={(e) =>
+                                onChangeInputDifferentiated(e, order)
+                              }
+                              value={
+                                !!order.differentiated?.descontoPercentual
+                                  ? `% ${order.differentiated.descontoPercentual}`
+                                  : ""
+                              }
+                            />
+                          )}
+
+                          {order.differentiated.tipoValor === "VALOR" && (
+                            <Input
+                              label="Valor do desconto"
+                              name="descontoValor"
+                              onChange={(e) =>
+                                onChangeInputDifferentiated(e, order)
+                              }
+                              value={order.differentiated.descontoValor?.toLocaleString(
+                                "pt-br",
+                                {
+                                  style: "currency",
+                                  currency: "BRL",
+                                }
+                              )}
+                            />
+                          )}
+                        </Stack>
+                      )} */}
 
                       <Flex justify="space-between" mt="8">
                         <Text
@@ -355,6 +473,23 @@ export default function CheckoutOrder({ me }: Props) {
                           color="gray.700"
                         >{`${order.items.length} itens`}</Text>
                       </Flex>
+
+                      {/* {order.differentiated?.isActive && (
+                        <Flex justify="space-between">
+                          <Text
+                            fontSize={["sm", "sm", "md", "md"]}
+                            color="gray.700"
+                          >{`Desconto`}</Text>
+                          <Text
+                            fontSize={["sm", "sm", "md", "md"]}
+                            color="gray.700"
+                          >
+                            {order.differentiated.amountDiscountFormat ||
+                              "R$ 0,00"}
+                          </Text>
+                        </Flex>
+                      )} */}
+
                       <Flex justify="space-between">
                         <Text
                           mb="4"
@@ -365,7 +500,9 @@ export default function CheckoutOrder({ me }: Props) {
                           mb="4"
                           fontWeight="bold"
                           fontSize={["md", "md", "lg", "lg"]}
-                        >{`${order.amountFormat}`}</Text>
+                        >
+                          {order.amountFormat}
+                        </Text>
                       </Flex>
                     </AccordionPanel>
                   </AccordionItem>
