@@ -25,6 +25,7 @@ import {
   useQueryParamsFilterList,
 } from "../../../hooks/useQueryParamsFilterList";
 
+import { TbShoppingCartCancel } from "react-icons/tb";
 import { Accordion } from "../../../components/Accordion";
 import { Cart } from "../../../components/Cart";
 import { FilterRangeAmount } from "../../../components/FilterRangeAmount";
@@ -33,6 +34,7 @@ import { HeaderNavigation } from "../../../components/HeaderNavigation";
 import { HeaderToList } from "../../../components/HeaderToList";
 import { ListFilter, SelectedFilter } from "../../../components/ListFilter";
 import { ListProducts } from "../../../components/ListProducts";
+import { ModalAlert } from "../../../components/ModalAlert";
 import { ModalFilter } from "../../../components/ModalFilter";
 import { ModalOrderBy } from "../../../components/ModalOrderBy";
 import { PanelLayout } from "../../../components/PanelLayout";
@@ -48,6 +50,11 @@ export default function Order({ me }: OrderProps) {
   const { setQueryParams } = useQueryParams({ router });
   const { client, priceList, totalItems, exitOrder } = useStore();
 
+  const {
+    isOpen: isConfirmExitOrder,
+    onOpen: onOpenConfirmExitOrder,
+    onClose: onCloseConfirmExitOrder,
+  } = useDisclosure();
   const {
     isOpen: isOpenFilter,
     onOpen: onOpenFilter,
@@ -134,7 +141,7 @@ export default function Order({ me }: OrderProps) {
             _hover={{ bg: "transparent" }}
             alignItems="center"
             justifyContent="center"
-            onClick={exitOrder}
+            onClick={onOpenConfirmExitOrder}
             ml={["2", "2", "2", "0"]}
             mr={["0", "0", "0", "1rem "]}
           >
@@ -450,6 +457,22 @@ export default function Order({ me }: OrderProps) {
         setOrderBy={(orderByValue) => {
           setOrderBy(String(orderByValue));
           onCloseOrderBy();
+        }}
+      />
+
+      <ModalAlert
+        isOpen={isConfirmExitOrder}
+        onClose={onCloseConfirmExitOrder}
+        data={{
+          Icon: TbShoppingCartCancel,
+          title:
+            "Tem certeza que deseja sair? Ao sair seus itens no carrinho serão perdidos.",
+        }}
+        confirmOptions={{
+          onConfirm: exitOrder,
+          onClose: onCloseConfirmExitOrder,
+          titleButtonConfirm: "Sim, sair do pedido!",
+          titleButtonClose: "Cancelar",
         }}
       />
 
