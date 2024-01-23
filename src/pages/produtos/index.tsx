@@ -377,7 +377,7 @@ export default function Produtos({ me }: ProductsProps) {
             packageQuantity: product?.qtdEmbalagem
               ? product.qtdEmbalagem // `- ${product.qtdEmbalagem} +`
               : "-",
-            list28: product.listaPreco?.find((f) => f.codigo === 28)?.valor,
+            list28: product.precoTabela28,
             ...data,
           });
 
