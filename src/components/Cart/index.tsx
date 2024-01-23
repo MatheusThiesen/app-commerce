@@ -44,7 +44,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
   const validMinimumAllOrder =
     orders
       .map((order) => validateMinimumOrder(order.brand.codigo, order.amount))
-      .filter((f) => f).length > 0 && orders.length > 0;
+      .filter((f) => f).length > 0 || orders.length <= 0;
 
   return (
     <DrawerList
