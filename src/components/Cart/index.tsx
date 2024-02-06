@@ -44,7 +44,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
   const validMinimumAllOrder =
     orders
       .map((order) => validateMinimumOrder(order.brand.codigo, order.amount))
-      .filter((f) => f).length > 0;
+      .filter((f) => f).length > 0 || orders.length <= 0;
 
   return (
     <DrawerList
@@ -121,7 +121,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
 
       <DrawerFooter
         boxShadow="dark-lg"
-        pb={["6.5rem", "6.5rem", "1rem", "1rem"]}
+        pb={["6.5rem", "6.5rem", "4rem", "1rem"]}
       >
         <Flex flexDir="column" w="full">
           <Flex justify="space-between">

@@ -9,6 +9,8 @@ import {
 
 import { Button, Icon, Stack } from "@chakra-ui/react";
 import { IoBagHandle } from "react-icons/io5";
+import { TbShoppingCartCancel } from "react-icons/tb";
+import { ModalAlert } from "../components/ModalAlert";
 import { ModalAlertList } from "../components/ModalAlertList";
 import { ProductOrder } from "../components/ProductOrder";
 import { Client } from "../hooks/queries/useClients";
@@ -154,6 +156,8 @@ export function StoreProvider({ children }: StoreProviderProps) {
   const [sketchEditItems, setSketchEditItems] = useState<SketchItem[]>([]);
   const [sketchRemoveItems, setSketchRemoveItems] = useState<SketchItem[]>([]);
   const [isAlertSketch, setIsAlertSketch] = useState<boolean>(false);
+  const [isAlertSketchNoItens, setIsAlertSketchNoItens] =
+    useState<boolean>(false);
 
   const totalItems = orders.reduce(
     (previousValue, currentValue) => previousValue + currentValue.items.length,
@@ -445,7 +449,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
     const { pedido, itens } = getSketch.data;
 
     if (itens.atuais.length <= 0) {
-      return alert("sem itens");
+      return setIsAlertSketchNoItens(true);
     }
 
     onSetStoragePriceList(pedido.tabelaPreco);
@@ -504,11 +508,16 @@ export function StoreProvider({ children }: StoreProviderProps) {
       }),
     };
 
-    setSketchEditItems(itens.atualizados);
-    setSketchRemoveItems(itens.deletados);
-    setIsAlertSketch(true);
     setOrders([orderCreate]);
     recalculatePriceOrders();
+
+    if (itens.atualizados.length <= 0 && itens.deletados.length <= 0) {
+      push("/pedidos/novo");
+    } else {
+      setSketchEditItems(itens.atualizados);
+      setSketchRemoveItems(itens.deletados);
+      setIsAlertSketch(true);
+    }
   }
 
   async function handleRedirectSketch() {
@@ -665,6 +674,19 @@ export function StoreProvider({ children }: StoreProviderProps) {
             </Button>
           </Stack>
         </ModalAlertList>
+      )}
+
+      {isAlertSketchNoItens && (
+        <ModalAlert
+          isOpen={isAlertSketchNoItens}
+          onClose={() => {
+            setIsAlertSketchNoItens(false);
+          }}
+          data={{
+            Icon: TbShoppingCartCancel,
+            title: "Sem produtos disponíveis.",
+          }}
+        />
       )}
       {children}
     </StoreContext.Provider>
