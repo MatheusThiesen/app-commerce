@@ -26,3 +26,7 @@
 
 - [ ] Alertar que o pedido nao esta batendo os requisitos com ícones
 - [ ] Pop-up no momento de sair do pedido, informando se o mesmo deseja sair, ou guardar rascunho (Criar FLAG de orçamento na listagem)
+
+# BUG
+
+- [ ] mês atual esta ficando com situação false.

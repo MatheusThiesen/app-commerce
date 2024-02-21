@@ -284,7 +284,7 @@ export default function Order({ me }: OrderProps) {
 
             {productsFilters?.filters.find((f) => f.name === "salePrices")
               ?.name && (
-              <Accordion isOpen title="Preço de venda" mb="2">
+              <Accordion isOpen={false} title="Preço de venda" mb="2">
                 <FilterRangeAmount
                   onChangeRange={([min, max]) => {
                     const newFilters = [
@@ -337,7 +337,7 @@ export default function Order({ me }: OrderProps) {
                 onChangeSelectedFilter={(a) => {
                   setFilters(a);
                 }}
-                isOpen
+                isOpen={false}
               />
             )}
           </Box>
@@ -403,7 +403,7 @@ export default function Order({ me }: OrderProps) {
           </Flex>
           {productsFilters?.filters.find((f) => f.name === "salePrices")
             ?.name && (
-            <Accordion isOpen title="Preço de venda" mb="2">
+            <Accordion isOpen={false} title="Preço de venda" mb="2">
               <FilterRangeAmount
                 onChangeRange={([min, max]) => {
                   const newFilters = [

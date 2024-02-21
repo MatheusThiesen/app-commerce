@@ -696,7 +696,7 @@ export default function Produtos({ me }: ProductsProps) {
 
             {productsFilters?.filters.find((f) => f.name === "salePrices")
               ?.name && (
-              <Accordion isOpen title="Preço de venda" mb="2">
+              <Accordion isOpen={false} title="Preço de venda" mb="2">
                 <FilterRangeAmount
                   onChangeRange={([min, max]) => {
                     const newFilters = [
@@ -749,7 +749,7 @@ export default function Produtos({ me }: ProductsProps) {
                 onChangeSelectedFilter={(a) => {
                   setFilters(a);
                 }}
-                isOpen
+                isOpen={false}
               />
             )}
           </Box>
@@ -875,7 +875,7 @@ export default function Produtos({ me }: ProductsProps) {
 
           {productsFilters?.filters.find((f) => f.name === "salePrices")
             ?.name && (
-            <Accordion isOpen title="Preço de venda" mb="2">
+            <Accordion isOpen={false} title="Preço de venda" mb="2">
               <FilterRangeAmount
                 onChangeRange={([min, max]) => {
                   const newFilters = [
