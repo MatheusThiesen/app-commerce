@@ -22,7 +22,6 @@ import { withSSRAuth } from "../../utils/withSSRAuth";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useStore } from "../../contexts/StoreContext";
 
-import { Client } from "../../hooks/queries/useClients";
 import { useOrders } from "../../hooks/queries/useOrder";
 import { useOrdersFilters } from "../../hooks/queries/useOrdersFilters";
 
@@ -33,7 +32,6 @@ import { ListFilter, SelectedFilter } from "../../components/ListFilter";
 import { LoadingInfiniteScroll } from "../../components/LoadingInfiniteScroll";
 import { ModalList } from "../../components/ModalList";
 import { ModalSelectClient } from "../../components/ModalSelectClient";
-import { ModalSelectPriceList } from "../../components/ModalSelectPriceList";
 import { Order } from "../../components/Order";
 import { OrderBy } from "../../components/OrderBy";
 import { OrderByMobile } from "../../components/OrderByMobile";
@@ -90,7 +88,6 @@ export default function Orders({ me }: OrdersProps) {
   const [orderBy, setOrderBy] = useState<string>(() => {
     return "createdAt.desc";
   });
-  const [client, setClient] = useState<Client | undefined>(undefined);
   const { setLoading } = useLoading();
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -148,7 +145,11 @@ export default function Orders({ me }: OrdersProps) {
           </Box>
         }
         content={
-          <Flex w="full" justify="space-around">
+          <Flex
+            w="full"
+            justify="space-around"
+            display={["flex", "flex", "flex", "none"]}
+          >
             <Button
               bg="white"
               borderRadius={0}
@@ -168,7 +169,7 @@ export default function Orders({ me }: OrdersProps) {
               {filters.length > 0 && (
                 <Flex
                   borderRadius="full"
-                  bg="red.500"
+                  bg="primary"
                   ml="1.5"
                   h="1.6rem"
                   w="1.6rem"
@@ -205,7 +206,6 @@ export default function Orders({ me }: OrdersProps) {
                   onChangeSelectedFilter={(a) => {
                     setFilters(a);
                   }}
-                  isOpen
                 />
               )}
             </Box>
@@ -225,7 +225,7 @@ export default function Orders({ me }: OrdersProps) {
                 <Button type="button" ml="2" onClick={onOpenSeleteClient}>
                   <Icon
                     as={IoMdAddCircle}
-                    color="red.500"
+                    color="primary"
                     fontSize={"1.8rem"}
                   />
                 </Button>
@@ -344,6 +344,7 @@ export default function Orders({ me }: OrdersProps) {
         title="Ordenar por"
         isOpen={isOpenOrderBy}
         onClose={onCloseOrderBy}
+        placement="left"
       >
         <OrderByMobile
           orderByItems={OrderByItems}
@@ -365,21 +366,17 @@ export default function Orders({ me }: OrdersProps) {
       <ModalSelectClient
         isOpen={isOpenSeleteClient}
         onClose={onCloseSeleteClient}
-        setClient={(data) => {
-          if (!!data?.titulo?.length && data?.titulo?.length >= 1) {
+        setClient={(client) => {
+          if (!!client?.titulo?.length && client?.titulo?.length >= 1) {
             onOpenAlertBilletClient();
           } else {
             onOpenSeleteListPrice();
-            setClient(data);
-          }
-        }}
-      />
 
-      <ModalSelectPriceList
-        isOpen={isOpenSeleteListPrice}
-        onClose={onCloseSeleteListPrice}
-        setPriceList={(data) => {
-          if (client) createOrder({ client, priceList: data });
+            createOrder({
+              client,
+              priceList: { codigo: 28, descricao: "28 DDL" },
+            });
+          }
         }}
       />
     </>

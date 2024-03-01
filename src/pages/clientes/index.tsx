@@ -106,7 +106,11 @@ export default function Clientes({ me }: ClientProps) {
         title="Clientes"
         contentHeight={2.5}
         content={
-          <Flex w="full" justify="space-around">
+          <Flex
+            w="full"
+            justify="space-around"
+            display={["flex", "flex", "flex", "none"]}
+          >
             <Button
               bg="white"
               borderRadius={0}
@@ -126,7 +130,7 @@ export default function Clientes({ me }: ClientProps) {
               {filters.length > 0 && (
                 <Flex
                   borderRadius="full"
-                  bg="red.500"
+                  bg="primary"
                   ml="1.5"
                   h="1.6rem"
                   w="1.6rem"
@@ -185,7 +189,6 @@ export default function Clientes({ me }: ClientProps) {
                       onChangeSelectedFilter={(a) => {
                         setFilters(a);
                       }}
-                      isOpen
                     />
                   )}
                 </Box>

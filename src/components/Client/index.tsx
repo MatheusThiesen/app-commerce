@@ -32,7 +32,14 @@ export const Client = ({
         <Text fontSize="lg" fontWeight="bold" color="gray.800">
           {client.razaoSocial}
         </Text>
-        <Text fontSize="sm" fontWeight="light" color="gray.600">
+        <Text
+          fontSize="sm"
+          fontWeight="light"
+          color="gray.600"
+          whiteSpace="nowrap"
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
           {`${client.logradouro}, ${client.numero} - ${client.bairro}, ${client.cidade} - ${client.uf}, ${client.cepFormat}`}
         </Text>
       </Box>

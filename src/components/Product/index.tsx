@@ -2,6 +2,7 @@ import { Box, Button, Flex, Icon, Image, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { memo } from "react";
+import { FaCartArrowDown } from "react-icons/fa";
 import {
   MdCollectionsBookmark,
   MdOutlineCollectionsBookmark,
@@ -22,14 +23,18 @@ interface ProductComponentProps {
   product: ProductProps;
   isCatalog?: boolean;
   href: string;
+  hrefBack?: string;
   onClickProduct?: () => void;
+  onAddCard?: (product: ProductProps) => void;
 }
 
 export function ProductComponent({
   product,
   isCatalog,
   href,
+  hrefBack,
   onClickProduct,
+  onAddCard,
 }: ProductComponentProps) {
   const { productsSelected, onRemoveProduct, onSelectedProduct } =
     useProductCatalog();
@@ -62,17 +67,8 @@ export function ProductComponent({
       whileHover={{ boxShadow: "0px 10px 15px 4px rgba(0,0,0,0.20)" }}
       viewport={{ once: true }}
       whileTap={{ scale: 0.98 }}
-      // transition="box-shadow .2s ease-in-out,-webkit-box-shadow .2s ease-in-out;"
-      // border="2px solid"
-      // borderColor="blue.600"
     >
-      <Flex
-        position="relative"
-        flexDir="column"
-        pt="2rem"
-        alignItems="start"
-        h="full"
-      >
+      <Flex position="relative" flexDir="column" alignItems="start" h="full">
         {isCatalog && (
           <Box position="absolute" top="0" left="0">
             <Button
@@ -103,17 +99,27 @@ export function ProductComponent({
             />
           </Button>
         </Box> */}
-        <Link href={`/${href}/${cod}`} passHref>
-          <Box
+        <Link href={`/${href}/${cod}?hrefBack=${hrefBack}`} passHref>
+          <Flex
             as="a"
+            flexDir="column"
+            justifyContent="space-between"
             w="100%"
+            flex={1}
             onClick={() => {
               if (onClickProduct) onClickProduct();
             }}
           >
-            <Flex w="full" flexDirection="column" align="center">
+            <Flex
+              w="full"
+              flexDirection="column"
+              align="center"
+              justify="center"
+              flex={1}
+            >
               <Image
-                height="10rem"
+                w="full"
+                minH="44"
                 src={uri}
                 objectFit="contain"
                 onError={({ currentTarget }) => {
@@ -123,8 +129,16 @@ export function ProductComponent({
               />
             </Flex>
 
-            <Box>
-              <Text mt="4" fontSize="md" fontWeight="400">
+            <Box w="full">
+              <Text
+                w="full"
+                mt="4"
+                fontSize="md"
+                fontWeight="400"
+                whiteSpace="nowrap"
+                overflow="hidden"
+                textOverflow="ellipsis"
+              >
                 {name}
               </Text>
 
@@ -152,13 +166,34 @@ export function ProductComponent({
                 {amount}
               </Text>
             </Box>
-          </Box>
+          </Flex>
         </Link>
+
+        {onAddCard && (
+          <Button
+            onClick={() => onAddCard(product)}
+            leftIcon={<Icon as={FaCartArrowDown} fontSize="24" />}
+            mt="4"
+            w="full"
+            bg="primary"
+            _hover={{ bg: "primary.hover" }}
+            colorScheme="red"
+            color="white"
+            size="md"
+            type="button"
+          >
+            Comprar
+          </Button>
+        )}
       </Flex>
     </MotionBox>
   );
 }
 
-export const Product = memo(ProductComponent, (prevProps, nextProps) =>
-  Object.is(prevProps.product.cod, nextProps.product.cod)
+export const Product = memo(
+  ProductComponent,
+  (prevProps, nextProps) =>
+    JSON.stringify(prevProps.product) === JSON.stringify(nextProps.product) &&
+    prevProps.href === nextProps.href &&
+    prevProps.hrefBack === nextProps.hrefBack
 );

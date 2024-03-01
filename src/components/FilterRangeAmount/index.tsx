@@ -52,8 +52,8 @@ function FilterRangeAmountComponent({
         onChange={onChange}
         value={[min, max]}
       >
-        <RangeSliderTrack bg="red.100" py="1">
-          <RangeSliderFilledTrack bg="red.500" py="1" />
+        <RangeSliderTrack bg="gray.300" py="1">
+          <RangeSliderFilledTrack bg="primary" py="1" />
         </RangeSliderTrack>
         <RangeSliderThumb boxSize={5} index={0} boxShadow="dark-lg" />
         <RangeSliderThumb boxSize={5} index={1} boxShadow="dark-lg" />
@@ -88,10 +88,12 @@ function FilterRangeAmountComponent({
         <Button
           size="sm"
           mt="4"
-          leftIcon={<Icon fontSize="16" as={IoIosArrowDroprightCircle} />}
+          leftIcon={
+            <Icon fontSize="24" ml="1" as={IoIosArrowDroprightCircle} />
+          }
           onClick={() => onChangeRange([min, max])}
         >
-          Buscar
+          {/* Buscar */}
         </Button>
       </Flex>
     </Box>

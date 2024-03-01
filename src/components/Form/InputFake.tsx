@@ -37,7 +37,7 @@ export const InputFake = ({
           <Button
             type="button"
             variant="unstyled"
-            color="red.500"
+            color="primary"
             onClick={onUpdate}
           >
             ALTERAR

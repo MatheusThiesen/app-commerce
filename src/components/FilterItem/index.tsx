@@ -169,6 +169,7 @@ export function FilterItem({
                   <Checkbox
                     key={item.value}
                     isChecked={isChecked}
+                    size="lg"
                     value={item.value}
                     onChange={(e) =>
                       handleSelectedFilter({

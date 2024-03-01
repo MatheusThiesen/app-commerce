@@ -48,7 +48,10 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
           </ListItem>
 
           {user?.eVendedor &&
-            user.email === "matheus.thiesen@alpardobrasil.com.br" && (
+            [
+              "lucas.machado@alpardobrasil.com.br",
+              "matheus.thiesen@alpardobrasil.com.br",
+            ].includes(user.email) && (
               <ListItem h="full">
                 <MainNavLink href="/pedidos" icon={IoBagHandleOutline}>
                   Pedidos

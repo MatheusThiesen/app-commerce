@@ -55,7 +55,7 @@ export function ModalSelectClient({
       isOpen={isOpen}
       scrollBehavior="inside"
     >
-      <ModalOverlay />
+      <ModalOverlay backdropFilter="blur(5px)" />
       <ModalContent>
         <ModalHeader>
           <Stack>

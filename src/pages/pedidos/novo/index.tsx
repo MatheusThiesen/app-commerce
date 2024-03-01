@@ -1,7 +1,9 @@
 import {
   Box,
   Button,
+  Center,
   Flex,
+  Stack,
   Switch,
   Text,
   useDisclosure,
@@ -37,6 +39,7 @@ import { ListProducts } from "../../../components/ListProducts";
 import { ModalAlert } from "../../../components/ModalAlert";
 import { ModalFilter } from "../../../components/ModalFilter";
 import { ModalOrderBy } from "../../../components/ModalOrderBy";
+import { ModalSelectPriceList } from "../../../components/ModalSelectPriceList";
 import { PanelLayout } from "../../../components/PanelLayout";
 import { Search } from "../../../components/Search";
 import { ShoppingButton } from "../../../components/ShoppingButton";
@@ -48,7 +51,8 @@ interface OrderProps {
 export default function Order({ me }: OrderProps) {
   const router = useRouter();
   const { setQueryParams } = useQueryParams({ router });
-  const { client, priceList, totalItems, exitOrder } = useStore();
+  const { client, priceList, totalItems, exitOrder, changePriceList } =
+    useStore();
 
   const {
     isOpen: isConfirmExitOrder,
@@ -69,6 +73,11 @@ export default function Order({ me }: OrderProps) {
     isOpen: isOpenOrder,
     onOpen: onOpenOrder,
     onClose: onCloseOrder,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenSeleteListPrice,
+    onOpen: onOpenSeleteListPrice,
+    onClose: onCloseSeleteListPrice,
   } = useDisclosure();
 
   const [search, setSearch] = useState<string>(() => {
@@ -132,66 +141,53 @@ export default function Order({ me }: OrderProps) {
         user={{ name: me?.email }}
         title="Pedido"
         contentHeight={4}
-        Right={<ShoppingButton qtdItens={totalItems} onClick={onOpenOrder} />}
-        Left={
-          <Button
-            p="0"
-            bg="transparent"
-            display="flex"
-            _hover={{ bg: "transparent" }}
-            alignItems="center"
-            justifyContent="center"
-            onClick={onOpenConfirmExitOrder}
-            ml={["2", "2", "2", "0"]}
-            mr={["0", "0", "0", "1rem "]}
-          >
-            <ImExit color="white" fontSize={"1.8rem"} />
-            <Text
-              color="white"
-              ml="1"
-              display={["none", "none", "flex", "flex"]}
+        Right={
+          <Stack direction="row" pr="2">
+            <Button
+              p="0"
+              bg="transparent"
+              display="flex"
+              _hover={{ bg: "transparent" }}
+              alignItems="center"
+              justifyContent="center"
+              onClick={onOpenConfirmExitOrder}
+              ml={["2", "2", "2", "0"]}
+              mr={["0", "0", "0", "1rem "]}
             >
-              Sair
-            </Text>
-          </Button>
+              <ImExit color="white" fontSize={"1.8rem"} />
+              <Text
+                color="white"
+                ml="1"
+                display={["none", "none", "flex", "flex"]}
+              >
+                Sair
+              </Text>
+            </Button>
+
+            <ShoppingButton qtdItens={totalItems} onClick={onOpenOrder} />
+          </Stack>
         }
         Center={
           <Flex
             width={"100%"}
             paddingX={["0.5rem", "0.5rem", "0.5rem", "0"]}
             flexDir="column"
-            mt={["0", "0", "0", "5"]}
           >
             <Search
               size="md"
               setSearch={setSearch}
               search={search}
-              placeholder="Buscar na Alpar do Brasil por produtos"
+              placeholder="Buscar..."
             />
-            <Flex
-              w="full"
-              h="1.5rem"
-              align="center"
-              justify="space-between"
-              color="white"
-              pt="2"
-              display={["none", "none", "none", "flex"]}
-            >
-              <Text fontWeight="normal" fontSize="sm">
-                {!!client?.codigo
-                  ? `${client?.codigo} - ${client?.razaoSocial}`
-                  : "-"}
-              </Text>
-
-              <Text fontWeight="normal" fontSize="sm">
-                {!!priceList?.codigo ? `${priceList?.descricao}` : "-"}
-              </Text>
-            </Flex>
           </Flex>
         }
         content={
           <Flex w="full" flexDir="column">
-            <Flex w="full" justify="space-around">
+            <Flex
+              w="full"
+              justify="space-around"
+              display={["flex", "flex", "flex", "none"]}
+            >
               <Button
                 bg="white"
                 borderRadius={0}
@@ -226,24 +222,48 @@ export default function Order({ me }: OrderProps) {
               </Button>
             </Flex>
 
-            <Flex
-              w="full"
-              h="1.5rem"
-              bg="gray.50"
-              align="center"
-              justify="space-between"
-              px="2rem"
-            >
-              <Text fontWeight="light" fontSize="sm">
-                {!!client?.codigo
-                  ? `${client?.codigo} - ${client?.razaoSocial}`
-                  : "-"}
-              </Text>
+            <Center w="full" h="1.5rem" bg="gray.50">
+              <Flex
+                w="full"
+                maxW="1200px"
+                align="center"
+                justify="space-between"
+                px="2rem"
+              >
+                <Box width="50%">
+                  <Text
+                    fontWeight="light"
+                    fontSize={["sm", "sm", "sm", "md"]}
+                    textAlign="center"
+                    whiteSpace="nowrap"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                  >
+                    {!!client?.codigo
+                      ? `${client?.codigo} - ${client?.razaoSocial}`
+                      : "-"}
+                  </Text>
+                </Box>
 
-              <Text fontWeight="light" fontSize="sm">
-                {!!priceList?.codigo ? `${priceList?.descricao}` : "-"}
-              </Text>
-            </Flex>
+                <Box width="50%" borderLeft="1px solid #ccc">
+                  <Text
+                    fontWeight="light"
+                    fontSize={["sm", "sm", "sm", "md"]}
+                    onClick={onOpenSeleteListPrice}
+                    textAlign="center"
+                    cursor="pointer"
+                    whiteSpace="nowrap"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    _hover={{
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {!!priceList?.codigo ? `${priceList?.descricao}` : "-"}
+                  </Text>
+                </Box>
+              </Flex>
+            </Center>
           </Flex>
         }
         isNotNavigation
@@ -251,7 +271,7 @@ export default function Order({ me }: OrderProps) {
 
       <PanelLayout
         isLoading={isLoadingProductsFilters}
-        pt={["8rem", "8rem", "8rem", "8rem"]}
+        pt={["8rem", "8rem", "8rem", "9rem"]}
       >
         <Flex
           w="22rem"
@@ -337,7 +357,6 @@ export default function Order({ me }: OrderProps) {
                 onChangeSelectedFilter={(a) => {
                   setFilters(a);
                 }}
-                isOpen={false}
               />
             )}
           </Box>
@@ -363,6 +382,11 @@ export default function Order({ me }: OrderProps) {
                   value: client?.codigo,
                   name: "clientCod",
                   field: "clientCod",
+                },
+                {
+                  value: priceList?.codigo,
+                  name: "priceListCod",
+                  field: "priceListCod",
                 },
               ]}
             />
@@ -477,6 +501,14 @@ export default function Order({ me }: OrderProps) {
       />
 
       <Cart isOpen={isOpenOrder} onClose={onCloseOrder} />
+
+      <ModalSelectPriceList
+        isOpen={isOpenSeleteListPrice}
+        onClose={onCloseSeleteListPrice}
+        setPriceList={(data) => {
+          changePriceList(data);
+        }}
+      />
     </>
   );
 }

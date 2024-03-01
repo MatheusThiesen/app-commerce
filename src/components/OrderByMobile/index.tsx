@@ -37,7 +37,7 @@ function OrderByMobileComponent({
         >
           {currentOrderByValue && currentOrderByValue === item.value && (
             <Flex position="absolute" w="2" h="100%" align="center" left="1">
-              <Box w="100%" h="90%" bg="red.500" borderRadius="sm" />
+              <Box w="100%" h="90%" bg="primary" borderRadius="sm" />
             </Flex>
           )}
 

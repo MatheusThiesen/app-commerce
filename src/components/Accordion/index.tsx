@@ -16,7 +16,12 @@ type Props = AccordionChakraProps & {
   children: ReactNode;
 };
 
-function AccordionComponent({ isOpen, title, children, ...props }: Props) {
+function AccordionComponent({
+  isOpen = false,
+  title,
+  children,
+  ...props
+}: Props) {
   return (
     <AccordionChakra
       defaultIndex={isOpen ? [0] : [1]}

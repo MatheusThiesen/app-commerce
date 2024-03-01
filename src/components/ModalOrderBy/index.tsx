@@ -14,7 +14,12 @@ export const ModalOrderBy = ({
   onClose,
 }: ModalOrderByProps) => {
   return (
-    <ModalList title="Ordenar por" isOpen={isOpen} onClose={onClose}>
+    <ModalList
+      title="Ordenar por"
+      isOpen={isOpen}
+      onClose={onClose}
+      placement="left"
+    >
       <OrderByMobile
         orderByItems={orderByItems}
         currentOrderByValue={currentOrderByValue}

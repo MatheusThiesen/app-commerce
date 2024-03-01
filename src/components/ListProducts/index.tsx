@@ -1,16 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useProducts } from "../../hooks/queries/useProducts";
 import { ItemFilter } from "../../hooks/queries/useProductsFilters";
 
 import { Box, SimpleGrid } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 import { useInView } from "react-intersection-observer";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useStore } from "../../contexts/StoreContext";
 import { spaceImages } from "../../global/parameters";
 import { useLocalStore } from "../../hooks/useLocalStore";
 import { LoadingInfiniteScroll } from "../LoadingInfiniteScroll";
-import { Product } from "../Product";
+import { ModalProductAddToCart } from "../ModalProductAddToCart";
+import { Product, ProductProps } from "../Product";
 
 interface Props {
   orderby?: string;
@@ -21,6 +23,7 @@ interface Props {
 
 export function ListProducts({ filters, orderby, distinct, search }: Props) {
   const { ref, inView } = useInView();
+  const router = useRouter();
   const { setLoading } = useLoading();
   const { priceList } = useStore();
   const {
@@ -38,6 +41,10 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
       search,
     });
 
+  const [modalProductAddToCart, setModalProductAddToCart] = useState<
+    number | undefined
+  >();
+
   function setPositionScroll() {
     onSetScrollPosition(window.scrollY.toString());
   }
@@ -45,6 +52,10 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
   async function handleClickProduct() {
     setPositionScroll();
     setLoading(true);
+  }
+
+  async function handleProductAddToCart(product: ProductProps) {
+    setModalProductAddToCart(product.cod);
   }
 
   useEffect(() => {
@@ -68,23 +79,52 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
   }, [scrollPosition]);
 
   return (
-    <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
-      <SimpleGrid columns={[2, 2, 3, 4]} spacing="1" mb="1rem">
-        {data?.pages.map((page) =>
-          page?.products.map((product, i) =>
-            i === page?.products.length - 4 ? (
-              <Box key={product.codigo} ref={ref}>
+    <>
+      <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
+        <SimpleGrid columns={[2, 2, 3, 4]} spacing="2" mb="1rem">
+          {data?.pages.map((page) =>
+            page?.products.map((product, i) =>
+              i === page?.products.length - 4 ? (
+                <Box key={product.codigo} ref={ref}>
+                  <Product
+                    onClickProduct={handleClickProduct}
+                    onAddCard={handleProductAddToCart}
+                    hrefBack={router.asPath.replaceAll("&", "!")}
+                    href="pedidos/novo/produtos"
+                    product={{
+                      cod: product.codigo,
+                      name: product.descricao,
+                      descriptionAdditional: product.descricaoAdicional,
+                      reference: product.referencia,
+                      subInfo: `${priceList?.descricao} ${
+                        //@ts-ignore
+                        product[`precoTabela${priceList?.codigo}Format`]
+                      }`,
+                      amount: "PDV " + product.precoVendaFormat ?? "-",
+                      uri: `${spaceImages}/Produtos/${
+                        product?.imagemPreview
+                          ? product.imagemPreview
+                          : product.referencia + "_01"
+                      }_smaller`,
+                    }}
+                  />
+                </Box>
+              ) : (
                 <Product
                   onClickProduct={handleClickProduct}
+                  onAddCard={handleProductAddToCart}
+                  hrefBack={router.asPath.replaceAll("&", "!")}
                   href="pedidos/novo/produtos"
+                  key={product.codigo}
                   product={{
                     cod: product.codigo,
                     name: product.descricao,
                     descriptionAdditional: product.descricaoAdicional,
                     reference: product.referencia,
-                    subInfo:
+                    subInfo: `${priceList?.descricao} ${
                       //@ts-ignore
-                      product[`precoTabela${priceList?.codigo}Format`],
+                      product[`precoTabela${priceList?.codigo}Format`]
+                    }`,
                     amount: "PDV " + product.precoVendaFormat ?? "-",
                     uri: `${spaceImages}/Produtos/${
                       product?.imagemPreview
@@ -93,32 +133,18 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
                     }_smaller`,
                   }}
                 />
-              </Box>
-            ) : (
-              <Product
-                onClickProduct={handleClickProduct}
-                href="pedidos/novo/produtos"
-                key={product.codigo}
-                product={{
-                  cod: product.codigo,
-                  name: product.descricao,
-                  descriptionAdditional: product.descricaoAdicional,
-                  reference: product.referencia,
-                  subInfo:
-                    //@ts-ignore
-                    product[`precoTabela${priceList?.codigo}Format`],
-                  amount: "PDV " + product.precoVendaFormat ?? "-",
-                  uri: `${spaceImages}/Produtos/${
-                    product?.imagemPreview
-                      ? product.imagemPreview
-                      : product.referencia + "_01"
-                  }_smaller`,
-                }}
-              />
+              )
             )
-          )
-        )}
-      </SimpleGrid>
-    </LoadingInfiniteScroll>
+          )}
+        </SimpleGrid>
+      </LoadingInfiniteScroll>
+
+      <ModalProductAddToCart
+        productCode={modalProductAddToCart}
+        onClose={() => {
+          setModalProductAddToCart(undefined);
+        }}
+      />
+    </>
   );
 }

@@ -4,15 +4,21 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   Button,
+  Center,
   Divider,
   Flex,
   Icon,
+  Select,
   Spinner,
   Stack,
   Table,
+  TableCaption,
+  TableContainer,
   Tbody,
   Td,
   Text,
+  Th,
+  Thead,
   Tr,
   useDisclosure,
   useToast,
@@ -22,11 +28,11 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaCartPlus } from "react-icons/fa";
-import ReactSelect from "react-select";
 import { Me } from "../../../../@types/me";
 import { Cart } from "../../../../components/Cart";
 import { InputQuantity } from "../../../../components/Form/InputQuantity";
 import { HeaderNavigation } from "../../../../components/HeaderNavigation";
+import { ModalSelectPriceList } from "../../../../components/ModalSelectPriceList";
 import { ProductImageCarouse } from "../../../../components/ProductImageCarouse";
 import { ShoppingButton } from "../../../../components/ShoppingButton";
 import { VariationsProduct } from "../../../../components/VariationsProduct";
@@ -49,27 +55,32 @@ export default function Produto(props: ProdutoProps) {
   const { setLoading } = useLoading();
   const toast = useToast();
 
-  const { totalItems, orders, client } = useStore();
+  const { totalItems, orders, client, changePriceList } = useStore();
 
   const {
     isOpen: isOpenOrder,
     onOpen: onOpenOrder,
     onClose: onCloseOrder,
   } = useDisclosure();
+  const {
+    isOpen: isOpenSeleteListPrice,
+    onOpen: onOpenSeleteListPrice,
+    onClose: onCloseSeleteListPrice,
+  } = useDisclosure();
 
-  const { codigo } = router.query;
+  const { codigo, hrefBack } = router.query;
   const [images, setImages] = useState<string[]>([]);
   const [stockLocationSelected, setStockLocationSelected] = useState<
     StockLocation | undefined
   >();
 
-  const { data: product, isLoading } = useProductOne(
-    Number(codigo),
-    client?.codigo
-  );
+  const {
+    data: product,
+    isLoading,
+    refetch,
+  } = useProductOne(Number(codigo), client?.codigo);
 
   const { priceList, addItem } = useStore();
-
   const [quantity, setQuantity] = useState(0);
 
   useEffect(() => {
@@ -130,13 +141,28 @@ export default function Produto(props: ProdutoProps) {
     });
   }
 
+  function handleGoBack() {
+    const hrefBack = router.query?.hrefBack;
+
+    if (hrefBack && hrefBack !== "undefined") {
+      router.push(String(hrefBack).replaceAll("!", "&"));
+    } else {
+      router.back();
+    }
+  }
+
   const InfoProduct = () => {
     return (
       <>
+        <Text as="p" color="gray.600" fontSize="md" fontWeight="md" mt="2">
+          {`${priceList?.descricao} ${
+            product?.listaPreco?.find(
+              (f) => Number(f.codigo) === Number(priceList?.codigo)
+            )?.valorFormat ?? "-"
+          }`}
+        </Text>
         <Text as="span" fontSize="3xl" fontWeight="medium">
-          {product?.listaPreco?.find(
-            (f) => Number(f.codigo) === Number(priceList?.codigo)
-          )?.valorFormat ?? "-"}
+          PDV {product?.precoVendaFormat ?? "-"}
         </Text>
 
         <Text as="p" fontSize="small" mt="2" fontWeight="light">
@@ -154,6 +180,7 @@ export default function Produto(props: ProdutoProps) {
             variationsProduct={product.variacoes}
             currentReference={product?.referencia ?? ""}
             uri={`/pedidos/novo/produtos`}
+            hrefBack={hrefBack ? String(hrefBack) : undefined}
             onClick={() => setLoading(true)}
           />
         )}
@@ -161,48 +188,46 @@ export default function Produto(props: ProdutoProps) {
         <Stack mt="4" spacing="4">
           <Box>
             <Text fontWeight="light">Grade</Text>
-            <ReactSelect
-              options={product?.grades?.map((grade) => ({
-                value: grade.codigo,
-                label: grade.descricaoAdicional,
-              }))}
-              defaultValue={{
-                value: product?.codigo,
-                label: product?.descricaoAdicional,
-              }}
+            <Select
               onChange={(e) => {
-                if (e?.value !== product?.codigo) {
+                if (Number(e?.target.value) !== product?.codigo) {
                   setLoading(true);
-                  router.push(`/pedidos/novo/produtos/${e?.value}`);
+                  router.push(
+                    `/pedidos/novo/produtos/${e?.target.value}?hrefBack=${hrefBack}`
+                  );
                 }
               }}
-            />
+              value={product?.codigo}
+            >
+              {product?.grades?.map((grid) => (
+                <option value={grid.codigo}>{grid.descricaoAdicional}</option>
+              ))}
+            </Select>
           </Box>
-          <Box>
-            <Text fontWeight="light">Disponibilidade</Text>
-            <ReactSelect
-              placeholder="Selecionar"
-              options={product?.locaisEstoque?.map((localEstoque) => ({
-                value: localEstoque.periodo,
-                label: localEstoque.descricao,
-              }))}
-              onChange={(e) => {
-                const findStockLocation = product?.locaisEstoque?.find(
-                  (f) => String(f.periodo) === String(e?.value)
-                );
 
-                setStockLocationSelected(findStockLocation);
-              }}
-              value={
-                stockLocationSelected
-                  ? {
-                      label: stockLocationSelected.descricao,
-                      value: stockLocationSelected.periodo,
-                    }
-                  : undefined
-              }
-            />
-          </Box>
+          {product?.locaisEstoque && (
+            <Box>
+              <Text fontWeight="light">Disponibilidade</Text>
+              <Select
+                value={stockLocationSelected?.periodo}
+                onChange={(e) => {
+                  const findStockLocation = product?.locaisEstoque?.find(
+                    (f) => String(f.periodo) === String(e?.target.value)
+                  );
+
+                  setStockLocationSelected(findStockLocation);
+                }}
+              >
+                <option>Selecione...</option>
+                {product.locaisEstoque?.map((stockLocation) => (
+                  <option value={stockLocation.periodo}>
+                    {stockLocation.descricao}
+                  </option>
+                ))}
+              </Select>
+            </Box>
+          )}
+
           {stockLocationSelected && (
             <Box w="8rem">
               <InputQuantity
@@ -246,6 +271,70 @@ export default function Produto(props: ProdutoProps) {
         >
           Adicionar ao carrinho
         </Button>
+
+        <Divider mt="8" />
+
+        <TableContainer mt="6" w="70%">
+          <Text mb="3" fontSize="lg">
+            Locais de Estoque
+          </Text>
+          <Table size="sm" variant="simple">
+            {(product?.locaisEstoque?.length ?? 0) <= 0 && (
+              <TableCaption>Sem dados</TableCaption>
+            )}
+
+            <Thead>
+              <Tr>
+                <Th>Período</Th>
+                <Th>Estoque</Th>
+              </Tr>
+            </Thead>
+            {
+              <Tbody>
+                {product?.locaisEstoque?.map((localEstoque) => (
+                  <Tr key={localEstoque.id}>
+                    <Td>{localEstoque.descricao}</Td>
+
+                    <Td>
+                      {/* {localEstoque.quantidade >= 1
+                      ? "Disponível"
+                      : "Indisponível"} */}
+                      {localEstoque.quantidade}
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            }
+          </Table>
+        </TableContainer>
+        <TableContainer mt="6">
+          <Text mb="3" fontSize="lg">
+            Lista de Preço
+          </Text>
+          <Table size="sm" variant="simple">
+            {(product?.listaPreco?.length ?? 0) <= 0 && (
+              <TableCaption>Sem dados</TableCaption>
+            )}
+
+            <Thead>
+              <Tr>
+                <Th>Lista</Th>
+                <Th>Preço</Th>
+              </Tr>
+            </Thead>
+            {
+              <Tbody>
+                {product?.listaPreco?.map((localEstoque) => (
+                  <Tr key={localEstoque.id}>
+                    <Td>{localEstoque.descricao}</Td>
+
+                    <Td>{localEstoque.valorFormat}</Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            }
+          </Table>
+        </TableContainer>
       </>
     );
   };
@@ -258,33 +347,55 @@ export default function Produto(props: ProdutoProps) {
 
       <HeaderNavigation
         isInativeEventScroll
-        isGoBack
+        onGoBack={handleGoBack}
         title="Detalhes"
         user={{ name: props.me.email }}
         Right={<ShoppingButton qtdItens={totalItems} onClick={onOpenOrder} />}
         isNotNavigation
         contentHeight={2}
         content={
-          <Flex w="full" flexDir="column">
+          <Center w="full" h="1.5rem" bg="gray.50">
             <Flex
               w="full"
-              h="1.5rem"
-              bg="gray.50"
+              maxW="1200px"
               align="center"
               justify="space-between"
               px="2rem"
             >
-              <Text fontWeight="light" fontSize="sm">
-                {!!client?.codigo
-                  ? `${client?.codigo} - ${client?.razaoSocial}`
-                  : "-"}
-              </Text>
+              <Box width="50%">
+                <Text
+                  fontWeight="light"
+                  fontSize={["sm", "sm", "sm", "md"]}
+                  textAlign="center"
+                  whiteSpace="nowrap"
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                >
+                  {!!client?.codigo
+                    ? `${client?.codigo} - ${client?.razaoSocial}`
+                    : "-"}
+                </Text>
+              </Box>
 
-              <Text fontWeight="light" fontSize="sm">
-                {!!priceList?.codigo ? `${priceList?.descricao}` : "-"}
-              </Text>
+              <Box width="50%" borderLeft="1px solid #ccc">
+                <Text
+                  fontWeight="light"
+                  fontSize={["sm", "sm", "sm", "md"]}
+                  onClick={onOpenSeleteListPrice}
+                  textAlign="center"
+                  cursor="pointer"
+                  whiteSpace="nowrap"
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                  _hover={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  {!!priceList?.codigo ? `${priceList?.descricao}` : "-"}
+                </Text>
+              </Box>
             </Flex>
-          </Flex>
+          </Center>
         }
       />
 
@@ -314,7 +425,7 @@ export default function Produto(props: ProdutoProps) {
                 display={["none", "none", "none", "flex"]}
               >
                 <Button
-                  onClick={() => router.back()}
+                  onClick={handleGoBack}
                   h="full"
                   color="gray.600"
                   cursor="pointer"
@@ -334,7 +445,9 @@ export default function Produto(props: ProdutoProps) {
                     </Link>
                   </BreadcrumbItem> */}
                   <BreadcrumbItem>
-                    <Link href={`/produtos/${product?.codigo}`}>
+                    <Link
+                      href={`/produtos/${product?.codigo}?hrefBack=${hrefBack}`}
+                    >
                       <BreadcrumbLink>{product?.descricao}</BreadcrumbLink>
                     </Link>
                   </BreadcrumbItem>
@@ -393,7 +506,7 @@ export default function Produto(props: ProdutoProps) {
                         fontSize={["2xl", "2xl", "3xl"]}
                         fontWeight="light"
                       >
-                        Características do produto
+                        Características do Produto
                       </Text>
 
                       <Text
@@ -407,7 +520,7 @@ export default function Produto(props: ProdutoProps) {
 
                       <Box w={["100%", "100%", "100%", "60%"]} mb="2rem">
                         <Text as="h2" mb="2" fontSize="lg" fontWeight="light">
-                          Características gerais
+                          Características Gerais
                         </Text>
 
                         <Table size="sm" variant="striped">
@@ -537,6 +650,15 @@ export default function Produto(props: ProdutoProps) {
       )}
 
       <Cart isOpen={isOpenOrder} onClose={onCloseOrder} />
+
+      <ModalSelectPriceList
+        isOpen={isOpenSeleteListPrice}
+        onClose={onCloseSeleteListPrice}
+        setPriceList={(data) => {
+          changePriceList(data);
+          refetch();
+        }}
+      />
     </>
   );
 }

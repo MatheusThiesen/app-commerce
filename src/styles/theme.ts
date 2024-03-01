@@ -1,9 +1,17 @@
 import { extendTheme, ThemeConfig } from "@chakra-ui/react";
 import { GlobalStyleProps, mode } from "@chakra-ui/theme-tools";
 
+export const themeColors = {
+  primary: "#1F2029",
+  "primary.hover": "#353646",
+  background: "#D1D2DC",
+};
+
 export const theme: ThemeConfig = extendTheme({
   initialColorMode: "light",
   colors: {
+    ...themeColors,
+
     gray: {
       "900": "#181B23",
       "800": "#1F2029",
@@ -17,7 +25,7 @@ export const theme: ThemeConfig = extendTheme({
       "50": "#EEEEF2",
     },
     red: {
-      "500": "#E5122A",
+      "500": "#da2d3a",
     },
     blue: {
       "400": "#007aff",
@@ -30,7 +38,7 @@ export const theme: ThemeConfig = extendTheme({
   styles: {
     global: (props: GlobalStyleProps) => ({
       body: {
-        bg: mode("gray.100", "gray.900")(props),
+        bg: mode("background", "gray.900")(props),
         color: props.colorMode === "dark" ? "gray.50" : "gray.900",
         overflow: "hidden",
       },

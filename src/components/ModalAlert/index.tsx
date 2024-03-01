@@ -46,7 +46,7 @@ export function ModalAlert({
       scrollBehavior="inside"
       isCentered
     >
-      <ModalOverlay />
+      <ModalOverlay backdropFilter="blur(5px)" />
       <ModalContent>
         <ModalHeader>
           <Stack>
@@ -80,7 +80,9 @@ export function ModalAlert({
             </Button>
             <Button
               size="lg"
+              bg="primary"
               colorScheme="red"
+              _hover={{ bg: "primary.hover" }}
               onClick={confirmOptions.onConfirm}
             >
               {confirmOptions.titleButtonConfirm}

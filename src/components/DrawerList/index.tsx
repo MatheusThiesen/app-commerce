@@ -32,8 +32,9 @@ export function DrawerList({
       onClose={onClose}
       size={["full", "full", "full", "xl"]}
       isOpen={isOpen}
+      placement="right"
     >
-      <DrawerOverlay />
+      <DrawerOverlay backdropFilter="blur(5px)" />
       <DrawerContent>
         <DrawerHeader borderBottom={"1px"} borderColor="#ccc">
           <Stack>

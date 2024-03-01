@@ -1,22 +1,22 @@
 import {
-  Box,
   Button,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
   Flex,
   Icon,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Stack,
   Text,
 } from "@chakra-ui/react";
 import { ReactNode } from "react";
-import { IoArrowBack } from "react-icons/io5";
+import { IoClose } from "react-icons/io5";
 
 interface ModalListProps {
   title: string;
+  placement?: "right" | "left";
 
   isOpen: boolean;
   onClose: () => void;
@@ -28,35 +28,31 @@ export function ModalList({
   isOpen,
   children,
   title,
+  placement = "right",
 }: ModalListProps) {
   return (
-    <Modal
-      onClose={onClose}
-      size={"full"}
-      isOpen={isOpen}
-      scrollBehavior="inside"
-    >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
+    <Drawer onClose={onClose} size={"md"} isOpen={isOpen} placement={placement}>
+      <DrawerOverlay backdropFilter="blur(5px)" />
+      <DrawerContent>
+        <DrawerHeader>
           <Stack>
-            <Box>
+            <Flex justify={placement === "right" ? "start" : "end"}>
               <Button variant="unstyled" onClick={onClose}>
-                <Icon as={IoArrowBack} fontSize="1.8rem" />
+                <Icon as={IoClose} fontSize="1.8rem" />
               </Button>
-            </Box>
+            </Flex>
 
             <Flex align="center" justify="center">
               <Text fontSize="2xl">{title}</Text>
             </Flex>
           </Stack>
-        </ModalHeader>
+        </DrawerHeader>
 
-        <ModalBody bg="gray.50" p="0">
+        <DrawerBody bg="gray.50" p="0">
           {children}
-        </ModalBody>
-        <ModalFooter></ModalFooter>
-      </ModalContent>
-    </Modal>
+        </DrawerBody>
+        <DrawerFooter></DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

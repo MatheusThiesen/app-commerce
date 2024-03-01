@@ -1,6 +1,6 @@
 import { ColorModeScript } from "@chakra-ui/react";
 import Document, { Head, Html, Main, NextScript } from "next/document";
-import { theme } from "../styles/theme";
+import { theme, themeColors } from "../styles/theme";
 
 export default class MyDocument extends Document {
   render() {
@@ -20,7 +20,7 @@ export default class MyDocument extends Document {
             rel="stylesheet"
           />
           <link rel="icon" href="/favicon.png" />
-          <meta name="theme-color" content="#E5122A" />
+          <meta name="theme-color" content={themeColors.primary} />
 
           <meta name="application-name" content="Catálogo Alpar" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -39,9 +39,9 @@ export default class MyDocument extends Document {
             name="msapplication-config"
             content="/icons/browserconfig.xml"
           />
-          <meta name="msapplication-TileColor" content="#E5122A" />
+          <meta name="msapplication-TileColor" content={themeColors.primary} />
           <meta name="msapplication-tap-highlight" content="no" />
-          <meta name="theme-color" content="#E5122A" />
+          <meta name="theme-color" content={themeColors.primary} />
         </Head>
         <body style={{ overflow: "auto" }}>
           <ColorModeScript initialColorMode={theme.initialColorMode} />

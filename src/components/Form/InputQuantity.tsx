@@ -36,7 +36,7 @@ export function InputQuantity({
     <HStack spacing={0} border={"1px"} borderRadius="md" borderColor="gray.200">
       <Button
         variant="unstyled"
-        color="red.500"
+        color="primary"
         fontSize="lg"
         onClick={
           onDisabledDecrementalButtonClick()
@@ -51,7 +51,7 @@ export function InputQuantity({
       <Input textAlign="center" border={0} readOnly p="0" value={value} />
       <Button
         variant="unstyled"
-        color="red.500"
+        color="primary"
         fontSize="lg"
         onClick={
           onDisabledIncrementalButtonClick()

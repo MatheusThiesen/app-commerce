@@ -14,6 +14,7 @@ interface ModelFilterProps {
   onClose: () => void;
 
   children?: ReactNode;
+  placement?: "right" | "left";
 }
 
 export const ModalFilter = ({
@@ -22,10 +23,16 @@ export const ModalFilter = ({
   dataFilters,
   filters,
   setFilters,
+  placement,
   children,
 }: ModelFilterProps) => {
   return (
-    <ModalList title="Filtros" isOpen={isOpen} onClose={onClose}>
+    <ModalList
+      title="Filtros"
+      isOpen={isOpen}
+      onClose={onClose}
+      placement={placement}
+    >
       <Box borderRadius="md">
         <FilterSelectedList filters={filters} setFilters={setFilters} />
 

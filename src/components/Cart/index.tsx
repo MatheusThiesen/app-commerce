@@ -71,7 +71,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                 <AccordionButton>
                   <Box as="span" flex="1" textAlign="left">
                     <Text fontSize="lg">
-                      {`${order?.brand?.descricao} - ${order.stockLocation.descricao}`}
+                      {`${order?.brand?.descricao} - ${order.stockLocation.descricao} - ${order.amountFormat}`}
 
                       {validateMinimum && (
                         <Text

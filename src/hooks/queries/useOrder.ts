@@ -10,6 +10,7 @@ import { api } from "../../service/apiClient";
 import { ItemFilter } from "../../@types/api-queries";
 import { Client } from "./useClients";
 
+import { BiSolidDiscount } from "react-icons/bi";
 import {
   BsCloudSlashFill,
   BsFillCloudArrowUpFill,
@@ -18,6 +19,7 @@ import {
 import { FcClock } from "react-icons/fc";
 import { HiBadgeCheck } from "react-icons/hi";
 import { RiCloseCircleFill } from "react-icons/ri";
+import { Differentiated } from "../../contexts/StoreContext";
 
 export type Order = {
   codigo: number;
@@ -29,6 +31,14 @@ export type Order = {
   valorTotal: number;
   valorTotalFormat: string;
   eRascunho: boolean;
+  eDiferenciado: boolean;
+  tipoDesconto?: "VALOR" | "PERCENTUAL";
+  descontoCalculado?: number;
+  descontoCalculadoFormat?: string;
+  descontoPercentual?: number;
+  descontoValor?: number;
+  vendedorPendenteDiferenciadoCodigo?: number;
+  diferenciados: Differentiated[];
   situacaoPedido?: {
     codigo: number;
     descricao: string;
@@ -102,6 +112,10 @@ export function selectStatusColor(statusCode?: number): string {
       return "red.500";
     case 5:
       return "red.500";
+    case 6:
+      return "purple.500";
+    case 7:
+      return "orange.400";
     case 99:
       return "orange.400";
 
@@ -122,6 +136,10 @@ export function selectStatusIcon(statusCode?: number) {
       return RiCloseCircleFill;
     case 5:
       return BsCloudSlashFill;
+    case 6:
+      return BiSolidDiscount;
+    case 7:
+      return BsFillFileTextFill;
     case 99:
       return BsFillFileTextFill;
 
@@ -221,6 +239,22 @@ export async function getOrderOne(
       style: "currency",
       currency: "BRL",
     }),
+    descontoCalculadoFormat: Number(data.descontoCalculado || 0).toLocaleString(
+      "pt-br",
+      {
+        style: "currency",
+        currency: "BRL",
+      }
+    ),
+    diferenciados: data.diferenciados.map((differentiated) => ({
+      ...differentiated,
+      descontoCalculadoFormat: Number(
+        differentiated.descontoCalculado || 0
+      ).toLocaleString("pt-br", {
+        style: "currency",
+        currency: "BRL",
+      }),
+    })),
     itens: data.itens.map((item) => ({
       ...item,
       valorTotalFormat: (item.valorUnitario * item.quantidade).toLocaleString(

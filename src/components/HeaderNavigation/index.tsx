@@ -25,6 +25,7 @@ export interface HeaderProps {
   isInativeEventScroll?: boolean;
   isNotHideHeaderEventScroll?: boolean;
   isGoBack?: boolean;
+  onGoBack?: () => void;
 
   content?: ReactNode;
   contentHeight?: number;
@@ -53,6 +54,7 @@ export function HeaderNavigationComponent({
   isInativeEventScroll = false,
   isNotHideHeaderEventScroll = false,
   isGoBack = false,
+  onGoBack,
   user,
   isNotNavigation = false,
 }: HeaderProps) {
@@ -61,7 +63,7 @@ export function HeaderNavigationComponent({
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  if (!Left && isGoBack) {
+  if (!Left && (isGoBack || onGoBack)) {
     Left = (
       <Flex ml="4" align="center" display={["flex", "flex", "flex", "none"]}>
         <Button
@@ -71,7 +73,7 @@ export function HeaderNavigationComponent({
           _hover={{ bg: "transparent" }}
           alignItems="center"
           justifyContent="center"
-          onClick={() => Router.back()}
+          onClick={() => (onGoBack ? onGoBack() : Router.back())}
         >
           <IoIosArrowBack color="white" fontSize={"1.8rem"} />
           <Text color="white">Voltar</Text>
@@ -129,7 +131,7 @@ export function HeaderNavigationComponent({
         display={["flex", "flex", "flex", "none"]}
       >
         <Flex
-          bg="red.500"
+          bg="primary"
           w="full"
           h={`${height}rem`}
           py="2"
@@ -182,11 +184,13 @@ export function HeaderNavigationComponent({
         position={isInativeEventScroll ? undefined : "fixed"}
         transition="all 0.2s"
         transform={
-          show ? "translateY(0)" : `translateY(calc(${height + 2.6}rem * -1))`
+          show
+            ? "translateY(0)"
+            : `translateY(calc(${height + contentHeight + 2.6}rem * -1))`
         }
         flexDir="column"
         display={["none", "none", "none", "flex"]}
-        bg="red.500"
+        bg="primary"
       >
         <Flex
           w="full"
@@ -228,7 +232,10 @@ export function HeaderNavigationComponent({
                 <NavLink href="/produtos">Produtos</NavLink>
                 <NavLink href="/clientes">Clientes</NavLink>
                 {userAuth?.eVendedor &&
-                  userAuth.email === "matheus.thiesen@alpardobrasil.com.br" && (
+                  [
+                    "lucas.machado@alpardobrasil.com.br",
+                    "matheus.thiesen@alpardobrasil.com.br",
+                  ].includes(userAuth.email) && (
                     <NavLink href="/pedidos">Pedidos</NavLink>
                   )}
               </Stack>
@@ -278,11 +285,11 @@ export function HeaderNavigationComponent({
           </Flex>
         </Flex>
 
-        {/* {content && (
+        {content && (
           <Box w="full" h="calc(100% - 3.5rem)">
             {content}
           </Box>
-        )} */}
+        )}
       </Flex>
     </>
   );

@@ -211,41 +211,45 @@ export async function getProductOne(
   cod: number,
   clientCod?: number,
   ctx: GetServerSidePropsContext | undefined = undefined
-): Promise<Product> {
+): Promise<Product | undefined> {
   var apiClient = api;
 
   if (ctx) {
     apiClient = setupAPIClient(ctx);
   }
 
-  const { data } = await apiClient.get<Product>(`/products/${cod}`, {
-    params: { clientCod },
-  });
+  if (cod) {
+    const { data } = await apiClient.get<Product>(`/products/${cod}`, {
+      params: { clientCod },
+    });
 
-  const product: Product = {
-    ...data,
-    precoVendaFormat: data.precoVenda.toLocaleString("pt-br", {
-      style: "currency",
-      currency: "BRL",
-    }),
-    precoVendaEmpresaFormat: data.precoVendaEmpresa
-      ? data.precoVendaEmpresa.toLocaleString("pt-br", {
-          style: "currency",
-          currency: "BRL",
-        })
-      : "R$ -",
-    listaPreco: data.listaPreco?.map((list) => ({
-      ...list,
-      valorFormat: list.valor.toLocaleString("pt-br", {
+    const product: Product = {
+      ...data,
+      precoVendaFormat: data.precoVenda.toLocaleString("pt-br", {
         style: "currency",
         currency: "BRL",
       }),
-    })),
+      precoVendaEmpresaFormat: data.precoVendaEmpresa
+        ? data.precoVendaEmpresa.toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          })
+        : "R$ -",
+      listaPreco: data.listaPreco?.map((list) => ({
+        ...list,
+        valorFormat: list.valor.toLocaleString("pt-br", {
+          style: "currency",
+          currency: "BRL",
+        }),
+      })),
 
-    ncmFormat: mask(data.ncm, "9999.99.99"),
-  };
+      ncmFormat: mask(data.ncm, "9999.99.99"),
+    };
 
-  return product;
+    return product;
+  }
+
+  return undefined;
 }
 
 export function useProducts({

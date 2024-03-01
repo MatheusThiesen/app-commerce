@@ -10,6 +10,7 @@ import {
 import { Button, Icon, Stack } from "@chakra-ui/react";
 import { IoBagHandle } from "react-icons/io5";
 import { TbShoppingCartCancel } from "react-icons/tb";
+import { mask } from "remask";
 import { ModalAlert } from "../components/ModalAlert";
 import { ModalAlertList } from "../components/ModalAlertList";
 import { ProductOrder } from "../components/ProductOrder";
@@ -34,10 +35,27 @@ export type Differentiated = {
 
   descontoPercentual?: string;
   descontoValor?: number;
-  tipoValor?: "VALOR" | "PERCENTUAL";
+  tipoDesconto?: "VALOR" | "PERCENTUAL";
+
+  motivoDiferenciado?: string;
 
   amountDiscount?: number;
   amountDiscountFormat?: string;
+
+  id?: string;
+  vendedor?: {
+    codigo: number;
+    nome: string;
+    nomeGuerra: string;
+  };
+  passo?: number;
+  descontoCalculado?: number;
+  eFinalizado?: boolean;
+  descontoCalculadoFormat?: string;
+  tipoUsuario?: string;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export interface Order {
@@ -46,12 +64,11 @@ export interface Order {
   differentiated?: Differentiated;
   paymentCondition?: PaymentCondition;
   items: Item[];
+  diferenciado?: Differentiated;
 
   qtd: number;
   amount: number;
   amountFormat: string;
-  amountWithDiscount: number;
-  amountWithDiscountFormat: string;
 
   isSketch?: number;
 }
@@ -121,6 +138,7 @@ type StoreContextData = {
     order: Order;
     differentiated: Differentiated;
   }) => void;
+  changePriceList: (p: PriceList) => void;
 };
 
 type StoreProviderProps = {
@@ -164,7 +182,10 @@ export function StoreProvider({ children }: StoreProviderProps) {
     0
   );
   const totalAmount = orders.reduce(
-    (previousValue, currentValue) => previousValue + currentValue.amount,
+    (previousValue, currentValue) =>
+      previousValue +
+      (currentValue.amount -
+        (currentValue.differentiated?.amountDiscount ?? 0)),
     0
   );
   const totalAmountFormat = totalAmount.toLocaleString("pt-br", {
@@ -266,8 +287,6 @@ export function StoreProvider({ children }: StoreProviderProps) {
         qtd: qtd,
         amount,
         amountFormat,
-        amountWithDiscount: 0,
-        amountWithDiscountFormat: "R$ 0,00",
         items: [
           {
             product,
@@ -407,26 +426,10 @@ export function StoreProvider({ children }: StoreProviderProps) {
     order: Order;
     differentiated: Differentiated;
   }) {
-    console.log(differentiated);
-
     const ordersUpdated = orders.map((old) => {
-      if (order === old) {
-        const amountDiscount =
-          Number(order.differentiated?.amountDiscount) ?? 0;
-
-        const amountWithDiscount = order.amount - amountDiscount;
-        const amountWithDiscountFormat = amountWithDiscount.toLocaleString(
-          "pt-br",
-          {
-            style: "currency",
-            currency: "BRL",
-          }
-        );
-
+      if (order.stockLocation.periodo === old.stockLocation.periodo) {
         return {
           ...old,
-          amountWithDiscount,
-          amountWithDiscountFormat,
           differentiated,
         };
       }
@@ -439,7 +442,6 @@ export function StoreProvider({ children }: StoreProviderProps) {
   }
 
   async function sketchOrder(orderCode: number) {
-    //Lista de produto que sofreram alterações;
     const getSketch = await api.post<GetSketchOrderValidResponse>(
       `/orders/sketch/${orderCode}`
     );
@@ -453,8 +455,16 @@ export function StoreProvider({ children }: StoreProviderProps) {
     }
 
     onSetStoragePriceList(pedido.tabelaPreco);
-    onSetStorageClient(pedido.cliente);
-    setClient(pedido.cliente);
+    onSetStorageClient({
+      ...pedido.cliente,
+      cepFormat: mask(pedido.cliente.cep, "99999-999"),
+      cnpjFormat: mask(pedido.cliente.cnpj, "99.999.999/9999-99"),
+    });
+    setClient({
+      ...pedido.cliente,
+      cepFormat: mask(pedido.cliente.cep, "99999-999"),
+      cnpjFormat: mask(pedido.cliente.cnpj, "99.999.999/9999-99"),
+    });
     setPriceList(pedido.tabelaPreco);
 
     const amountOrder = itens.atuais.reduce(
@@ -466,15 +476,6 @@ export function StoreProvider({ children }: StoreProviderProps) {
       style: "currency",
       currency: "BRL",
     });
-
-    const amountWithDiscount = 0;
-    const amountWithDiscountFormat = amountWithDiscount.toLocaleString(
-      "pt-br",
-      {
-        style: "currency",
-        currency: "BRL",
-      }
-    );
 
     const orderCreate: Order = {
       paymentCondition: pedido.condicaoPagamento,
@@ -489,8 +490,6 @@ export function StoreProvider({ children }: StoreProviderProps) {
       qtd: itens.atuais.length,
       amount: amountOrder,
       amountFormat: amountOrderFormat,
-      amountWithDiscount,
-      amountWithDiscountFormat,
       isSketch: orderCode,
       items: itens.atuais.map((item) => {
         const amount = Number(item.valorUnitario) * item.quantidade;
@@ -520,14 +519,6 @@ export function StoreProvider({ children }: StoreProviderProps) {
     }
   }
 
-  async function handleRedirectSketch() {
-    setSketchEditItems([]);
-    setSketchRemoveItems([]);
-    setIsAlertSketch(false);
-
-    push("/pedidos/novo");
-  }
-
   async function sendOrder({ isDraft }: { isDraft: boolean }) {
     for (const order of orders) {
       if (!!order.isSketch) {
@@ -538,8 +529,16 @@ export function StoreProvider({ children }: StoreProviderProps) {
           tabelaPrecoCodigo: priceList.codigo,
           marcaCodigo: order.brand.codigo,
           periodoEstoque: order.stockLocation.periodo,
-          eRascunho: isDraft,
           rascunhoCodigo: order.isSketch,
+          eRascunho: isDraft,
+          eDiferenciado: !!order.differentiated?.isActive,
+          tipoDesconto: order.differentiated?.tipoDesconto,
+          descontoPercentual: order.differentiated?.descontoPercentual
+            ? Number(order.differentiated?.descontoPercentual)
+            : undefined,
+          descontoValor: order.differentiated?.descontoValor,
+          motivoDiferenciado: order.differentiated?.motivoDiferenciado,
+          descontoCalculado: order.differentiated?.amountDiscount,
           itens: order.items.map((item) => {
             const findPriceList = item?.product.listaPreco?.find(
               (f) => Number(f.codigo) === Number(priceList?.codigo)
@@ -564,8 +563,16 @@ export function StoreProvider({ children }: StoreProviderProps) {
           tabelaPrecoCodigo: priceList.codigo,
           marcaCodigo: order.brand.codigo,
           periodoEstoque: order.stockLocation.periodo,
-          eRascunho: isDraft,
           rascunhoCodigo: order.isSketch,
+          eRascunho: isDraft,
+          eDiferenciado: !!order.differentiated?.isActive,
+          descontoPercentual: order.differentiated?.descontoPercentual
+            ? Number(order.differentiated?.descontoPercentual)
+            : undefined,
+          descontoValor: order.differentiated?.descontoValor,
+          tipoDesconto: order.differentiated?.tipoDesconto,
+          motivoDiferenciado: order.differentiated?.motivoDiferenciado,
+          descontoCalculado: order.differentiated?.amountDiscount,
           itens: order.items.map((item) => {
             const findPriceList = item?.product.listaPreco?.find(
               (f) => Number(f.codigo) === Number(priceList?.codigo)
@@ -589,6 +596,20 @@ export function StoreProvider({ children }: StoreProviderProps) {
     setTimeout(reset, 2000);
   }
 
+  async function handleRedirectSketch() {
+    setSketchEditItems([]);
+    setSketchRemoveItems([]);
+    setIsAlertSketch(false);
+
+    push("/pedidos/novo");
+  }
+
+  async function changePriceList(priceList: PriceList) {
+    onSetStoragePriceList(priceList);
+    setPriceList(priceList);
+    recalculatePriceOrders();
+  }
+
   return (
     <StoreContext.Provider
       value={{
@@ -607,6 +628,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
         setPaymentCondition,
         setDifferentiated,
         sketchOrder,
+        changePriceList,
       }}
     >
       {isAlertSketch && (

@@ -34,7 +34,7 @@ export function ModalAlertList({
       isOpen={isOpen}
       scrollBehavior="inside"
     >
-      <ModalOverlay />
+      <ModalOverlay backdropFilter="blur(5px)" />
       <ModalContent>
         <ModalHeader>
           <Stack>

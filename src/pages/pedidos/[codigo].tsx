@@ -27,9 +27,11 @@ import {
 } from "../../hooks/queries/useOrder";
 
 import { Client } from "../../components/Client";
+import { DifferentiatedCard } from "../../components/DifferentiatedCard";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductOrder } from "../../components/ProductOrder";
 import { useStore } from "../../contexts/StoreContext";
+import { DifferentiatedApproval } from "./_components/DifferentiatedApproval";
 
 interface Props {
   me: Me;
@@ -43,13 +45,13 @@ export default function Order({ me }: Props) {
 
   const { data: order, isLoading } = useOrderOne(Number(codigo));
 
-  useEffect(() => {
-    setLoading(isLoading);
-  }, [isLoading]);
-
   async function handleSketch() {
     if (order?.codigo) await sketchOrder(order.codigo);
   }
+
+  useEffect(() => {
+    setLoading(isLoading);
+  }, [isLoading]);
 
   return (
     <>
@@ -152,17 +154,15 @@ export default function Order({ me }: Props) {
                     </Tag>
                   </HStack>
 
-                  {!order.eRascunho && (
-                    <HStack mt="1.5" spacing={1}>
-                      <Text fontSize="sm" fontWeight="light" color="gray.600">
-                        CÓDIGO ERP:
-                      </Text>
+                  <HStack mt="1.5" spacing={1}>
+                    <Text fontSize="sm" fontWeight="light" color="gray.600">
+                      CÓDIGO ERP:
+                    </Text>
 
-                      <Text fontSize="lg" fontWeight="bold" color="gray.800">
-                        {order.codigoErp ?? "-"}
-                      </Text>
-                    </HStack>
-                  )}
+                    <Text fontSize="lg" fontWeight="bold" color="gray.800">
+                      {order.codigoErp ?? "-"}
+                    </Text>
+                  </HStack>
                 </Flex>
 
                 <Box
@@ -272,6 +272,27 @@ export default function Order({ me }: Props) {
                     />
                   ))}
                 </Stack>
+              </Box>
+
+              <Box width="full">
+                <Text fontSize="lg" fontWeight="light">
+                  Histórico de Diferenciado
+                </Text>
+                <Stack bg="white" borderRadius="lg">
+                  {order?.diferenciados?.map((differentiated) => (
+                    <DifferentiatedCard
+                      differentiated={differentiated}
+                      key={differentiated.id}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+
+              <Box width="full">
+                <Text fontSize="lg" fontWeight="light">
+                  Aprovar Diferenciado
+                </Text>
+                <DifferentiatedApproval order={order} />
               </Box>
             </Stack>
           )}

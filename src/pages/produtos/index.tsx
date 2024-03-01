@@ -68,6 +68,7 @@ export default function Produtos({ me }: ProductsProps) {
   const toastIdRef = useRef();
   const router = useRouter();
   const { setLoading } = useLoading();
+  const asPathBackHref = router.asPath.replaceAll("&", "!");
 
   const {
     isActivated: isActivatedCatalog,
@@ -540,6 +541,16 @@ export default function Produtos({ me }: ProductsProps) {
     }
   }
 
+  function handleGetHrefBack(): string {
+    new URLSearchParams({
+      var1: "value",
+      var2: "value2",
+      arr: "foo",
+    });
+
+    return router.asPath.replaceAll("&", "!");
+  }
+
   useEffect(() => {
     if (isActivatedCatalog && !isOpen) {
       onToggle();
@@ -590,7 +601,11 @@ export default function Produtos({ me }: ProductsProps) {
         title="Produtos"
         contentHeight={2.5}
         content={
-          <Flex w="full" justify="space-around">
+          <Flex
+            w="full"
+            justify="space-around"
+            display={["flex", "flex", "flex", "none"]}
+          >
             <Button
               bg="white"
               borderRadius={0}
@@ -610,7 +625,7 @@ export default function Produtos({ me }: ProductsProps) {
               {filters.length > 0 && (
                 <Flex
                   borderRadius="full"
-                  bg="red.500"
+                  bg="primary"
                   ml="1.5"
                   h="1.6rem"
                   w="1.6rem"
@@ -749,7 +764,6 @@ export default function Produtos({ me }: ProductsProps) {
                 onChangeSelectedFilter={(a) => {
                   setFilters(a);
                 }}
-                isOpen={false}
               />
             )}
           </Box>
@@ -797,7 +811,8 @@ export default function Produtos({ me }: ProductsProps) {
                     <Box key={product.codigo} ref={ref}>
                       <Product
                         isCatalog
-                        href="produtos"
+                        hrefBack={asPathBackHref}
+                        href={"produtos"}
                         product={{
                           cod: product.codigo,
                           name: product.descricao,
@@ -817,6 +832,7 @@ export default function Produtos({ me }: ProductsProps) {
                     <Box key={product.codigo}>
                       <Product
                         isCatalog
+                        hrefBack={asPathBackHref}
                         href="produtos"
                         product={{
                           cod: product.codigo,

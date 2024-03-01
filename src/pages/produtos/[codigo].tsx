@@ -6,6 +6,7 @@ import {
   Button,
   Divider,
   Flex,
+  Select,
   Spinner,
   Table,
   TableCaption,
@@ -22,7 +23,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { IoChevronForwardSharp } from "react-icons/io5";
-import ReactSelect from "react-select";
 import { Me } from "../../@types/me";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductImageCarouse } from "../../components/ProductImageCarouse";
@@ -39,11 +39,21 @@ interface ProdutoProps {
 
 export default function Produto(props: ProdutoProps) {
   const router = useRouter();
-  const { codigo } = router.query;
+  const { codigo, hrefBack } = router.query;
   const [images, setImages] = useState<string[]>([]);
 
   const { data: product, isLoading } = useProductOne(Number(codigo));
   const { setLoading } = useLoading();
+
+  function handleGoBack() {
+    const hrefBack = router.query?.hrefBack;
+
+    if (hrefBack && hrefBack !== "undefined") {
+      router.push(String(hrefBack).replaceAll("!", "&"));
+    } else {
+      router.back();
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -81,32 +91,32 @@ export default function Produto(props: ProdutoProps) {
           variationsProduct={product.variacoes}
           currentReference={product?.referencia ?? ""}
           uri={`/produtos`}
+          hrefBack={hrefBack ? String(hrefBack) : undefined}
           onClick={() => setLoading(true)}
         />
       )}
 
       <Box mt="4">
         <Text fontWeight="light">Grade</Text>
-        <ReactSelect
-          options={product?.grades?.map((grade) => ({
-            value: grade.codigo,
-            label: grade.descricaoAdicional,
-          }))}
-          defaultValue={{
-            value: product?.codigo,
-            label: product?.descricaoAdicional,
-          }}
+        <Select
           onChange={(e) => {
-            if (e?.value !== product?.codigo) {
+            if (Number(e?.target.value) !== product?.codigo) {
               setLoading(true);
-              router.push(`/produtos/${e?.value}`);
+              router.push(
+                `/pedidos/novo/produtos/${e?.target.value}?hrefBack=${hrefBack}`
+              );
             }
           }}
-        />
+          value={product?.codigo}
+        >
+          {product?.grades?.map((grid) => (
+            <option value={grid.codigo}>{grid.descricaoAdicional}</option>
+          ))}
+        </Select>
       </Box>
       <TableContainer mt="6" w="70%">
         <Text mb="3" fontSize="lg">
-          Locais de estoque
+          Locais de Estoque
         </Text>
         <Table size="sm" variant="simple">
           {(product?.locaisEstoque?.length ?? 0) <= 0 && (
@@ -125,12 +135,7 @@ export default function Produto(props: ProdutoProps) {
                 <Tr key={localEstoque.id}>
                   <Td>{localEstoque.descricao}</Td>
 
-                  <Td>
-                    {/* {localEstoque.quantidade >= 1
-                      ? "Disponível"
-                      : "Indisponível"} */}
-                    {localEstoque.quantidade}
-                  </Td>
+                  <Td>{localEstoque.quantidade}</Td>
                 </Tr>
               ))}
             </Tbody>
@@ -139,7 +144,7 @@ export default function Produto(props: ProdutoProps) {
       </TableContainer>
       <TableContainer mt="6">
         <Text mb="3" fontSize="lg">
-          Lista de preço
+          Lista de Preço
         </Text>
         <Table size="sm" variant="simple">
           {(product?.listaPreco?.length ?? 0) <= 0 && (
@@ -176,7 +181,7 @@ export default function Produto(props: ProdutoProps) {
 
       <HeaderNavigation
         isInativeEventScroll
-        isGoBack
+        onGoBack={handleGoBack}
         title="Detalhes"
         user={{ name: props.me.email }}
       />
@@ -207,7 +212,7 @@ export default function Produto(props: ProdutoProps) {
                 display={["none", "none", "none", "flex"]}
               >
                 <Button
-                  onClick={() => router.back()}
+                  onClick={handleGoBack}
                   h="full"
                   color="gray.600"
                   cursor="pointer"
@@ -223,7 +228,9 @@ export default function Produto(props: ProdutoProps) {
                   separator={<IoChevronForwardSharp color="gray.500" />}
                 >
                   <BreadcrumbItem>
-                    <Link href={`/produtos/${product?.codigo}`}>
+                    <Link
+                      href={`/produtos/${product?.codigo}?hrefBack=${hrefBack}`}
+                    >
                       <BreadcrumbLink>{product?.descricao}</BreadcrumbLink>
                     </Link>
                   </BreadcrumbItem>
@@ -282,7 +289,7 @@ export default function Produto(props: ProdutoProps) {
                         fontSize={["2xl", "2xl", "3xl"]}
                         fontWeight="light"
                       >
-                        Características do produto
+                        Características do Produto
                       </Text>
 
                       <Text
@@ -296,7 +303,7 @@ export default function Produto(props: ProdutoProps) {
 
                       <Box w={["100%", "100%", "100%", "60%"]} mb="2rem">
                         <Text as="h2" mb="2" fontSize="lg" fontWeight="light">
-                          Características gerais
+                          Características Gerais
                         </Text>
 
                         <Table size="sm" variant="striped">

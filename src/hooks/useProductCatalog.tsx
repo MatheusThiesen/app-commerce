@@ -236,7 +236,7 @@ export function ProductCatalogProvider({
 
       {catalogLink && (
         <Modal isOpen={isOpen} onClose={onClose} size="lg">
-          <ModalOverlay />
+          <ModalOverlay backdropFilter="blur(5px)" />
           <ModalContent>
             <ModalHeader>Catálogo</ModalHeader>
             <ModalCloseButton />

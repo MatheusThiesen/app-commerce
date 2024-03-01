@@ -149,7 +149,7 @@ export default function Conta(props: ContaProps) {
           isOpen={isOpenModalUpdatePassword}
           onClose={onCloseModalUpdatePassword}
         >
-          <ModalOverlay />
+          <ModalOverlay backdropFilter="blur(5px)" />
           <ModalContent>
             <ModalHeader textAlign="center" mt="4" fontSize="2xl">
               Alterar senha
@@ -200,7 +200,8 @@ export default function Conta(props: ContaProps) {
                   variant="solid"
                   w="full"
                   colorScheme="red"
-                  bg="red.500"
+                  bg="primary"
+                  _hover={{ bg: "primary.hover" }}
                   size="lg"
                   mt="6"
                   mb="4"
