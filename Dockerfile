@@ -2,7 +2,7 @@ FROM node:18-alpine as BUILD_IMAGE
 WORKDIR /app
 COPY package.json yarn.lock ./
 # install dependencies
-RUN npm i 
+RUN npm i --force
 COPY . .
 # build
 RUN npm run build
