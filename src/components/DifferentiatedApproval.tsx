@@ -2,10 +2,10 @@ import { Box, Button, Flex, Stack, Text } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Input } from "../../../components/Form/Input";
-import { InputSelect } from "../../../components/Form/InputSelect";
-import { Textarea } from "../../../components/Form/TextArea";
-import { Order } from "../../../hooks/queries/useOrder";
+import { Order } from "../hooks/queries/useOrder";
+import { Input } from "./Form/Input";
+import { InputSelect } from "./Form/InputSelect";
+import { Textarea } from "./Form/TextArea";
 
 const createDifferentiatedFormSchema = z
   .object({

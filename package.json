@@ -15,7 +15,7 @@
     "@chakra-ui/react": "^2.6.0",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
-    "@hookform/resolvers": "3.3.4",
+    "@hookform/resolvers": "^2.8.8",
     "@react-pdf/renderer": "^3.1.9",
     "@react-three/drei": "^9.4.2",
     "@react-three/fiber": "^8.0.11",

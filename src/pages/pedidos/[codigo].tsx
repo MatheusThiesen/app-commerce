@@ -27,11 +27,11 @@ import {
 } from "../../hooks/queries/useOrder";
 
 import { Client } from "../../components/Client";
+import { DifferentiatedApproval } from "../../components/DifferentiatedApproval";
 import { DifferentiatedCard } from "../../components/DifferentiatedCard";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductOrder } from "../../components/ProductOrder";
 import { useStore } from "../../contexts/StoreContext";
-import { DifferentiatedApproval } from "./_components/DifferentiatedApproval";
 
 interface Props {
   me: Me;
