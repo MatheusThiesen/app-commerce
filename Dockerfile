@@ -1,4 +1,4 @@
-FROM node:alpine as BUILD_IMAGE
+FROM node:18-alpine as BUILD_IMAGE
 WORKDIR /app
 COPY package.json yarn.lock ./
 # install dependencies
@@ -6,7 +6,7 @@ RUN yarn
 COPY . .
 # build
 RUN yarn build
-FROM node:alpine
+FROM node:18-alpine
 WORKDIR /app
 # copy from build image
 COPY --from=BUILD_IMAGE /app/package.json ./package.json
