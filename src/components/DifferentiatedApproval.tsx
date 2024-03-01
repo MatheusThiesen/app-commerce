@@ -57,8 +57,6 @@ export function DifferentiatedApproval({ order }: Props) {
     });
   const { errors } = formState;
 
-  console.log(errors);
-
   const watchType = watch("type");
   const watchValue = watch("value");
   const watchPercent = watch("percent");

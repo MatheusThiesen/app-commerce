@@ -274,26 +274,30 @@ export default function Order({ me }: Props) {
                 </Stack>
               </Box>
 
-              <Box width="full">
-                <Text fontSize="lg" fontWeight="light">
-                  Histórico de Diferenciado
-                </Text>
-                <Stack bg="white" borderRadius="lg">
-                  {order?.diferenciados?.map((differentiated) => (
-                    <DifferentiatedCard
-                      differentiated={differentiated}
-                      key={differentiated.id}
-                    />
-                  ))}
-                </Stack>
-              </Box>
+              {order.eDiferenciado && (
+                <>
+                  <Box width="full">
+                    <Text fontSize="lg" fontWeight="light">
+                      Histórico de Diferenciado
+                    </Text>
+                    <Stack bg="white" borderRadius="lg">
+                      {order?.diferenciados?.map((differentiated) => (
+                        <DifferentiatedCard
+                          differentiated={differentiated}
+                          key={differentiated.id}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
 
-              <Box width="full">
-                <Text fontSize="lg" fontWeight="light">
-                  Aprovar Diferenciado
-                </Text>
-                <DifferentiatedApproval order={order} />
-              </Box>
+                  <Box width="full">
+                    <Text fontSize="lg" fontWeight="light">
+                      Aprovar Diferenciado
+                    </Text>
+                    <DifferentiatedApproval order={order} />
+                  </Box>
+                </>
+              )}
             </Stack>
           )}
         </Flex>
