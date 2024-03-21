@@ -19,13 +19,13 @@ export const useImagesProduct = async ({
   reference,
   images: imagesStorage,
 }: useImagesProductProps) => {
-  if (imagesStorage && imagesStorage.length > 0) {
-    return imagesStorage.map((item) => `${spaceImages}/Produtos/${item}`);
-  }
+  // if (imagesStorage && imagesStorage.length > 0) {
+  //   return imagesStorage.map((item) => `${spaceImages}/Produtos/${item}`);
+  // }
 
   var images: string[] = [];
   const response = await axios(
-    `${spaceImages}/?prefix=Produtos%2F${reference}&max-keys=10`,
+    `${spaceImages}/?prefix=Produtos%2F${reference}&max-keys=30`,
     {
       method: "GET",
       // headers: {
@@ -40,11 +40,17 @@ export const useImagesProduct = async ({
     const xmlToJson = (await xml2js.parseStringPromise(
       response.data
     )) as ResponseXmlToJson;
-    images = xmlToJson?.ListBucketResult?.Contents?.map(
-      (key) => spaceImages + "/" + key?.Key[0]
-    );
 
-    return images.filter((f) => !f.endsWith("_smaller"));
+    images = xmlToJson?.ListBucketResult?.Contents?.map((key) => key?.Key[0]);
+
+    return images
+      .filter((f) => !f.endsWith("_smaller"))
+      .filter((f) =>
+        imagesStorage?.length ?? 0 > 0
+          ? imagesStorage?.map((item) => `Produtos/${item}`).includes(f)
+          : true
+      )
+      .map((image) => `${spaceImages}/${image}`);
   } catch (error) {
     return [""];
   }
