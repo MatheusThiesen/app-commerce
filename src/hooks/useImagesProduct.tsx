@@ -43,14 +43,16 @@ export const useImagesProduct = async ({
 
     images = xmlToJson?.ListBucketResult?.Contents?.map((key) => key?.Key[0]);
 
-    return images
-      .filter((f) => !f.endsWith("_smaller"))
-      .filter((f) =>
-        imagesStorage?.length ?? 0 > 0
-          ? imagesStorage?.map((item) => `Produtos/${item}`).includes(f)
-          : true
-      )
-      .map((image) => `${spaceImages}/${image}`);
+    return (
+      images
+        .filter((f) => !f.endsWith("_smaller"))
+        // .filter((f) =>
+        //   imagesStorage?.length ?? 0 > 0
+        //     ? imagesStorage?.map((item) => `Produtos/${item}`).includes(f)
+        //     : true
+        // )
+        .map((image) => `${spaceImages}/${image}`)
+    );
   } catch (error) {
     return [""];
   }
