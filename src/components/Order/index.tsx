@@ -15,6 +15,10 @@ interface Props {
     code: number;
     description: string;
   };
+  seller?: {
+    codigo: number;
+    nome: string;
+  };
 }
 
 export const Order = ({
@@ -25,6 +29,7 @@ export const Order = ({
   date,
   eRascunho,
   status,
+  seller,
 }: Props) => {
   return (
     <Box w="full" bg="white" display={"block"} p="4" borderRadius={"md"}>
@@ -71,6 +76,14 @@ export const Order = ({
           CLIENTE
         </Text>
         <Text fontWeight="bold">{client}</Text>
+      </Box>
+      <Box mt="1.5">
+        <Text fontWeight="light" fontSize="small" color="gray.500">
+          VENDEDOR
+        </Text>
+        <Text fontWeight="bold">
+          {seller ? `${seller.codigo} - ${seller.nome}` : "-"}
+        </Text>
       </Box>
       <Box mt="1.5">
         <Text fontWeight="light" fontSize="small" color="gray.500">

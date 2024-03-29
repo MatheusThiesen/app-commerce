@@ -40,6 +40,18 @@ export const DifferentiatedCard = ({
             <Text fontSize="md" fontWeight="light">
               {differentiated.tipoUsuario}
             </Text>
+
+            {differentiated.eAprovado !== null && (
+              <Tag
+                size="md"
+                variant="solid"
+                color="white"
+                bg={differentiated.eAprovado ? "green.400" : "red.500"}
+                borderRadius="lg"
+              >
+                {differentiated.eAprovado ? "APROVADO" : "REPROVADO"}
+              </Tag>
+            )}
           </HStack>
 
           <Box mt="1.5">

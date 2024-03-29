@@ -1,8 +1,13 @@
-import { Box, Button, Flex, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Stack, Text, useToast } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/router";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useLoading } from "../contexts/LoadingContext";
+import { useDiscountScope } from "../hooks/queries/useDiscountScope";
 import { Order } from "../hooks/queries/useOrder";
+import { api } from "../service/apiClient";
 import { Input } from "./Form/Input";
 import { InputSelect } from "./Form/InputSelect";
 import { Textarea } from "./Form/TextArea";
@@ -22,7 +27,7 @@ const createDifferentiatedFormSchema = z
       })
       .nullable(),
     percent: z.coerce
-      .number({
+      .string({
         errorMap: () => ({
           message: "É obrigado informar percentual",
         }),
@@ -41,16 +46,30 @@ const createDifferentiatedFormSchema = z
 
 type CreateDifferentiatedProps = z.infer<typeof createDifferentiatedFormSchema>;
 
+interface Differentiated {
+  tipoDesconto: string;
+  descontoPercentual?: number;
+  descontoValor?: number;
+  motivoDiferenciado?: string;
+}
+
 interface Props {
   order: Order;
 }
 
 export function DifferentiatedApproval({ order }: Props) {
+  const toast = useToast();
+  const discountScope = useDiscountScope();
+  const { push } = useRouter();
+
+  const [isLoadingForm, setIsLoadingForm] = useState(false);
+  const { setLoading } = useLoading();
+
   const { register, handleSubmit, formState, setValue, watch } =
     useForm<CreateDifferentiatedProps>({
       defaultValues: {
         type: order.tipoDesconto,
-        percent: order.descontoPercentual,
+        percent: String(order.descontoPercentual),
         value: order.descontoValor,
       },
       resolver: zodResolver(createDifferentiatedFormSchema),
@@ -62,8 +81,75 @@ export function DifferentiatedApproval({ order }: Props) {
   const watchPercent = watch("percent");
   const watchReason = watch("reason");
 
-  function handleSubmitDifferentiatedApproval(data: CreateDifferentiatedProps) {
-    console.log(data);
+  async function handleSubmitDifferentiatedApproval(
+    data: CreateDifferentiatedProps
+  ) {
+    setIsLoadingForm(true);
+    setLoading(true);
+    try {
+      const normalized: Differentiated = {
+        tipoDesconto: data.type,
+        descontoPercentual:
+          data.type === "PERCENTUAL" ? Number(data.percent) : undefined,
+        descontoValor: data.type === "VALOR" ? Number(data.value) : undefined,
+        motivoDiferenciado: data.reason ? data.reason : undefined,
+      };
+
+      await api.post(`/differentiated/approval/${order.codigo}`, normalized);
+
+      push("/pedidos");
+      toast({
+        title: "Desconto aprovado",
+        description: "O pedido será enviado.",
+        status: "success",
+        isClosable: true,
+        position: "top",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro interno",
+        description:
+          "Houve um erro ao tentar aprovar o pedido. Tente novamente mais tarde.",
+        status: "error",
+        isClosable: true,
+        position: "top",
+      });
+    } finally {
+      setIsLoadingForm(false);
+      setLoading(false);
+    }
+  }
+
+  async function handleSubmitDifferentiatedReproval() {
+    setIsLoadingForm(true);
+    setLoading(true);
+    try {
+      await api.post(`/differentiated/reproval/${order.codigo}`, {
+        motivoDiferenciado: watchReason,
+      });
+
+      push("/pedidos");
+
+      toast({
+        title: "Desconto reprovado",
+        description: "O pedido foi reprovado.",
+        status: "warning",
+        isClosable: true,
+        position: "top",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro interno",
+        description:
+          "Houve um erro ao tentar reprovar o pedido. Tente novamente mais tarde.",
+        status: "error",
+        isClosable: true,
+        position: "top",
+      });
+    } finally {
+      setIsLoadingForm(false);
+      setLoading(false);
+    }
   }
 
   function onChangeInput(
@@ -72,6 +158,12 @@ export function DifferentiatedApproval({ order }: Props) {
     >
   ) {
     const { name, value } = event.target;
+
+    const maxPercentage =
+      discountScope.data?.discountScope.percentualSolicitacao ?? 0;
+    const maxValue = maxPercentage
+      ? order.valorTotal * (maxPercentage / 100)
+      : 0;
 
     switch (name) {
       case "type":
@@ -84,7 +176,21 @@ export function DifferentiatedApproval({ order }: Props) {
       case "value":
         const valueDiscount = Number(value.replace(/\D/g, "")) / 100;
 
-        setValue("value", valueDiscount);
+        if (valueDiscount <= maxValue) {
+          setValue("value", valueDiscount);
+        } else {
+          return toast({
+            title: `Desconto máximo permitido ${
+              discountScope.data?.discountScope.percentualSolicitacao
+            }% (${maxValue.toLocaleString("pt-br", {
+              style: "currency",
+              currency: "BRL",
+            })})`,
+            status: "warning",
+            position: "top",
+            isClosable: true,
+          });
+        }
 
         break;
 
@@ -93,8 +199,26 @@ export function DifferentiatedApproval({ order }: Props) {
           .replace(/[^0-9.,]/g, "")
           .replace(",", ".");
 
-        if (Number(valuePercentage) >= 0 && Number(valuePercentage) <= 100) {
-          setValue("percent", Number(valuePercentage));
+        if (Number(valuePercentage) <= maxPercentage) {
+          if (Number(valuePercentage) >= 0) {
+            setValue("percent", valuePercentage);
+          }
+
+          if (Number(valuePercentage) < 0) {
+            setValue("percent", "0");
+          }
+        } else {
+          return toast({
+            title: `Desconto máximo permitido ${
+              discountScope.data?.discountScope.percentualSolicitacao
+            }% (${maxValue.toLocaleString("pt-br", {
+              style: "currency",
+              currency: "BRL",
+            })})`,
+            status: "warning",
+            position: "top",
+            isClosable: true,
+          });
         }
 
         break;
@@ -143,8 +267,10 @@ export function DifferentiatedApproval({ order }: Props) {
         {watchType === "PERCENTUAL" && (
           <Input
             label="Percentual de desconto"
-            {...register("percent", { onChange: onChangeInput })}
-            value={watchPercent ? `% ${watchPercent}` : 0}
+            {...register("percent")}
+            onBlur={onChangeInput}
+            onChange={onChangeInput}
+            value={!!watchPercent ? `% ${watchPercent}` : ""}
             error={
               !!errors?.percent?.message
                 ? String(errors?.percent?.message)
@@ -157,6 +283,8 @@ export function DifferentiatedApproval({ order }: Props) {
           <Input
             label="Valor do desconto"
             {...register("value", { onChange: onChangeInput })}
+            onBlur={onChangeInput}
+            onChange={onChangeInput}
             value={Number(
               isNaN(Number(watchValue)) ? 0 : Number(watchValue)
             ).toLocaleString("pt-br", {
@@ -246,10 +374,23 @@ export function DifferentiatedApproval({ order }: Props) {
         </Flex>
 
         <Stack direction="row" w="full" columnGap="4">
-          <Button colorScheme="red" flex={1} type="button">
+          <Button
+            colorScheme="red"
+            flex={1}
+            type="button"
+            onClick={handleSubmitDifferentiatedReproval}
+            disabled={isLoadingForm}
+            isLoading={isLoadingForm}
+          >
             Reprovar
           </Button>
-          <Button colorScheme="green" flex={1} type="submit">
+          <Button
+            colorScheme="green"
+            flex={1}
+            type="submit"
+            disabled={isLoadingForm}
+            isLoading={isLoadingForm}
+          >
             Aprovar
           </Button>
         </Stack>

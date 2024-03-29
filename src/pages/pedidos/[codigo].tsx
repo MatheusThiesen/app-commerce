@@ -182,7 +182,7 @@ export default function Order({ me }: Props) {
 
                 {order.vendedores.map((seller) => (
                   <Box
-                    key={seller.vendedor.codigo}
+                    key={`${seller.vendedor.codigo}-${seller.tipo}`}
                     w="full"
                     display="block"
                     bg="white"
@@ -280,22 +280,29 @@ export default function Order({ me }: Props) {
                     <Text fontSize="lg" fontWeight="light">
                       Histórico de Diferenciado
                     </Text>
-                    <Stack bg="white" borderRadius="lg">
+                    <Stack bg="transparent" borderRadius="lg" rowGap="1">
                       {order?.diferenciados?.map((differentiated) => (
                         <DifferentiatedCard
                           differentiated={differentiated}
                           key={differentiated.id}
+                          colorTag={selectStatusColor(
+                            order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                          )}
                         />
                       ))}
                     </Stack>
                   </Box>
 
-                  <Box width="full">
-                    <Text fontSize="lg" fontWeight="light">
-                      Aprovar Diferenciado
-                    </Text>
-                    <DifferentiatedApproval order={order} />
-                  </Box>
+                  {order?.situacaoPedido?.codigo === 6 &&
+                    order.vendedorPendenteDiferenciadoCodigo ===
+                      me.vendedorCodigo && (
+                      <Box width="full">
+                        <Text fontSize="lg" fontWeight="light">
+                          Aprovar Diferenciado
+                        </Text>
+                        <DifferentiatedApproval order={order} />
+                      </Box>
+                    )}
                 </>
               )}
             </Stack>

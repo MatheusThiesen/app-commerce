@@ -116,6 +116,8 @@ export function selectStatusColor(statusCode?: number): string {
       return "purple.500";
     case 7:
       return "orange.400";
+    case 8:
+      return "red.500";
     case 99:
       return "orange.400";
 
@@ -140,6 +142,8 @@ export function selectStatusIcon(statusCode?: number) {
       return BiSolidDiscount;
     case 7:
       return BsFillFileTextFill;
+    case 8:
+      return RiCloseCircleFill;
     case 99:
       return BsFillFileTextFill;
 

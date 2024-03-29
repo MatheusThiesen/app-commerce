@@ -277,6 +277,10 @@ export default function Orders({ me }: OrdersProps) {
                                 }
                               }
                               eRascunho={order.eRascunho}
+                              seller={
+                                order.vendedores.find((f) => f.tipo === 1)
+                                  ?.vendedor
+                              }
                             />
                           </ChakraLink>
                         </Link>
@@ -306,6 +310,10 @@ export default function Orders({ me }: OrdersProps) {
                                   code: order.situacaoPedido?.codigo,
                                   description: order.situacaoPedido?.descricao,
                                 }
+                              }
+                              seller={
+                                order.vendedores.find((f) => f.tipo === 1)
+                                  ?.vendedor
                               }
                             />
                           </ChakraLink>

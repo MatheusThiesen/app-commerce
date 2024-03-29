@@ -120,6 +120,7 @@ export function ProductComponent({
               <Image
                 w="full"
                 minH="44"
+                maxH="44"
                 src={uri}
                 objectFit="contain"
                 onError={({ currentTarget }) => {

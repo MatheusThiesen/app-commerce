@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 
-import { Button, Icon, Stack } from "@chakra-ui/react";
+import { Button, Icon, Stack, useToast } from "@chakra-ui/react";
 import { IoBagHandle } from "react-icons/io5";
 import { TbShoppingCartCancel } from "react-icons/tb";
 import { mask } from "remask";
@@ -51,6 +51,7 @@ export type Differentiated = {
   passo?: number;
   descontoCalculado?: number;
   eFinalizado?: boolean;
+  eAprovado?: boolean;
   descontoCalculadoFormat?: string;
   tipoUsuario?: string;
 
@@ -150,6 +151,7 @@ export const StoreContext = createContext({} as StoreContextData);
 export function StoreProvider({ children }: StoreProviderProps) {
   const { push } = useRouter();
   const { user } = useAuth();
+  const toast = useToast();
 
   const {
     onGet: onGetStoragePriceList,
@@ -594,6 +596,13 @@ export function StoreProvider({ children }: StoreProviderProps) {
 
     push("/pedidos");
     setTimeout(reset, 2000);
+    toast({
+      title: "Enviado pedido",
+      description: "Seu pedido foi realizado com sucesso.",
+      status: "success",
+      isClosable: true,
+      position: "top",
+    });
   }
 
   async function handleRedirectSketch() {

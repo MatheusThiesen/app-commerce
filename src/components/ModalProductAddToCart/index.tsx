@@ -125,7 +125,7 @@ export function ModalProductAddToCart({ onClose, productCode }: Props) {
         <ModalBody p="6">
           <Flex flexDirection="column" align="center" justify="center" flex={1}>
             <Image
-              h="52"
+              h="36"
               src={`${spaceImages}/Produtos/${
                 product?.imagemPreview
                   ? product.imagemPreview
@@ -146,7 +146,7 @@ export function ModalProductAddToCart({ onClose, productCode }: Props) {
               )?.valorFormat ?? "-"
             }`}
           </Text>
-          <Text as="span" fontSize="3xl" fontWeight="medium">
+          <Text as="span" fontSize="2xl" fontWeight="medium">
             PDV {product?.precoVendaFormat ?? "-"}
           </Text>
 

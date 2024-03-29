@@ -1,13 +1,11 @@
 import Head from "next/head";
 import Router from "next/router";
 import { useEffect, useState } from "react";
-import ReactSelect from "react-select";
 
 import { Me } from "../../../@types/me";
 import { setupAPIClient } from "../../../service/api";
 import { withSSRAuth } from "../../../utils/withSSRAuth";
 
-import { BiCartDownload } from "react-icons/bi";
 import { IoArrowBack } from "react-icons/io5";
 import { MdShoppingCartCheckout } from "react-icons/md";
 
@@ -34,12 +32,14 @@ import {
   Stack,
   Switch,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 
 import { Input } from "../../../components/Form/Input";
 import { InputSelect } from "../../../components/Form/InputSelect";
 import { Textarea } from "../../../components/Form/TextArea";
 import { useBrands } from "../../../hooks/queries/useBrands";
+import { useDiscountScope } from "../../../hooks/queries/useDiscountScope";
 import { api } from "../../../service/apiClient";
 
 interface Props {
@@ -65,6 +65,10 @@ type PaymentConditionState = {
 };
 
 export default function CheckoutOrder({ me }: Props) {
+  const toast = useToast();
+  const { data } = useBrands({});
+  const discountScope = useDiscountScope();
+
   const {
     orders,
     client,
@@ -81,12 +85,14 @@ export default function CheckoutOrder({ me }: Props) {
     PaymentConditionState[]
   >([]);
 
-  const { data } = useBrands({});
-
   const validMinimumAllOrder =
     orders
       .map((order) => validateMinimumOrder(order.brand.codigo, order.amount))
       .filter((f) => f).length > 0;
+
+  const validDifferentiatedAllOrder =
+    orders.map((order) => validateDifferentiatedOrder(order)).filter((f) => f)
+      .length > 0;
 
   function onSelectPaymentCondition({
     brandCod,
@@ -119,6 +125,23 @@ export default function CheckoutOrder({ me }: Props) {
     return true;
   }
 
+  function validateDifferentiatedOrder(order: Order): boolean {
+    if (order.differentiated?.isActive) {
+      if (order.differentiated?.tipoDesconto) {
+        switch (order.differentiated?.tipoDesconto) {
+          case "PERCENTUAL":
+            return !(Number(order.differentiated?.descontoPercentual) > 0);
+          case "VALOR":
+            return !(Number(order.differentiated?.descontoValor) > 0);
+        }
+      } else {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function onChangeInputDifferentiated(
     event: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -131,6 +154,10 @@ export default function CheckoutOrder({ me }: Props) {
       ...order.differentiated,
       isActive: true,
     };
+
+    const maxPercentage =
+      discountScope.data?.discountScope.percentualSolicitacao ?? 0;
+    const maxValue = maxPercentage ? order.amount * (maxPercentage / 100) : 0;
 
     switch (name) {
       case "tipoDesconto":
@@ -149,14 +176,28 @@ export default function CheckoutOrder({ me }: Props) {
       case "descontoValor":
         const valueDiscount = Number(value.replace(/\D/g, "")) / 100;
 
-        differentiated.descontoValor = valueDiscount >= 0 ? valueDiscount : 0;
+        if (valueDiscount <= maxValue) {
+          differentiated.descontoValor = valueDiscount >= 0 ? valueDiscount : 0;
 
-        differentiated.amountDiscount = differentiated.descontoValor;
-        differentiated.amountDiscountFormat =
-          differentiated.descontoValor.toLocaleString("pt-br", {
-            style: "currency",
-            currency: "BRL",
+          differentiated.amountDiscount = differentiated.descontoValor;
+          differentiated.amountDiscountFormat =
+            differentiated.descontoValor.toLocaleString("pt-br", {
+              style: "currency",
+              currency: "BRL",
+            });
+        } else {
+          return toast({
+            title: `Desconto máximo permitido ${
+              discountScope.data?.discountScope.percentualSolicitacao
+            }% (${maxValue.toLocaleString("pt-br", {
+              style: "currency",
+              currency: "BRL",
+            })})`,
+            status: "warning",
+            position: "top",
+            isClosable: true,
           });
+        }
 
         break;
       case "motivoDiferenciado":
@@ -168,21 +209,36 @@ export default function CheckoutOrder({ me }: Props) {
           .replace(/[^0-9.,]/g, "")
           .replace(",", ".");
 
-        if (Number(valuePercentage) >= 0 && Number(valuePercentage) <= 100) {
-          differentiated.descontoPercentual = valuePercentage;
-        }
+        if (Number(valuePercentage) <= maxPercentage) {
+          if (Number(valuePercentage) >= 0) {
+            differentiated.descontoPercentual = valuePercentage;
+          }
 
-        if (Number(valuePercentage) < 0) {
-          differentiated.descontoPercentual = "0";
-        }
+          if (Number(valuePercentage) < 0) {
+            differentiated.descontoPercentual = "0";
+          }
 
-        differentiated.amountDiscount =
-          (Number(differentiated.descontoPercentual ?? 0) / 100) * order.amount;
-        differentiated.amountDiscountFormat =
-          differentiated.amountDiscount.toLocaleString("pt-br", {
-            style: "currency",
-            currency: "BRL",
+          differentiated.amountDiscount =
+            (Number(differentiated.descontoPercentual ?? 0) / 100) *
+            order.amount;
+          differentiated.amountDiscountFormat =
+            differentiated.amountDiscount.toLocaleString("pt-br", {
+              style: "currency",
+              currency: "BRL",
+            });
+        } else {
+          return toast({
+            title: `Desconto máximo permitido ${
+              discountScope.data?.discountScope.percentualSolicitacao
+            }% (${maxValue.toLocaleString("pt-br", {
+              style: "currency",
+              currency: "BRL",
+            })})`,
+            status: "warning",
+            position: "top",
+            isClosable: true,
           });
+        }
 
         break;
     }
@@ -190,6 +246,12 @@ export default function CheckoutOrder({ me }: Props) {
     setDifferentiated({
       order: order,
       differentiated: differentiated,
+    });
+  }
+
+  function handleSendOrder() {
+    sendOrder({
+      isDraft: false,
     });
   }
 
@@ -206,6 +268,7 @@ export default function CheckoutOrder({ me }: Props) {
             totalAmount: order.amount,
             clientCod: client?.codigo,
             stockLocationPeriod: order.stockLocation.periodo,
+            isDifferentiated: order.differentiated?.isActive,
           }
         );
 
@@ -218,7 +281,7 @@ export default function CheckoutOrder({ me }: Props) {
 
       setPaymentConditionOrders(paymentConditionOrdersNormalized);
     })();
-  }, []);
+  }, [orders]);
 
   return (
     <>
@@ -298,6 +361,11 @@ export default function CheckoutOrder({ me }: Props) {
                   order.amount
                 );
 
+                const validateDifferentiated =
+                  validateDifferentiatedOrder(order);
+
+                const validOrder = validateMinimum || validateDifferentiated;
+
                 return (
                   <AccordionItem
                     key={`${order.stockLocation.periodo}${order.brand.descricao}`}
@@ -312,7 +380,7 @@ export default function CheckoutOrder({ me }: Props) {
                           fontSize="lg"
                           fontWeight="bold"
                           color={
-                            order.paymentCondition && !validateMinimum
+                            order.paymentCondition && !validOrder
                               ? "green"
                               : "red"
                           }
@@ -330,46 +398,9 @@ export default function CheckoutOrder({ me }: Props) {
                     </AccordionButton>
 
                     <AccordionPanel borderTop="1px" borderColor="gray.100">
-                      <Box mt="1rem">
-                        <Text mb="2" fontSize="md" fontWeight="bold">
-                          Condição de pagamento
-                        </Text>
-                        <ReactSelect
-                          maxMenuHeight={160}
-                          placeholder="Selecione..."
-                          defaultValue={
-                            order.paymentCondition && {
-                              value: order.paymentCondition.codigo,
-                              label: order.paymentCondition.descricao,
-                            }
-                          }
-                          options={onSelectPaymentCondition({
-                            brandCod: order.brand.codigo,
-                            stockLocationPeriod: order.stockLocation.periodo,
-                          })}
-                          onChange={(e) => {
-                            if (e)
-                              setPaymentCondition({
-                                brandCod: order.brand.codigo,
-                                stockLocationPeriod:
-                                  order.stockLocation.periodo,
-                                paymentCondition: {
-                                  codigo: Number(e.value),
-                                  descricao: e.label,
-                                },
-                              });
-                          }}
-                        />
-                      </Box>
-
-                      <Accordion
-                        defaultIndex={1}
-                        allowToggle
-                        borderRadius="4"
-                        mt="2rem"
-                      >
+                      <Accordion defaultIndex={1} allowToggle borderRadius="4">
                         <AccordionItem border={1} mb="1rem" borderRadius="md">
-                          <AccordionButton>
+                          <AccordionButton paddingX={"0"}>
                             <Text fontSize="lg" fontWeight="light">
                               {`Itens (${order.items.length})`}
                             </Text>
@@ -415,6 +446,47 @@ export default function CheckoutOrder({ me }: Props) {
                         size="lg"
                         colorScheme="blue"
                       />
+
+                      <Box mt="1rem">
+                        <Text mb="2" fontSize="md" fontWeight="bold">
+                          Condição de pagamento
+                        </Text>
+                        <InputSelect
+                          name="paymentCondition"
+                          value={order.paymentCondition?.codigo ?? ""}
+                          onChange={(e) => {
+                            if (e) {
+                              const find = onSelectPaymentCondition({
+                                brandCod: order.brand.codigo,
+                                stockLocationPeriod:
+                                  order.stockLocation.periodo,
+                              }).find(
+                                (f) =>
+                                  Number(f.value) === Number(e.target.value)
+                              );
+
+                              if (find)
+                                setPaymentCondition({
+                                  brandCod: order.brand.codigo,
+                                  stockLocationPeriod:
+                                    order.stockLocation.periodo,
+                                  paymentCondition: {
+                                    codigo: Number(find.value),
+                                    descricao: find.label,
+                                  },
+                                });
+                            }
+                          }}
+                        >
+                          <option value="">Selecionar...</option>
+                          {onSelectPaymentCondition({
+                            brandCod: order.brand.codigo,
+                            stockLocationPeriod: order.stockLocation.periodo,
+                          }).map((item) => (
+                            <option value={item.value}>{item.label}</option>
+                          ))}
+                        </InputSelect>
+                      </Box>
 
                       {order.differentiated?.isActive && (
                         <Stack mt="4">
@@ -589,7 +661,7 @@ export default function CheckoutOrder({ me }: Props) {
               spacing="4"
               direction={["column", "column", "column", "row"]}
             >
-              <Button
+              {/* <Button
                 fontWeight={"normal"}
                 colorScheme="orange"
                 size="lg"
@@ -597,16 +669,26 @@ export default function CheckoutOrder({ me }: Props) {
                 w="full"
                 fontSize="lg"
                 leftIcon={<Icon as={BiCartDownload} fontSize="30" />}
-                aria-disabled={!validOrders || validMinimumAllOrder}
-                disabled={!validOrders || validMinimumAllOrder}
+                aria-disabled={
+                  !validOrders ||
+                  validMinimumAllOrder ||
+                  validDifferentiatedAllOrder
+                }
+                disabled={
+                  !validOrders ||
+                  validMinimumAllOrder ||
+                  validDifferentiatedAllOrder
+                }
                 onClick={
-                  validOrders && !validMinimumAllOrder
+                  validOrders &&
+                  !validMinimumAllOrder &&
+                  !validDifferentiatedAllOrder
                     ? () => sendOrder({ isDraft: true })
                     : () => {}
                 }
               >
                 CRIAR RASCUNHO
-              </Button>
+              </Button> */}
               <Button
                 fontWeight={"normal"}
                 colorScheme="green"
@@ -615,11 +697,21 @@ export default function CheckoutOrder({ me }: Props) {
                 w="full"
                 fontSize="lg"
                 leftIcon={<Icon as={MdShoppingCartCheckout} fontSize="30" />}
-                aria-disabled={!validOrders || validMinimumAllOrder}
-                disabled={!validOrders || validMinimumAllOrder}
+                aria-disabled={
+                  !validOrders ||
+                  validMinimumAllOrder ||
+                  validDifferentiatedAllOrder
+                }
+                disabled={
+                  !validOrders ||
+                  validMinimumAllOrder ||
+                  validDifferentiatedAllOrder
+                }
                 onClick={
-                  validOrders && !validMinimumAllOrder
-                    ? () => sendOrder({ isDraft: false })
+                  validOrders &&
+                  !validMinimumAllOrder &&
+                  !validDifferentiatedAllOrder
+                    ? () => handleSendOrder()
                     : () => {}
                 }
               >
