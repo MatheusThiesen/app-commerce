@@ -12,14 +12,7 @@ export const DifferentiatedCard = ({
   colorTag = "purple.500",
 }: Props) => {
   return (
-    <Box
-      w="full"
-      display="block"
-      bg="white"
-      p="3"
-      // h={"6.5rem"}
-      borderRadius="lg"
-    >
+    <Box w="full" display="block" bg="white" p="3" borderRadius="lg">
       <Stack
         direction={["column", "column", "row", "row"]}
         alignItems="start"

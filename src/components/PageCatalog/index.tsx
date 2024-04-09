@@ -27,6 +27,7 @@ interface InfoProductProps {
   description?: string;
   colors?: string;
   pdv?: string;
+  priceList28?: string;
 }
 
 export function PageCatalog({ product, type }: PageCatalogProps) {
@@ -36,6 +37,7 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
     description,
     colors,
     pdv,
+    priceList28,
   }: InfoProductProps) => {
     return (
       <Flex
@@ -81,6 +83,19 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
             {pdv}
           </Text>
         </Text>
+
+        <Text
+          fontSize={"sm"}
+          color={"gray.600"}
+          as="span"
+          bg="white"
+          fontWeight="normal"
+        >
+          28 DDL:{" "}
+          <Text as="span" fontSize={"sm"}>
+            {priceList28}
+          </Text>
+        </Text>
       </Flex>
     );
   };
@@ -108,6 +123,7 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
           description={product.description}
           reference={!product.isGroupProduct ? product.reference : undefined}
           pdv={product.price}
+          priceList28={product.priceList28}
         />
 
         <Flex
