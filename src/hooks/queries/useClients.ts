@@ -114,10 +114,20 @@ export async function getClientOne(
     cepFormat: mask(client.cep, "99999-999"),
     cnpjFormat: mask(client.cnpj, "99.999.999/9999-99"),
     telefone2Format: client.telefone2
-      ? mask(client.telefone2, ["(99) 9999-9999", "(99) 99999-9999"])
+      ? mask(client.telefone2, [
+          "9999-9999",
+          "99999-9999",
+          "(99) 9999-9999",
+          "(99) 99999-9999",
+        ])
       : undefined,
     telefoneFormat: client.telefone
-      ? mask(client.telefone, ["(99) 9999-9999", "(99) 99999-9999"])
+      ? mask(client.telefone, [
+          "9999-9999",
+          "99999-9999",
+          "(99) 9999-9999",
+          "(99) 99999-9999",
+        ])
       : undefined,
   };
 

@@ -22,7 +22,7 @@ function FilterSelectedListComponent({
   setFilters,
 }: FilterSelectedListProps) {
   function handleRemoveOneFilter(filter: SelectedFilter) {
-    const removeFilter = filters.filter((f) => f !== filter);
+    const removeFilter = filters.filter((f) => f.name !== filter.name);
 
     setFilters(removeFilter);
   }
