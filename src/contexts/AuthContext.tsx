@@ -47,7 +47,7 @@ export function signOut() {
   destroyCookie(undefined, "nextauth.token");
   destroyCookie(undefined, "nextauth.refreshToken");
 
-  Router.push("/");
+  window.location.reload();
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -87,6 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // authChannel.postMessage("signIn");
     Router.push(route_home);
+    window.location.reload();
   }
 
   async function signIn({
@@ -104,8 +105,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       await authenticate({ token, refreshToken });
     } catch (error) {
-      const err = error as AxiosError;
-
       return {
         title: "Login ou senha incorretos",
         status: "warning",
