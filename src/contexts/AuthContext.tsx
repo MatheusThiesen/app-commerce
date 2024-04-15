@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 import Router from "next/router";
-import { destroyCookie, parseCookies, setCookie } from "nookies";
+import nookies, { parseCookies, setCookie } from "nookies";
 import {
   ReactNode,
   createContext,
@@ -44,8 +44,14 @@ export const AuthContext = createContext({} as AuthContextData);
 const route_home = "/produtos";
 
 export function signOut() {
-  destroyCookie(undefined, "nextauth.token");
-  destroyCookie(undefined, "nextauth.refreshToken");
+  nookies.set({}, "nextauth.token", "", {
+    maxAge: -1,
+    path: "/",
+  });
+  nookies.set({}, "nextauth.refreshToken", "", {
+    maxAge: -1,
+    path: "/",
+  });
 
   window.location.reload();
 }
