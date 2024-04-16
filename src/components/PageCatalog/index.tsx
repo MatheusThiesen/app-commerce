@@ -84,7 +84,7 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
           </Text>
         </Text>
 
-        <Text
+        {/* <Text
           fontSize={"sm"}
           color={"gray.600"}
           as="span"
@@ -95,7 +95,7 @@ export function PageCatalog({ product, type }: PageCatalogProps) {
           <Text as="span" fontSize={"sm"}>
             {priceList28}
           </Text>
-        </Text>
+        </Text> */}
       </Flex>
     );
   };
