@@ -99,6 +99,7 @@ export interface VariationsProduct {
   codigoAlternativo: number;
   referencia: string;
   descricao: string;
+  imagemPreview: string;
 
   imagens?: {
     nome: string;

@@ -102,9 +102,7 @@ export default function Produto(props: ProdutoProps) {
           onChange={(e) => {
             if (Number(e?.target.value) !== product?.codigo) {
               setLoading(true);
-              router.push(
-                `/pedidos/novo/produtos/${e?.target.value}?hrefBack=${hrefBack}`
-              );
+              router.push(`/produtos/${e?.target.value}?hrefBack=${hrefBack}`);
             }
           }}
           value={product?.codigo}

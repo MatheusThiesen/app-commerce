@@ -61,8 +61,8 @@ export function VariationsProduct({
             h="full"
             objectFit="contain"
             src={`${spaceImages}/Produtos/${
-              variation.imagens && variation.imagens[0]
-                ? variation.imagens[0].nome
+              variation.imagemPreview
+                ? variation.imagemPreview
                 : variation.referencia + "_01"
             }_smaller`}
             alt={variation.descricao}
