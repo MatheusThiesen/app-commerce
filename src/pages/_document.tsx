@@ -5,7 +5,7 @@ import { theme, themeColors } from "../styles/theme";
 export default class MyDocument extends Document {
   render() {
     return (
-      <Html>
+      <Html lang="pt-BR">
         <Head>
           <meta charSet="UTF-8" />
 

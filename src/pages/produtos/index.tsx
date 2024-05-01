@@ -69,6 +69,9 @@ export default function Produtos({ me }: ProductsProps) {
   const router = useRouter();
   const { setLoading } = useLoading();
   const asPathBackHref = router.asPath.replaceAll("&", "!");
+  const { setQueryParams } = useQueryParams({ router });
+
+  const { isOpen, onToggle } = useDisclosure();
 
   const {
     isActivated: isActivatedCatalog,
@@ -77,7 +80,6 @@ export default function Produtos({ me }: ProductsProps) {
     onSelectedAllProduct: onSelectedAllProductCatalog,
     onGenerateCatalog,
   } = useProductCatalog();
-  const [stockLocation, setStockLocation] = useState(false);
 
   const {
     isOpen: isOpenFilter,
@@ -89,9 +91,7 @@ export default function Produtos({ me }: ProductsProps) {
     onOpen: onOpenOrderBy,
     onClose: onCloseOrderBy,
   } = useDisclosure();
-  const { isOpen, onToggle } = useDisclosure();
 
-  const { setQueryParams } = useQueryParams({ router });
   const {
     data: scrollPosition,
     onRemove: onRemoveScrollPosition,
@@ -101,13 +101,11 @@ export default function Produtos({ me }: ProductsProps) {
   const [search, setSearch] = useState<string>(() => {
     return router.query.search ? String(router.query.search) : "";
   });
-
   const [orderBy, setOrderBy] = useState<string>(() => {
     return router.query.orderby
       ? String(router.query.orderby)
       : "precoVenda.desc";
   });
-
   const [filters, setFilters] = useState<SelectedFilter[]>(() => {
     return queryParamsToFiltersNormalized(router.query);
   });
@@ -116,6 +114,8 @@ export default function Produtos({ me }: ProductsProps) {
   >(() => {
     return router.query.distinct ? String(router.query.distinct) : "";
   });
+  const [stockLocation, setStockLocation] = useState(false);
+  const [isVisibleFilters, setIsVisibleFilters] = useState(true);
 
   useQueryParamsFilterList({
     router,
@@ -541,16 +541,6 @@ export default function Produtos({ me }: ProductsProps) {
     }
   }
 
-  function handleGetHrefBack(): string {
-    new URLSearchParams({
-      var1: "value",
-      var2: "value2",
-      arr: "foo",
-    });
-
-    return router.asPath.replaceAll("&", "!");
-  }
-
   useEffect(() => {
     if (isActivatedCatalog && !isOpen) {
       onToggle();
@@ -680,94 +670,96 @@ export default function Produtos({ me }: ProductsProps) {
       />
 
       <PanelLayout isLoading={isLoadingProductsFilters}>
-        <Flex
-          w="22rem"
-          mr="3rem"
-          display={["none", "none", "none", "flex"]}
-          flexDirection="column"
-        >
+        {isVisibleFilters && (
           <Flex
-            justify="space-between"
-            bg="white"
-            p="4"
-            mb="4"
-            borderRadius="md"
+            w="22rem"
+            mr="3rem"
+            display={["none", "none", "none", "flex"]}
+            flexDirection="column"
           >
-            <Text fontWeight="bold">Agrupar produtos</Text>
-            <Switch
-              isChecked={!!groupProduct}
-              onChange={(e) =>
-                setGroupProduct(
-                  e.target.checked ? "codigoAlternativo" : undefined
-                )
-              }
-              size="lg"
-              colorScheme="red"
-            />
-          </Flex>
-
-          <Box borderRadius="md">
-            <FilterSelectedList filters={filters} setFilters={setFilters} />
-
-            {productsFilters?.filters.find((f) => f.name === "salePrices")
-              ?.name && (
-              <Accordion isOpen={false} title="Preço de venda" mb="2">
-                <FilterRangeAmount
-                  onChangeRange={([min, max]) => {
-                    const newFilters = [
-                      {
-                        name: "salePrices",
-                        field: `PDV mínimo (${min.toLocaleString("pt-br", {
-                          style: "currency",
-                          currency: "BRL",
-                        })})`,
-                        value: min,
-                      },
-                      {
-                        name: "salePrices",
-                        field: `PDV máximo (${max.toLocaleString("pt-br", {
-                          style: "currency",
-                          currency: "BRL",
-                        })})`,
-                        value: max,
-                      },
-                    ];
-                    const normalized = filters.filter(
-                      (f) => f.name !== "salePrices"
-                    );
-                    setFilters([...normalized, ...newFilters]);
-                  }}
-                  defaultMin={
-                    Number(
-                      productsFilters?.filters.find(
-                        (f) => f.name === "salePrices"
-                      )?.data[0].value
-                    ) ?? 0
-                  }
-                  defaultMax={
-                    Number(
-                      productsFilters?.filters.find(
-                        (f) => f.name === "salePrices"
-                      )?.data[1].value
-                    ) ?? 0
-                  }
-                />
-              </Accordion>
-            )}
-
-            {productsFilters?.filters && (
-              <ListFilter
-                filters={productsFilters.filters?.filter(
-                  (f) => !["salePrices"].includes(f.name)
-                )}
-                selectedFilter={filters}
-                onChangeSelectedFilter={(a) => {
-                  setFilters(a);
-                }}
+            <Flex
+              justify="space-between"
+              bg="white"
+              p="4"
+              mb="4"
+              borderRadius="md"
+            >
+              <Text fontWeight="bold">Agrupar produtos</Text>
+              <Switch
+                isChecked={!!groupProduct}
+                onChange={(e) =>
+                  setGroupProduct(
+                    e.target.checked ? "codigoAlternativo" : undefined
+                  )
+                }
+                size="lg"
+                colorScheme="red"
               />
-            )}
-          </Box>
-        </Flex>
+            </Flex>
+
+            <Box borderRadius="md">
+              <FilterSelectedList filters={filters} setFilters={setFilters} />
+
+              {productsFilters?.filters.find((f) => f.name === "salePrices")
+                ?.name && (
+                <Accordion isOpen={false} title="Preço de venda" mb="2">
+                  <FilterRangeAmount
+                    onChangeRange={([min, max]) => {
+                      const newFilters = [
+                        {
+                          name: "salePrices",
+                          field: `PDV mínimo (${min.toLocaleString("pt-br", {
+                            style: "currency",
+                            currency: "BRL",
+                          })})`,
+                          value: min,
+                        },
+                        {
+                          name: "salePrices",
+                          field: `PDV máximo (${max.toLocaleString("pt-br", {
+                            style: "currency",
+                            currency: "BRL",
+                          })})`,
+                          value: max,
+                        },
+                      ];
+                      const normalized = filters.filter(
+                        (f) => f.name !== "salePrices"
+                      );
+                      setFilters([...normalized, ...newFilters]);
+                    }}
+                    defaultMin={
+                      Number(
+                        productsFilters?.filters.find(
+                          (f) => f.name === "salePrices"
+                        )?.data[0].value
+                      ) ?? 0
+                    }
+                    defaultMax={
+                      Number(
+                        productsFilters?.filters.find(
+                          (f) => f.name === "salePrices"
+                        )?.data[1].value
+                      ) ?? 0
+                    }
+                  />
+                </Accordion>
+              )}
+
+              {productsFilters?.filters && (
+                <ListFilter
+                  filters={productsFilters.filters?.filter(
+                    (f) => !["salePrices"].includes(f.name)
+                  )}
+                  selectedFilter={filters}
+                  onChangeSelectedFilter={(a) => {
+                    setFilters(a);
+                  }}
+                />
+              )}
+            </Box>
+          </Flex>
+        )}
 
         <Box w="full">
           <HeaderToList
@@ -779,6 +771,33 @@ export default function Produtos({ me }: ProductsProps) {
               data: productsOrderBy,
             }}
           >
+            {!isVisibleFilters && (
+              <Button
+                borderRadius={0}
+                onClick={onOpenFilter}
+                variant="outline"
+                rounded="md"
+                ml="4"
+              >
+                Filtros
+                {filters.length > 0 && (
+                  <Flex
+                    borderRadius="full"
+                    bg="primary"
+                    ml="1.5"
+                    h="1.6rem"
+                    w="1.6rem"
+                    align="center"
+                    justify="center"
+                  >
+                    <Text fontSize="smaller" color="white">
+                      {filters.length}
+                    </Text>
+                  </Flex>
+                )}
+              </Button>
+            )}
+
             <Menu>
               <MenuButton
                 as={IconButton}
@@ -801,6 +820,18 @@ export default function Produtos({ me }: ProductsProps) {
                 </MenuItem>
               </MenuList>
             </Menu>
+
+            <Flex justify="center" align="center" flexDir="row" ml="auto">
+              <Text as={"span"} fontSize="sm" fontWeight="normal">
+                OCULTAR FILTROS
+              </Text>
+              <Switch
+                ml="2"
+                size="md"
+                checked={!isVisibleFilters}
+                onChange={(e) => setIsVisibleFilters(!e.target.checked)}
+              />
+            </Flex>
           </HeaderToList>
 
           <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>

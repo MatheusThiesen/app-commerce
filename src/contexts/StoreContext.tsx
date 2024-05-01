@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { Button, Icon, Stack, useToast } from "@chakra-ui/react";
+import { differenceInDays } from "date-fns";
 import { IoBagHandle } from "react-icons/io5";
 import { TbShoppingCartCancel } from "react-icons/tb";
 import { mask } from "remask";
@@ -60,6 +61,8 @@ export type Differentiated = {
 };
 
 export interface Order {
+  createdAt: Date;
+
   stockLocation: StockLocation;
   brand: Brand;
   differentiated?: Differentiated;
@@ -157,17 +160,17 @@ export function StoreProvider({ children }: StoreProviderProps) {
     onGet: onGetStoragePriceList,
     onSet: onSetStoragePriceList,
     onRemove: onRemoveStoragePriceList,
-  } = useLocalStore("@Order-price-list");
+  } = useLocalStore<PriceList>("@Order-price-list");
   const {
     onGet: onGetStorageClient,
     onSet: onSetStorageClient,
     onRemove: onRemoveStorageClient,
-  } = useLocalStore("@Order-client");
+  } = useLocalStore<Client>("@Order-client");
   const {
     onGet: onGetStorageOrder,
     onSet: onSetStorageOrder,
     onRemove: onRemoveStorageOrder,
-  } = useLocalStore("@Order-cart");
+  } = useLocalStore<Order[]>("@Order-cart");
 
   const [client, setClient] = useState<Client>({} as Client);
   const [priceList, setPriceList] = useState<PriceList>({} as PriceList);
@@ -207,7 +210,15 @@ export function StoreProvider({ children }: StoreProviderProps) {
 
     if (clientStorage) setClient(clientStorage);
     if (priceListStorage) setPriceList(priceListStorage);
-    if (orderStorage) setOrders(orderStorage ?? []);
+    if (orderStorage) {
+      setOrders(
+        orderStorage.filter((f) => {
+          const differenceDays = differenceInDays(new Date(), f.createdAt);
+
+          return differenceDays < 7;
+        }) ?? []
+      );
+    }
   }, []);
 
   function createOrder({
@@ -281,6 +292,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
       setOrders(getOrders);
     } else {
       const orderCreate: Order = {
+        createdAt: new Date(),
         stockLocation: {
           descricao: stockLocation.descricao,
           periodo: stockLocation.periodo,
@@ -480,6 +492,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
     });
 
     const orderCreate: Order = {
+      createdAt: new Date(),
       paymentCondition: pedido.condicaoPagamento,
       stockLocation: {
         descricao: pedido.periodoEstoque.descricao,

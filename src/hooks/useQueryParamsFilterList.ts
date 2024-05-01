@@ -73,9 +73,16 @@ export function useQueryParamsFilterList({
         };
       }
 
+      if (query?.distinct) {
+        queryNormalized = { ...queryNormalized, distinct: query.distinct };
+      }
+      if (query?.orderby) {
+        queryNormalized = { ...queryNormalized, orderby: query.orderby };
+      }
+
       router.replace(
         {
-          query: { ...query, ...queryNormalized },
+          query: { ...queryNormalized },
         },
         undefined,
         { scroll: false }

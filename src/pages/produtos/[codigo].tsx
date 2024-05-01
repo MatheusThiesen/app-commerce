@@ -108,7 +108,9 @@ export default function Produto(props: ProdutoProps) {
           value={product?.codigo}
         >
           {product?.grades?.map((grid) => (
-            <option value={grid.codigo}>{grid.descricaoAdicional}</option>
+            <option key={grid.codigo} value={grid.codigo}>
+              {grid.descricaoAdicional}
+            </option>
           ))}
         </Select>
       </Box>
@@ -299,7 +301,11 @@ export default function Produto(props: ProdutoProps) {
                         {product?.obs || product?.descricaoComplementar}
                       </Text>
 
-                      <Box w={["100%", "100%", "100%", "60%"]} mb="2rem">
+                      <Box
+                        w={["100%", "100%", "100%", "60%"]}
+                        mb="2rem"
+                        textTransform="capitalize"
+                      >
                         <Text as="h2" mb="2" fontSize="lg" fontWeight="light">
                           Características Gerais
                         </Text>
@@ -339,7 +345,11 @@ export default function Produto(props: ProdutoProps) {
                           Cadastro
                         </Text>
 
-                        <Table size="sm" variant="striped">
+                        <Table
+                          size="sm"
+                          variant="striped"
+                          textTransform="capitalize"
+                        >
                           <Tbody>
                             <Tr>
                               <Td>Código produto</Td>
@@ -366,7 +376,11 @@ export default function Produto(props: ProdutoProps) {
                           Estoque
                         </Text>
 
-                        <Table size="sm" variant="striped">
+                        <Table
+                          size="sm"
+                          variant="striped"
+                          textTransform="capitalize"
+                        >
                           <Tbody>
                             <Tr>
                               <Td>Acondicionamento</Td>

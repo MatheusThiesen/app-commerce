@@ -112,11 +112,11 @@ export default function Client(props: ClientProps) {
                     value={data?.codigo.toString() || "-"}
                   />
                   <InputFake
-                    label="Nome fantasia"
+                    label="Nome Fantasia"
                     value={data?.nomeFantasia || "-"}
                   />
                   <InputFake
-                    label="Razão social"
+                    label="Razão Social"
                     value={data?.razaoSocial || "-"}
                   />
                   <InputFake label="CNPJ" value={data?.cnpjFormat || "-"} />

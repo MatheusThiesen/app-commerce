@@ -1,9 +1,13 @@
-import { Box } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 import Head from "next/head";
 import { Me } from "../@types/me";
 import { HeaderNavigation } from "../components/HeaderNavigation";
 import { setupAPIClient } from "../service/api";
 
+import { useRouter } from "next/router";
+import { BannerCarousel } from "../components/BannerCarousel";
+import { useBanners } from "../hooks/queries/useBanners";
+import { api } from "../service/apiClient";
 import { withSSRAuth } from "../utils/withSSRAuth";
 
 interface HomeProps {
@@ -11,6 +15,18 @@ interface HomeProps {
 }
 
 export default function Home({ me }: HomeProps) {
+  const { data } = useBanners();
+  const router = useRouter();
+
+  async function handlePressBanner(bannerId: string) {
+    const find = data?.banners.find((f) => f.id === bannerId);
+
+    if (find) {
+      router.push("/produtos" + `?banners=${find.titulo}|${find.id}`);
+      await api.patch(`/panel/banners/click/${find.id}`);
+    }
+  }
+
   return (
     <>
       <Head>
@@ -19,23 +35,45 @@ export default function Home({ me }: HomeProps) {
 
       <HeaderNavigation isInativeEventScroll user={{ name: me.email }} />
 
-      <Box>
-        {/* <BannerCarousel
-          h="300"
-          p="4"
-          banners={[
-            {
-              id: "1",
-              name: "Tenis Nike",
-              uri: "https://i.pinimg.com/originals/fa/45/96/fa4596ad9a9d39901eeb455ed4f74e44.jpg",
-            },
-            {
-              id: "2",
-              name: "Logo Nike",
-              uri: "https://www.qualitare.com/wp-content/uploads/2021/01/nike-banner.png",
-            },
-          ]}
-        /> */}
+      <Box p="4">
+        <Text
+          as="h1"
+          textTransform="capitalize"
+          fontSize="2xl"
+          fontWeight="bold"
+          mb="2"
+        >
+          Olá, {me.name}
+        </Text>
+
+        {(data?.banners.length ?? 0) > 0 && (
+          <>
+            <BannerCarousel
+              h="20rem"
+              display={["none", "none", "none", "flex"]}
+              onPress={handlePressBanner}
+              banners={
+                data?.banners.map((banner) => ({
+                  id: banner.id,
+                  name: banner.titulo,
+                  uri: banner.imagemDesktop.url,
+                })) ?? []
+              }
+            />
+            <BannerCarousel
+              h="27rem"
+              display={["flex", "flex", "flex", "none"]}
+              onPress={handlePressBanner}
+              banners={
+                data?.banners.map((banner) => ({
+                  id: banner.id,
+                  name: banner.titulo,
+                  uri: banner.imagemMobile.url,
+                })) ?? []
+              }
+            />
+          </>
+        )}
       </Box>
     </>
   );

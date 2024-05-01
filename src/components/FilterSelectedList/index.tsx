@@ -8,7 +8,6 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { memo } from "react";
 import { TiDelete } from "react-icons/ti";
 import { SelectedFilter } from "../ListFilter";
 
@@ -22,9 +21,11 @@ function FilterSelectedListComponent({
   setFilters,
 }: FilterSelectedListProps) {
   function handleRemoveOneFilter(filter: SelectedFilter) {
-    const removeFilter = filters.filter((f) => f.name !== filter.name);
+    const filtersNormalized = filters.filter((f) =>
+      filter.name === "salePrices" ? f.name !== filter.name : f !== filter
+    );
 
-    setFilters(removeFilter);
+    setFilters(filtersNormalized);
   }
 
   function handleClearFilter() {
@@ -42,7 +43,7 @@ function FilterSelectedListComponent({
       </Box>
       <List spacing={1}>
         {filters.map((item) => (
-          <ListItem key={item.name}>
+          <ListItem key={`${item.name}-${item.field}`}>
             <Flex align="center" justify="space-between" px="2">
               <Text fontSize="sm" color="gray.500">
                 {item.field}
@@ -73,4 +74,4 @@ function FilterSelectedListComponent({
   );
 }
 
-export const FilterSelectedList = memo(FilterSelectedListComponent);
+export const FilterSelectedList = FilterSelectedListComponent;

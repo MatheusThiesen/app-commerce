@@ -54,6 +54,8 @@ export default function Order({ me }: OrderProps) {
   const { client, priceList, totalItems, exitOrder, changePriceList } =
     useStore();
 
+  const [isVisibleFilters, setIsVisibleFilters] = useState(true);
+
   const {
     isOpen: isConfirmExitOrder,
     onOpen: onOpenConfirmExitOrder,
@@ -273,94 +275,96 @@ export default function Order({ me }: OrderProps) {
         isLoading={isLoadingProductsFilters}
         pt={["8rem", "8rem", "8rem", "9rem"]}
       >
-        <Flex
-          w="22rem"
-          mr="3rem"
-          display={["none", "none", "none", "flex"]}
-          flexDirection="column"
-        >
+        {isVisibleFilters && (
           <Flex
-            justify="space-between"
-            bg="white"
-            p="4"
-            mb="4"
-            borderRadius="md"
+            w="22rem"
+            mr="3rem"
+            display={["none", "none", "none", "flex"]}
+            flexDirection="column"
           >
-            <Text fontWeight="bold">Agrupar produtos</Text>
-            <Switch
-              isChecked={!!groupProduct}
-              onChange={(e) =>
-                setGroupProduct(
-                  e.target.checked ? "codigoAlternativo" : undefined
-                )
-              }
-              size="lg"
-              colorScheme="red"
-            />
-          </Flex>
-
-          <Box borderRadius="md">
-            <FilterSelectedList filters={filters} setFilters={setFilters} />
-
-            {productsFilters?.filters.find((f) => f.name === "salePrices")
-              ?.name && (
-              <Accordion isOpen={false} title="Preço de venda" mb="2">
-                <FilterRangeAmount
-                  onChangeRange={([min, max]) => {
-                    const newFilters = [
-                      {
-                        name: "salePrices",
-                        field: `PDV mínimo (${min.toLocaleString("pt-br", {
-                          style: "currency",
-                          currency: "BRL",
-                        })})`,
-                        value: min,
-                      },
-                      {
-                        name: "salePrices",
-                        field: `PDV máximo (${max.toLocaleString("pt-br", {
-                          style: "currency",
-                          currency: "BRL",
-                        })})`,
-                        value: max,
-                      },
-                    ];
-                    const normalized = filters.filter(
-                      (f) => f.name !== "salePrices"
-                    );
-                    setFilters([...normalized, ...newFilters]);
-                  }}
-                  defaultMin={
-                    Number(
-                      productsFilters?.filters.find(
-                        (f) => f.name === "salePrices"
-                      )?.data[0].value
-                    ) ?? 0
-                  }
-                  defaultMax={
-                    Number(
-                      productsFilters?.filters.find(
-                        (f) => f.name === "salePrices"
-                      )?.data[1].value
-                    ) ?? 0
-                  }
-                />
-              </Accordion>
-            )}
-
-            {productsFilters?.filters && (
-              <ListFilter
-                filters={productsFilters.filters?.filter(
-                  (f) => !["salePrices", "concept"].includes(f.name)
-                )}
-                selectedFilter={filters}
-                onChangeSelectedFilter={(a) => {
-                  setFilters(a);
-                }}
+            <Flex
+              justify="space-between"
+              bg="white"
+              p="4"
+              mb="4"
+              borderRadius="md"
+            >
+              <Text fontWeight="bold">Agrupar produtos</Text>
+              <Switch
+                isChecked={!!groupProduct}
+                onChange={(e) =>
+                  setGroupProduct(
+                    e.target.checked ? "codigoAlternativo" : undefined
+                  )
+                }
+                size="lg"
+                colorScheme="red"
               />
-            )}
-          </Box>
-        </Flex>
+            </Flex>
+
+            <Box borderRadius="md">
+              <FilterSelectedList filters={filters} setFilters={setFilters} />
+
+              {productsFilters?.filters.find((f) => f.name === "salePrices")
+                ?.name && (
+                <Accordion isOpen={false} title="Preço de venda" mb="2">
+                  <FilterRangeAmount
+                    onChangeRange={([min, max]) => {
+                      const newFilters = [
+                        {
+                          name: "salePrices",
+                          field: `PDV mínimo (${min.toLocaleString("pt-br", {
+                            style: "currency",
+                            currency: "BRL",
+                          })})`,
+                          value: min,
+                        },
+                        {
+                          name: "salePrices",
+                          field: `PDV máximo (${max.toLocaleString("pt-br", {
+                            style: "currency",
+                            currency: "BRL",
+                          })})`,
+                          value: max,
+                        },
+                      ];
+                      const normalized = filters.filter(
+                        (f) => f.name !== "salePrices"
+                      );
+                      setFilters([...normalized, ...newFilters]);
+                    }}
+                    defaultMin={
+                      Number(
+                        productsFilters?.filters.find(
+                          (f) => f.name === "salePrices"
+                        )?.data[0].value
+                      ) ?? 0
+                    }
+                    defaultMax={
+                      Number(
+                        productsFilters?.filters.find(
+                          (f) => f.name === "salePrices"
+                        )?.data[1].value
+                      ) ?? 0
+                    }
+                  />
+                </Accordion>
+              )}
+
+              {productsFilters?.filters && (
+                <ListFilter
+                  filters={productsFilters.filters?.filter(
+                    (f) => !["salePrices", "concept"].includes(f.name)
+                  )}
+                  selectedFilter={filters}
+                  onChangeSelectedFilter={(a) => {
+                    setFilters(a);
+                  }}
+                />
+              )}
+            </Box>
+          </Flex>
+        )}
 
         <Box w="full">
           <HeaderToList
@@ -370,7 +374,46 @@ export default function Order({ me }: OrderProps) {
               currentValue: orderBy,
               data: productsOrderBy,
             }}
-          />
+          >
+            {!isVisibleFilters && (
+              <Button
+                borderRadius={0}
+                onClick={onOpenFilter}
+                variant="outline"
+                rounded="md"
+                ml="4"
+              >
+                Filtros
+                {filters.length > 0 && (
+                  <Flex
+                    borderRadius="full"
+                    bg="primary"
+                    ml="1.5"
+                    h="1.6rem"
+                    w="1.6rem"
+                    align="center"
+                    justify="center"
+                  >
+                    <Text fontSize="smaller" color="white">
+                      {filters.length}
+                    </Text>
+                  </Flex>
+                )}
+              </Button>
+            )}
+
+            <Flex justify="center" align="center" flexDir="row" ml="auto">
+              <Text as={"span"} fontSize="sm" fontWeight="normal">
+                OCULTAR FILTROS
+              </Text>
+              <Switch
+                ml="2"
+                size="md"
+                checked={!isVisibleFilters}
+                onChange={(e) => setIsVisibleFilters(!e.target.checked)}
+              />
+            </Flex>
+          </HeaderToList>
           {client && priceList && (
             <ListProducts
               orderby={orderBy}

@@ -19,17 +19,20 @@ export const HeaderToList = ({
 }: HeaderToListProps) => {
   return (
     <Flex display={["none", "none", "none", "block"]}>
-      <Text
-        as="h1"
-        fontSize="4xl"
-        fontWeight="bold"
-        color="gray.700"
-        lineHeight="2rem"
-      >
-        {title}
-        {isLoading && <Spinner ml="4" size="md" />}
+      <Flex>
+        <Text
+          as="h1"
+          fontSize="4xl"
+          fontWeight="bold"
+          color="gray.700"
+          lineHeight="2rem"
+        >
+          {title}
+          {isLoading && <Spinner ml="4" size="md" />}
+        </Text>
+
         {children}
-      </Text>
+      </Flex>
 
       <Flex justifyContent="space-between" mt="1" mb="2">
         <Text fontSize="md" color="gray.600">

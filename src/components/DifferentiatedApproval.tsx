@@ -1,7 +1,21 @@
-import { Box, Button, Flex, Stack, Text, useToast } from "@chakra-ui/react";
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Box,
+  Button,
+  Flex,
+  Stack,
+  Text,
+  useDisclosure,
+  useToast,
+} from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useLoading } from "../contexts/LoadingContext";
@@ -58,6 +72,8 @@ interface Props {
 }
 
 export function DifferentiatedApproval({ order }: Props) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef(null);
   const toast = useToast();
   const discountScope = useDiscountScope();
   const { push } = useRouter();
@@ -133,7 +149,7 @@ export function DifferentiatedApproval({ order }: Props) {
       toast({
         title: "Desconto reprovado",
         description: "O pedido foi reprovado.",
-        status: "warning",
+        status: "success",
         isClosable: true,
         position: "top",
       });
@@ -149,6 +165,7 @@ export function DifferentiatedApproval({ order }: Props) {
     } finally {
       setIsLoadingForm(false);
       setLoading(false);
+      onClose();
     }
   }
 
@@ -242,159 +259,221 @@ export function DifferentiatedApproval({ order }: Props) {
   const currentAmountDiscount = getCurrentAmountDiscount();
 
   return (
-    <Box
-      as="form"
-      onSubmit={handleSubmit(handleSubmitDifferentiatedApproval)}
-      bg="white"
-      p="3"
-      borderRadius="lg"
-    >
-      <Stack>
-        <InputSelect
-          label="Tipo de desconto"
-          {...register("type", { onChange: onChangeInput })}
-          error={
-            !!errors?.type?.message ? String(errors?.type?.message) : undefined
-          }
-        >
-          <option value="">Selecionar...</option>
-          <option value="VALOR">Valor fixo</option>
-          <option value="PERCENTUAL">Percentual</option>
-        </InputSelect>
-
-        {watchType}
-
-        {watchType === "PERCENTUAL" && (
-          <Input
-            label="Percentual de desconto"
-            {...register("percent")}
-            onBlur={onChangeInput}
-            onChange={onChangeInput}
-            value={!!watchPercent ? `% ${watchPercent}` : ""}
+    <>
+      <Box
+        as="form"
+        onSubmit={handleSubmit(handleSubmitDifferentiatedApproval)}
+        bg="white"
+        p="3"
+        borderRadius="lg"
+      >
+        <Stack>
+          <InputSelect
+            label="Tipo de desconto"
+            {...register("type", { onChange: onChangeInput })}
             error={
-              !!errors?.percent?.message
-                ? String(errors?.percent?.message)
+              !!errors?.type?.message
+                ? String(errors?.type?.message)
                 : undefined
             }
-          />
-        )}
+          >
+            <option value="">Selecionar...</option>
+            <option value="VALOR">Valor fixo</option>
+            <option value="PERCENTUAL">Percentual</option>
+          </InputSelect>
 
-        {watchType === "VALOR" && (
-          <Input
-            label="Valor do desconto"
-            {...register("value", { onChange: onChangeInput })}
-            onBlur={onChangeInput}
-            onChange={onChangeInput}
-            value={Number(
-              isNaN(Number(watchValue)) ? 0 : Number(watchValue)
-            ).toLocaleString("pt-br", {
-              style: "currency",
-              currency: "BRL",
-            })}
-            error={
-              !!errors?.value?.message
-                ? String(errors?.value?.message)
-                : undefined
-            }
-          />
-        )}
+          {watchType}
 
-        {!!watchType && (
-          <Box position="relative">
-            <Textarea
-              label="Obervação"
-              {...register("reason")}
+          {watchType === "PERCENTUAL" && (
+            <Input
+              label="Percentual de desconto"
+              {...register("percent")}
+              onBlur={onChangeInput}
+              onChange={onChangeInput}
+              value={!!watchPercent ? `% ${watchPercent}` : ""}
               error={
-                !!errors?.reason?.message
-                  ? String(errors?.reason?.message)
+                !!errors?.percent?.message
+                  ? String(errors?.percent?.message)
                   : undefined
               }
-              maxLength={200}
             />
-            <Text
-              fontSize="sm"
-              fontWeight="light"
-              position="absolute"
-              top="1"
-              right="1"
-            >
-              {`${watchReason?.length ?? 0}/200`}
-            </Text>
-          </Box>
-        )}
+          )}
 
-        <Flex flexDir="column" pt="6">
-          <Flex justify="space-between">
-            <Text
-              fontSize={["sm", "sm", "md", "md"]}
-              color="gray.700"
-            >{`Quantidade`}</Text>
-            <Text
-              fontSize={["sm", "sm", "md", "md"]}
-              color="gray.700"
-            >{`${order.itens.length} itens`}</Text>
-          </Flex>
-          <Flex justify="space-between">
-            <Text
-              fontSize={["sm", "sm", "md", "md"]}
-              color="gray.700"
-            >{`Valor pedido`}</Text>
-            <Text fontSize={["sm", "sm", "md", "md"]} color="gray.700">
-              {order.valorTotalFormat || "R$ 0,00"}
-            </Text>
-          </Flex>
-          <Flex justify="space-between">
-            <Text
-              fontSize={["sm", "sm", "md", "md"]}
-              color="gray.700"
-            >{`Desconto`}</Text>
-            <Text fontSize={["sm", "sm", "md", "md"]} color="gray.700">
-              {Number(currentAmountDiscount).toLocaleString("pt-br", {
+          {watchType === "VALOR" && (
+            <Input
+              label="Valor do desconto"
+              {...register("value", { onChange: onChangeInput })}
+              onBlur={onChangeInput}
+              onChange={onChangeInput}
+              value={Number(
+                isNaN(Number(watchValue)) ? 0 : Number(watchValue)
+              ).toLocaleString("pt-br", {
                 style: "currency",
                 currency: "BRL",
               })}
-            </Text>
-          </Flex>
-          <Flex justify="space-between">
-            <Text
-              mb="4"
-              fontWeight="bold"
-              fontSize={["md", "md", "lg", "lg"]}
-            >{`Valor total`}</Text>
-            <Text mb="4" fontWeight="bold" fontSize={["md", "md", "lg", "lg"]}>
-              {Number(order.valorTotal - currentAmountDiscount).toLocaleString(
-                "pt-br",
-                {
+              error={
+                !!errors?.value?.message
+                  ? String(errors?.value?.message)
+                  : undefined
+              }
+            />
+          )}
+
+          {!!watchType && (
+            <Box position="relative">
+              <Textarea
+                label="Obervação"
+                {...register("reason")}
+                error={
+                  !!errors?.reason?.message
+                    ? String(errors?.reason?.message)
+                    : undefined
+                }
+                maxLength={200}
+              />
+              <Text
+                fontSize="sm"
+                fontWeight="light"
+                position="absolute"
+                top="1"
+                right="1"
+              >
+                {`${watchReason?.length ?? 0}/200`}
+              </Text>
+            </Box>
+          )}
+
+          <Flex flexDir="column" pt="6">
+            <Flex justify="space-between">
+              <Text
+                fontSize={["sm", "sm", "md", "md"]}
+                color="gray.700"
+              >{`Quantidade`}</Text>
+              <Text
+                fontSize={["sm", "sm", "md", "md"]}
+                color="gray.700"
+              >{`${order.itens.length} itens`}</Text>
+            </Flex>
+            <Flex justify="space-between">
+              <Text
+                fontSize={["sm", "sm", "md", "md"]}
+                color="gray.700"
+              >{`Valor pedido`}</Text>
+              <Text fontSize={["sm", "sm", "md", "md"]} color="gray.700">
+                {order.valorTotalFormat || "R$ 0,00"}
+              </Text>
+            </Flex>
+            <Flex justify="space-between">
+              <Text
+                fontSize={["sm", "sm", "md", "md"]}
+                color="gray.700"
+              >{`Desconto`}</Text>
+              <Text fontSize={["sm", "sm", "md", "md"]} color="gray.700">
+                {Number(currentAmountDiscount).toLocaleString("pt-br", {
                   style: "currency",
                   currency: "BRL",
-                }
-              )}
-            </Text>
+                })}
+              </Text>
+            </Flex>
+            <Flex justify="space-between">
+              <Text
+                mb="4"
+                fontWeight="bold"
+                fontSize={["md", "md", "lg", "lg"]}
+              >{`Valor total`}</Text>
+              <Text
+                mb="4"
+                fontWeight="bold"
+                fontSize={["md", "md", "lg", "lg"]}
+              >
+                {Number(
+                  order.valorTotal - currentAmountDiscount
+                ).toLocaleString("pt-br", {
+                  style: "currency",
+                  currency: "BRL",
+                })}
+              </Text>
+            </Flex>
           </Flex>
-        </Flex>
 
-        <Stack direction="row" w="full" columnGap="4">
-          <Button
-            colorScheme="red"
-            flex={1}
-            type="button"
-            onClick={handleSubmitDifferentiatedReproval}
-            disabled={isLoadingForm}
-            isLoading={isLoadingForm}
-          >
-            Reprovar
-          </Button>
-          <Button
-            colorScheme="green"
-            flex={1}
-            type="submit"
-            disabled={isLoadingForm}
-            isLoading={isLoadingForm}
-          >
-            Aprovar
-          </Button>
+          <Stack direction="row" w="full" columnGap="4">
+            <Button
+              colorScheme="red"
+              flex={1}
+              type="button"
+              onClick={onOpen}
+              disabled={isLoadingForm}
+              isLoading={isLoadingForm}
+            >
+              Reprovar
+            </Button>
+            <Button
+              colorScheme="green"
+              flex={1}
+              type="submit"
+              disabled={isLoadingForm}
+              isLoading={isLoadingForm}
+            >
+              Aprovar
+            </Button>
+          </Stack>
         </Stack>
-      </Stack>
-    </Box>
+      </Box>
+
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Reprovar desconto
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              <Text>
+                Você tem certeza? Você não poderá desfazer esta ação depois.
+              </Text>
+
+              <Box position="relative" mt="4">
+                <Textarea
+                  label="Obervação"
+                  {...register("reason")}
+                  error={
+                    !!errors?.reason?.message
+                      ? String(errors?.reason?.message)
+                      : undefined
+                  }
+                  maxLength={200}
+                />
+                <Text
+                  fontSize="sm"
+                  fontWeight="light"
+                  position="absolute"
+                  top="1"
+                  right="1"
+                >
+                  {`${watchReason?.length ?? 0}/200`}
+                </Text>
+              </Box>
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleSubmitDifferentiatedReproval}
+                ml={3}
+              >
+                Reprovar
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+    </>
   );
 }

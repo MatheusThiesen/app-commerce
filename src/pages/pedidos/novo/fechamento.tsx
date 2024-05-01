@@ -449,7 +449,7 @@ export default function CheckoutOrder({ me }: Props) {
 
                       <Box mt="1rem">
                         <Text mb="2" fontSize="md" fontWeight="bold">
-                          Condição de pagamento
+                          Condição de Pagamento
                         </Text>
                         <InputSelect
                           name="paymentCondition"
@@ -492,7 +492,7 @@ export default function CheckoutOrder({ me }: Props) {
                         <Stack mt="4">
                           <InputSelect
                             name="tipoDesconto"
-                            label="Tipo de desconto"
+                            label="Tipo de Desconto"
                             onChange={(event) =>
                               onChangeInputDifferentiated(event, order)
                             }
@@ -506,7 +506,7 @@ export default function CheckoutOrder({ me }: Props) {
                           {order.differentiated.tipoDesconto ===
                             "PERCENTUAL" && (
                             <Input
-                              label="Percentual de desconto"
+                              label="Percentual de Desconto"
                               name="descontoPercentual"
                               onChange={(e) =>
                                 onChangeInputDifferentiated(e, order)
@@ -521,7 +521,7 @@ export default function CheckoutOrder({ me }: Props) {
 
                           {order.differentiated.tipoDesconto === "VALOR" && (
                             <Input
-                              label="Valor do desconto"
+                              label="Valor do Desconto"
                               name="descontoValor"
                               onChange={(e) =>
                                 onChangeInputDifferentiated(e, order)
@@ -582,7 +582,7 @@ export default function CheckoutOrder({ me }: Props) {
                             <Text
                               fontSize={["sm", "sm", "md", "md"]}
                               color="gray.700"
-                            >{`Valor pedido`}</Text>
+                            >{`Subtotal`}</Text>
                             <Text
                               fontSize={["sm", "sm", "md", "md"]}
                               color="gray.700"

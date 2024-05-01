@@ -21,7 +21,7 @@ interface BannerCarouselProps extends BoxProps {
 
 export function ProductImageCarouse({ banners, ...rest }: BannerCarouselProps) {
   return (
-    <Box bg="#fff" {...rest}>
+    <Box bg="#fff" userSelect="none" {...rest}>
       <Swiper
         spaceBetween={50}
         centeredSlides={true}

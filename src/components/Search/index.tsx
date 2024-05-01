@@ -56,7 +56,7 @@ const SearchComponent = ({
 
   return (
     <Box as="form" onSubmit={handleSubmit}>
-      <InputGroup size={"md"}>
+      <InputGroup size={"md"} position="relative">
         <InputLeftElement pointerEvents="none">
           <Icon as={IoSearch} color="gray.500" />
         </InputLeftElement>

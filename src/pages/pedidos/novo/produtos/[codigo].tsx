@@ -558,7 +558,11 @@ export default function Produto(props: ProdutoProps) {
                           Cadastro
                         </Text>
 
-                        <Table size="sm" variant="striped">
+                        <Table
+                          size="sm"
+                          variant="striped"
+                          textTransform="capitalize"
+                        >
                           <Tbody>
                             <Tr>
                               <Td>Código produto</Td>
@@ -589,7 +593,11 @@ export default function Produto(props: ProdutoProps) {
                           Estoque
                         </Text>
 
-                        <Table size="sm" variant="striped">
+                        <Table
+                          size="sm"
+                          variant="striped"
+                          textTransform="capitalize"
+                        >
                           <Tbody>
                             <Tr>
                               <Td>Acondicionamento</Td>

@@ -171,42 +171,46 @@ export function ModalProductAddToCart({ onClose, productCode }: Props) {
           )}
 
           <Stack mt="4" spacing="4">
-            <Box>
-              <Text fontWeight="light">Grade</Text>
-              <Select
-                onChange={(e) => {
-                  handleUpdateProductCode(Number(e.target.value));
-                }}
-                value={product?.codigo}
-              >
-                {product?.grades?.map((grid) => (
-                  <option value={grid.codigo}>{grid.descricaoAdicional}</option>
-                ))}
-              </Select>
-            </Box>
-
-            {product?.locaisEstoque && (
-              <Box>
-                <Text fontWeight="light">Disponibilidade</Text>
+            <Stack direction="row" w="full">
+              <Box flex={1}>
+                <Text fontWeight="light">Grade</Text>
                 <Select
-                  value={stockLocationSelected?.periodo ?? "0"}
                   onChange={(e) => {
-                    const findStockLocation = product?.locaisEstoque?.find(
-                      (f) => String(f.periodo) === String(e?.target.value)
-                    );
-
-                    setStockLocationSelected(findStockLocation);
+                    handleUpdateProductCode(Number(e.target.value));
                   }}
+                  value={product?.codigo}
                 >
-                  <option value="0">Selecione...</option>
-                  {product.locaisEstoque?.map((stockLocation) => (
-                    <option value={stockLocation.periodo}>
-                      {stockLocation.descricao}
+                  {product?.grades?.map((grid) => (
+                    <option key={grid.codigo} value={grid.codigo}>
+                      {grid.descricaoAdicional}
                     </option>
                   ))}
                 </Select>
               </Box>
-            )}
+
+              {product?.locaisEstoque && (
+                <Box flex={1}>
+                  <Text fontWeight="light">Disponibilidade</Text>
+                  <Select
+                    value={stockLocationSelected?.periodo ?? "0"}
+                    onChange={(e) => {
+                      const findStockLocation = product?.locaisEstoque?.find(
+                        (f) => String(f.periodo) === String(e?.target.value)
+                      );
+
+                      setStockLocationSelected(findStockLocation);
+                    }}
+                  >
+                    <option value="0">Selecione...</option>
+                    {product.locaisEstoque?.map((stockLocation) => (
+                      <option value={stockLocation.periodo}>
+                        {stockLocation.descricao}
+                      </option>
+                    ))}
+                  </Select>
+                </Box>
+              )}
+            </Stack>
 
             {stockLocationSelected && (
               <Box w="8rem">
