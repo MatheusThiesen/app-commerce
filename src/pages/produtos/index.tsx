@@ -424,6 +424,10 @@ export default function Produtos({ me }: ProductsProps) {
           let columnKey = cell["_column"]["_key"];
 
           if (rowNumber === 1) {
+            if (["list42", "list56"].includes(columnKey)) {
+              columnCurrent.push(columnNumber);
+            }
+
             if (columnKey === "pdv") {
               columnCurrent.push(columnNumber);
             }
