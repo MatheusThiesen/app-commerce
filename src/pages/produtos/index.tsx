@@ -301,6 +301,16 @@ export default function Produtos({ me }: ProductsProps) {
           width: 26,
         },
         {
+          header: "Lista 42 DDL",
+          key: "list42",
+          width: 26,
+        },
+        {
+          header: "Lista 56 DDL",
+          key: "list56",
+          width: 26,
+        },
+        {
           header: "Quantidade Grades",
           key: "qtd",
           width: 30,
@@ -379,6 +389,8 @@ export default function Produtos({ me }: ProductsProps) {
               ? product.qtdEmbalagem // `- ${product.qtdEmbalagem} +`
               : "-",
             list28: product.precoTabela28,
+            list42: product.precoTabela42,
+            list56: product.precoTabela56,
             ...data,
           });
 
@@ -412,6 +424,10 @@ export default function Produtos({ me }: ProductsProps) {
           let columnKey = cell["_column"]["_key"];
 
           if (rowNumber === 1) {
+            if (["list42", "list56"].includes(columnKey)) {
+              columnCurrent.push(columnNumber);
+            }
+
             if (columnKey === "pdv") {
               columnCurrent.push(columnNumber);
             }
