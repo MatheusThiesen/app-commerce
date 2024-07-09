@@ -131,7 +131,7 @@ type StoreContextData = {
     brandCod: number;
   }) => void;
   createOrder: (data: { client: Client; priceList: PriceList }) => void;
-  sendOrder: (data: { isDraft: boolean }) => void;
+  sendOrder: (data: { isDraft: boolean }) => Promise<void>;
   exitOrder: () => void;
   setPaymentCondition: (d: {
     paymentCondition: PaymentCondition;

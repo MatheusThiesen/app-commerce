@@ -68,6 +68,7 @@ export default function CheckoutOrder({ me }: Props) {
   const toast = useToast();
   const { data } = useBrands({});
   const discountScope = useDiscountScope();
+  const [fetchingOrder, setFetchingOrder] = useState(false);
 
   const {
     orders,
@@ -249,10 +250,12 @@ export default function CheckoutOrder({ me }: Props) {
     });
   }
 
-  function handleSendOrder() {
-    sendOrder({
+  async function handleSendOrder() {
+    setFetchingOrder(true);
+    await sendOrder({
       isDraft: false,
     });
+    setFetchingOrder(false);
   }
 
   useEffect(() => {
@@ -709,6 +712,7 @@ export default function CheckoutOrder({ me }: Props) {
                 }
                 onClick={
                   validOrders &&
+                  !fetchingOrder &&
                   !validMinimumAllOrder &&
                   !validDifferentiatedAllOrder
                     ? () => handleSendOrder()
