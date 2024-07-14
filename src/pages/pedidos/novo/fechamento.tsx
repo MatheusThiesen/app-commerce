@@ -35,6 +35,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 
+import { BiCartDownload } from "react-icons/bi";
 import { Input } from "../../../components/Form/Input";
 import { InputSelect } from "../../../components/Form/InputSelect";
 import { Textarea } from "../../../components/Form/TextArea";
@@ -664,7 +665,7 @@ export default function CheckoutOrder({ me }: Props) {
               spacing="4"
               direction={["column", "column", "column", "row"]}
             >
-              {/* <Button
+              <Button
                 fontWeight={"normal"}
                 colorScheme="orange"
                 size="lg"
@@ -691,7 +692,7 @@ export default function CheckoutOrder({ me }: Props) {
                 }
               >
                 CRIAR RASCUNHO
-              </Button> */}
+              </Button>
               <Button
                 fontWeight={"normal"}
                 colorScheme="green"
