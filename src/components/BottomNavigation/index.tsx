@@ -49,6 +49,11 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
 
           {user?.eVendedor &&
             [
+              "amanda.medeiros@alpardobrasil.com.br",
+              "rardy.maciel@alpardobrasil.com.br",
+              "yasmin.santos@alpardobrasil.com.br",
+              "vanessa.rodrigues@alpardobrasil.com.br",
+              "mariana.fonseca@alpardobrasil.com.br",
               "lucas.machado@alpardobrasil.com.br",
               "matheus.thiesen@alpardobrasil.com.br",
               "joaoo@alpardobrasil.com.br",

@@ -57,8 +57,8 @@ export function ProductComponent({
     <MotionBox
       h="full"
       bg="white"
-      px="4"
-      py="4"
+      px="2"
+      py="2"
       borderRadius="md"
       boxShadow="base"
       _hover={{
@@ -104,6 +104,7 @@ export function ProductComponent({
             as="a"
             flexDir="column"
             justifyContent="space-between"
+            mt={isCatalog ? "4" : 0}
             w="100%"
             flex={1}
             onClick={() => {
@@ -119,10 +120,11 @@ export function ProductComponent({
             >
               <Image
                 w="full"
-                minH="44"
-                maxH="44"
+                minH="40"
+                maxH="40"
                 src={uri}
                 objectFit="contain"
+                objectPosition="50% 50%"
                 onError={({ currentTarget }) => {
                   currentTarget.onerror = null; // prevents looping
                   currentTarget.src = defaultNoImage;
