@@ -2,9 +2,9 @@ import { extendTheme, ThemeConfig } from "@chakra-ui/react";
 import { GlobalStyleProps, mode } from "@chakra-ui/theme-tools";
 
 export const themeColors = {
-  primary: "#1F2029",
-  "primary.hover": "#353646",
-  background: "#D1D2DC",
+  primary: "rgb(17 24 39)",
+  "primary.hover": "rgb(31 41 55)",
+  background: "rgb(229 231 235)",
 };
 
 export const theme: ThemeConfig = extendTheme({
@@ -13,15 +13,15 @@ export const theme: ThemeConfig = extendTheme({
     ...themeColors,
 
     gray: {
-      "900": "#181B23",
-      "800": "#1F2029",
-      "700": "#353646",
-      "600": "#4B4D63",
-      "500": "#616480",
-      "400": "#797D9A",
-      "300": "#9699B0",
-      "200": "#B3B5C6",
-      "100": "#D1D2DC",
+      "900": "rgb(17 24 39)",
+      "800": "rgb(31 41 55)",
+      "700": "rgb(55 65 81)",
+      "600": "rgb(75 85 99)",
+      "500": "rgb(107 114 128)",
+      "400": "rgb(156 163 175)",
+      "300": "rgb(209 213 219)",
+      "200": "rgb(209 213 219)",
+      "100": "rgb(229 231 235)",
       "50": "#EEEEF2",
     },
     red: {
