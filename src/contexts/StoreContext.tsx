@@ -407,30 +407,18 @@ export function StoreProvider({ children }: StoreProviderProps) {
     stockLocationPeriod: string;
     brandCod: number;
   }) {
-    onSetStorageOrder(
-      orders.map((order) => {
-        if (
-          order.stockLocation.periodo === stockLocationPeriod &&
-          order.brand.codigo === brandCod
-        ) {
-          return { ...order, paymentCondition };
-        }
-        return order;
-      })
-    );
+    const setPaymentConditionInOrder = orders.map((order) => {
+      if (
+        order.stockLocation.periodo === stockLocationPeriod &&
+        order.brand.codigo === brandCod
+      ) {
+        return { ...order, paymentCondition };
+      }
+      return order;
+    });
 
-    setOrders((prev) =>
-      prev.map((order) => {
-        if (
-          order.stockLocation.periodo === stockLocationPeriod &&
-          order.brand.codigo === brandCod
-        ) {
-          return { ...order, paymentCondition };
-        }
-
-        return order;
-      })
-    );
+    onSetStorageOrder(setPaymentConditionInOrder);
+    setOrders(setPaymentConditionInOrder);
   }
 
   function setDifferentiated({
@@ -627,6 +615,14 @@ export function StoreProvider({ children }: StoreProviderProps) {
   }
 
   async function changePriceList(priceList: PriceList) {
+    const removePaymentConditionOrders = orders.map((order) => ({
+      ...order,
+      paymentCondition: undefined,
+    }));
+
+    setOrders(removePaymentConditionOrders);
+    onSetStorageOrder(removePaymentConditionOrders);
+
     onSetStoragePriceList(priceList);
     setPriceList(priceList);
     recalculatePriceOrders();
