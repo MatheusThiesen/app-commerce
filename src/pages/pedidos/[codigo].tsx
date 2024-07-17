@@ -274,7 +274,7 @@ export default function Order({ me }: Props) {
                 </Stack>
               </Box>
 
-              {order.eDiferenciado && (
+              {order.eDiferenciado && !order.eRascunho && (
                 <>
                   <Box width="full">
                     <Text fontSize="lg" fontWeight="light">

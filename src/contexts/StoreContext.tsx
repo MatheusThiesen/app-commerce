@@ -98,6 +98,7 @@ type GetSketchOrderValidResponse = {
     condicaoPagamento: PaymentCondition;
     periodoEstoque: StockLocation;
     tabelaPreco: PriceList;
+    diferenciado?: Differentiated;
   };
 
   itens: {
@@ -443,6 +444,28 @@ export function StoreProvider({ children }: StoreProviderProps) {
     onSetStorageOrder(ordersUpdated);
   }
 
+  function normalizedDifferentiated(
+    differentiated: Differentiated
+  ): Differentiated {
+    let normalized: Differentiated = {
+      isActive: true,
+      tipoDesconto: differentiated.tipoDesconto,
+      descontoValor: differentiated.descontoValor,
+      descontoPercentual: differentiated.descontoPercentual,
+      motivoDiferenciado: differentiated.motivoDiferenciado,
+
+      amountDiscount: differentiated.descontoCalculado,
+      amountDiscountFormat: Number(
+        differentiated.descontoCalculado
+      ).toLocaleString("pt-br", {
+        style: "currency",
+        currency: "BRL",
+      }),
+    };
+
+    return normalized;
+  }
+
   async function sketchOrder(orderCode: number) {
     const getSketch = await api.post<GetSketchOrderValidResponse>(
       `/orders/sketch/${orderCode}`
@@ -490,6 +513,9 @@ export function StoreProvider({ children }: StoreProviderProps) {
         codigo: pedido.marca.codigo,
         descricao: pedido.marca.descricao,
       },
+      differentiated: pedido.diferenciado
+        ? normalizedDifferentiated(pedido.diferenciado)
+        : undefined,
       qtd: itens.atuais.length,
       amount: amountOrder,
       amountFormat: amountOrderFormat,
