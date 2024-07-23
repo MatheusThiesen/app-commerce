@@ -26,6 +26,7 @@ import {
   useOrderOne,
 } from "../../hooks/queries/useOrder";
 
+import * as reactPDF from "react-to-pdf";
 import { Client } from "../../components/Client";
 import { DifferentiatedApproval } from "../../components/DifferentiatedApproval";
 import { DifferentiatedCard } from "../../components/DifferentiatedCard";
@@ -41,6 +42,7 @@ export default function Order({ me }: Props) {
   const router = useRouter();
   const { sketchOrder } = useStore();
   const { setLoading } = useLoading();
+  const { toPDF, targetRef } = reactPDF.usePDF({ filename: "page.pdf" });
   const { codigo } = router.query;
 
   const { data: order, isLoading } = useOrderOne(Number(codigo));
@@ -55,6 +57,10 @@ export default function Order({ me }: Props) {
 
   return (
     <>
+      <button onClick={() => toPDF({ filename: "FILE.PDF" })}>
+        Download PDF
+      </button>
+
       <Head>
         <title> Pedido | App Alpar do Brasil</title>
       </Head>
@@ -257,7 +263,7 @@ export default function Order({ me }: Props) {
                 </Box>
               </Box>
 
-              <Box width="full">
+              <Box width="full" ref={targetRef}>
                 <Text fontSize="lg" fontWeight="light">
                   {`ITENS DO PEDIDO (${order?.itens.length})`}
                 </Text>
