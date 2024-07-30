@@ -241,6 +241,7 @@ export function HeaderNavigationComponent({
                     "lucas.machado@alpardobrasil.com.br",
                     "matheus.thiesen@alpardobrasil.com.br",
                     "joaoo@alpardobrasil.com.br",
+                    "vinicius@alpardobrasil.com.br",
                   ].includes(userAuth.email) && (
                     <NavLink href="/pedidos">Pedidos</NavLink>
                   )}
