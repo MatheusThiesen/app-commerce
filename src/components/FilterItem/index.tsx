@@ -103,6 +103,7 @@ export function FilterItem({
           key={item.value}
           isChecked={isChecked}
           value={item.value}
+          size="lg"
           onChange={(e) =>
             handleSelectedFilter({
               item: item,
@@ -142,7 +143,7 @@ export function FilterItem({
             <Flex
               h="2rem"
               mb="4"
-              p="2"
+              px="2"
               borderRadius="md"
               borderWidth="1.5px"
               align="center"

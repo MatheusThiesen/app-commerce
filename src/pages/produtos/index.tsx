@@ -688,8 +688,8 @@ export default function Produtos({ me }: ProductsProps) {
       <PanelLayout isLoading={isLoadingProductsFilters}>
         {isVisibleFilters && (
           <Flex
-            w="22rem"
-            mr="3rem"
+            w="18rem"
+            mr="8"
             display={["none", "none", "none", "flex"]}
             flexDirection="column"
           >
@@ -697,7 +697,7 @@ export default function Produtos({ me }: ProductsProps) {
               justify="space-between"
               bg="white"
               p="4"
-              mb="4"
+              mb="2"
               borderRadius="md"
             >
               <Text fontWeight="bold">Agrupar produtos</Text>
@@ -837,7 +837,13 @@ export default function Produtos({ me }: ProductsProps) {
               </MenuList>
             </Menu>
 
-            <Flex justify="center" align="center" flexDir="row" ml="auto">
+            <Flex
+              justify="center"
+              align="center"
+              flexDir="row"
+              ml="auto"
+              mr="4"
+            >
               <Text as={"span"} fontSize="sm" fontWeight="normal">
                 OCULTAR FILTROS
               </Text>
@@ -851,7 +857,7 @@ export default function Produtos({ me }: ProductsProps) {
           </HeaderToList>
 
           <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
-            <SimpleGrid columns={[2, 2, 3, 4]} spacing="1" mb="1rem">
+            <SimpleGrid columns={[2, 2, 3, 4, 4, 5]} spacing="1" mb="1rem">
               {data?.pages.map((page) =>
                 page?.products.map((product, i) =>
                   i === page?.products.length - 4 ? (
@@ -920,7 +926,7 @@ export default function Produtos({ me }: ProductsProps) {
             justify="space-between"
             bg="white"
             p="4"
-            mb="4"
+            mb="2"
             borderRadius="md"
           >
             <Text fontWeight="bold">Agrupar produtos</Text>

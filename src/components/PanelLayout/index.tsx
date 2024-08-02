@@ -26,7 +26,7 @@ export const PanelLayout = ({
             w="full"
             {...(rest as any)}
           >
-            <Flex w="full" maxW="1200px">
+            <Flex w="full" maxW="1350px">
               {children}
             </Flex>
           </Flex>

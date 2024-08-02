@@ -32,20 +32,20 @@ export const HeaderToList = ({
         </Text>
 
         {children}
-      </Flex>
 
-      <Flex justifyContent="space-between" mt="1" mb="2">
-        <Text fontSize="md" color="gray.600">
-          {total && `Total ${total} resultados`}
-        </Text>
+        <Flex justifyContent="space-between" mt="1" mb="2">
+          <Text fontSize="md" color="gray.600">
+            {total && `Total ${total} resultados`}
+          </Text>
 
-        {orderBy && (
-          <OrderBy
-            onChange={orderBy.onChange}
-            currentValue={orderBy.currentValue}
-            data={orderBy.data}
-          />
-        )}
+          {orderBy && (
+            <OrderBy
+              onChange={orderBy.onChange}
+              currentValue={orderBy.currentValue}
+              data={orderBy.data}
+            />
+          )}
+        </Flex>
       </Flex>
     </Flex>
   );
