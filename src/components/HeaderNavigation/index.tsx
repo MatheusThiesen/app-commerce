@@ -1,9 +1,10 @@
+import { Link } from "@chakra-ui/next-js";
 import {
   Avatar,
   Box,
   Button,
-  Link as CharkraLink,
   Flex,
+  HStack,
   Image,
   Menu,
   MenuButton,
@@ -14,12 +15,26 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import Link from "next/link";
 import Router from "next/router";
 import { ReactNode, memo, useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import { useAuth } from "../../contexts/AuthContext";
 import { NavLink } from "./NavLink";
+
+export const SELLER_EMAILS_ACCEPT = [
+  "amanda.medeiros@alpardobrasil.com.br",
+  "rardy.maciel@alpardobrasil.com.br",
+  "yasmin.santos@alpardobrasil.com.br",
+  "vanessa.rodrigues@alpardobrasil.com.br",
+  "mariana.fonseca@alpardobrasil.com.br",
+  "lucas.machado@alpardobrasil.com.br",
+  "matheus.thiesen@alpardobrasil.com.br",
+  "joaoo@alpardobrasil.com.br",
+  "vinicius@alpardobrasil.com.br",
+  "fernando@alpardobrasil.com.br",
+  "bruna.anjos@alpardobrasil.com.br",
+  "diulia.abbott@alpardobrasil.com.br",
+];
 
 export interface HeaderProps {
   isInativeEventScroll?: boolean;
@@ -37,9 +52,6 @@ export interface HeaderProps {
   Right?: ReactNode;
   Center?: ReactNode;
 
-  user?: {
-    name: string;
-  };
   isNotNavigation?: boolean;
 }
 
@@ -55,10 +67,9 @@ export function HeaderNavigationComponent({
   isNotHideHeaderEventScroll = false,
   isGoBack = false,
   onGoBack,
-  user,
   isNotNavigation = false,
 }: HeaderProps) {
-  const { signOut, isAuthenticated, user: userAuth } = useAuth();
+  const { signOut, isAuthenticated, user } = useAuth();
 
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -150,15 +161,13 @@ export function HeaderNavigationComponent({
               {title}
             </Text>
           ) : (
-            <CharkraLink h="full">
-              <Link href="/inicio">
-                <Image
-                  h="full"
-                  objectFit="contain"
-                  src="/assets/logo-white.png"
-                />
-              </Link>
-            </CharkraLink>
+            <Link href="/inicio" h="full">
+              <Image
+                h="full"
+                objectFit="contain"
+                src="/assets/logo-white.png"
+              />
+            </Link>
           )}
 
           <Flex flex={1} align="flex-end" justify="flex-end">
@@ -203,15 +212,19 @@ export function HeaderNavigationComponent({
           <Flex align="center" h="full">
             {Left && Left}
             {isAuthenticated && !isNotNavigation ? (
-              <Link href="/produtos" passHref>
-                <CharkraLink h="full" display="flex" alignItems="center">
-                  <Image
-                    py="1"
-                    h="70%"
-                    objectFit="contain"
-                    src="/assets/logo-white.png"
-                  />
-                </CharkraLink>
+              <Link
+                href="/produtos"
+                as="span"
+                h="full"
+                display="flex"
+                alignItems="center"
+              >
+                <Image
+                  py="1"
+                  h="70%"
+                  objectFit="contain"
+                  src="/assets/logo-white.png"
+                />
               </Link>
             ) : (
               <Image
@@ -230,69 +243,71 @@ export function HeaderNavigationComponent({
               <Stack direction="row" h="full" spacing="10">
                 <NavLink href="/inicio">Inicio</NavLink>
                 <NavLink href="/produtos">Produtos</NavLink>
-                <NavLink href="/clientes">Clientes</NavLink>
-                {userAuth?.eVendedor &&
-                  [
-                    "amanda.medeiros@alpardobrasil.com.br",
-                    "rardy.maciel@alpardobrasil.com.br",
-                    "yasmin.santos@alpardobrasil.com.br",
-                    "vanessa.rodrigues@alpardobrasil.com.br",
-                    "mariana.fonseca@alpardobrasil.com.br",
-                    "lucas.machado@alpardobrasil.com.br",
-                    "matheus.thiesen@alpardobrasil.com.br",
-                    "joaoo@alpardobrasil.com.br",
-                    "vinicius@alpardobrasil.com.br",
-                    "fernando@alpardobrasil.com.br",
-                    "bruna.anjos@alpardobrasil.com.br",
-                    "diulia.abbott@alpardobrasil.com.br",
-                  ].includes(userAuth.email) && (
-                    <NavLink href="/pedidos">Pedidos</NavLink>
-                  )}
+
+                {!user.eCliente && <NavLink href="/clientes">Clientes</NavLink>}
+
+                {((user.eVendedor &&
+                  SELLER_EMAILS_ACCEPT.includes(user.email)) ||
+                  user.eCliente) && <NavLink href="/pedidos">Pedidos</NavLink>}
               </Stack>
             )}
           </Flex>
 
-          <Flex
-            flexDir="column"
-            rowGap={"0.5rem"}
-            align="flex-end"
-            justify="center"
-            h="full"
-            py="0.5rem"
-          >
-            <Box>{Right && Right}</Box>
+          <HStack justify="center" alignItems="center" h="full" py="0.5rem">
+            <Flex
+              flexDir="column"
+              rowGap={"0.5rem"}
+              align="flex-end"
+              justify="center"
+            >
+              {user && !isNotNavigation && (
+                <Menu>
+                  <MenuButton>
+                    <Flex align={"center"}>
+                      <Avatar size="sm" name={user?.nome} bg="white" />
 
-            {user && !isNotNavigation && (
-              <Menu>
-                <MenuButton>
-                  <Flex align={"center"}>
-                    <Avatar size="sm" name={user?.name} bg="white" />
-                    <Text
-                      fontSize="smaller"
-                      fontWeight="bold"
-                      ml="2"
-                      color="white"
-                    >
-                      {user?.name}
-                    </Text>
-                  </Flex>
-                </MenuButton>
-                <MenuList zIndex="9999">
-                  <MenuGroup title="Perfil">
-                    <MenuItem>
-                      <Link href="/conta" passHref>
-                        <CharkraLink _hover={{ textDecoration: "none" }}>
+                      <Flex flexDir="column" alignItems="start">
+                        <Text
+                          fontSize="smaller"
+                          fontWeight="bold"
+                          ml="2"
+                          color="white"
+                          textTransform="capitalize"
+                          lineHeight="1"
+                          as={"span"}
+                        >
+                          {user?.nome}
+                        </Text>
+                        <Text
+                          fontSize="smaller"
+                          fontWeight="light"
+                          ml="2"
+                          color="white"
+                          lineHeight="1"
+                          as={"span"}
+                        >
+                          {user?.email}
+                        </Text>
+                      </Flex>
+                    </Flex>
+                  </MenuButton>
+                  <MenuList zIndex="9999">
+                    <MenuGroup title="Perfil">
+                      <MenuItem>
+                        <Link href="/conta" _hover={{ textDecoration: "none" }}>
                           Minha conta
-                        </CharkraLink>
-                      </Link>
-                    </MenuItem>
-                    <MenuDivider />
-                    <MenuItem onClick={signOut}>Sair </MenuItem>
-                  </MenuGroup>
-                </MenuList>
-              </Menu>
-            )}
-          </Flex>
+                        </Link>
+                      </MenuItem>
+                      <MenuDivider />
+                      <MenuItem onClick={signOut}>Sair </MenuItem>
+                    </MenuGroup>
+                  </MenuList>
+                </Menu>
+              )}
+            </Flex>
+
+            <Box>{Right && Right}</Box>
+          </HStack>
         </Flex>
 
         {content && (

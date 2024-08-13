@@ -25,8 +25,8 @@ import { IoBook } from "react-icons/io5";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
 
-import { Me } from "../../@types/me";
 import { Accordion } from "../../components/Accordion";
+import { Cart } from "../../components/Cart";
 import { FilterRangeAmount } from "../../components/FilterRangeAmount";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
@@ -38,7 +38,10 @@ import { ModalOrderBy } from "../../components/ModalOrderBy";
 import { PanelLayout } from "../../components/PanelLayout";
 import { Product } from "../../components/Product";
 import { Search } from "../../components/Search";
+import { ShoppingButton } from "../../components/ShoppingButton";
+import { useAuth } from "../../contexts/AuthContext";
 import { useLoading } from "../../contexts/LoadingContext";
+import { useStore } from "../../contexts/StoreContext";
 import { spaceImages } from "../../global/parameters";
 import {
   getProducts,
@@ -53,16 +56,10 @@ import {
   queryParamsToFiltersNormalized,
   useQueryParamsFilterList,
 } from "../../hooks/useQueryParamsFilterList";
-import { setupAPIClient } from "../../service/api";
 import getImageByUrl from "../../utils/getImageByUrl";
 import { groupByObj } from "../../utils/groupByObj";
-import { withSSRAuth } from "../../utils/withSSRAuth";
 
-interface ProductsProps {
-  me: Me;
-}
-
-export default function Produtos({ me }: ProductsProps) {
+export default function Produtos() {
   const { ref, inView } = useInView();
   const toast = useToast();
   const toastIdRef = useRef();
@@ -98,6 +95,8 @@ export default function Produtos({ me }: ProductsProps) {
     onSet: onSetScrollPosition,
   } = useLocalStore("@ScrollY-Products");
 
+  const { user } = useAuth();
+
   const [search, setSearch] = useState<string>(() => {
     return router.query.search ? String(router.query.search) : "";
   });
@@ -110,12 +109,21 @@ export default function Produtos({ me }: ProductsProps) {
     return queryParamsToFiltersNormalized(router.query);
   });
   const [groupProduct, setGroupProduct] = useState<
-    undefined | string | "codigoAlternativo"
+    undefined | string | "codigoAlternativo" | "referencia"
   >(() => {
-    return router.query.distinct ? String(router.query.distinct) : "";
+    return router.query.distinct
+      ? String(router.query.distinct)
+      : "codigoAlternativo";
   });
   const [stockLocation, setStockLocation] = useState(false);
   const [isVisibleFilters, setIsVisibleFilters] = useState(true);
+
+  const { totalItems } = useStore();
+  const {
+    isOpen: isOpenOrder,
+    onOpen: onOpenOrder,
+    onClose: onCloseOrder,
+  } = useDisclosure();
 
   useQueryParamsFilterList({
     router,
@@ -603,7 +611,6 @@ export default function Produtos({ me }: ProductsProps) {
       </Head>
 
       <HeaderNavigation
-        user={{ name: me?.email }}
         title="Produtos"
         contentHeight={2.5}
         content={
@@ -647,38 +654,48 @@ export default function Produtos({ me }: ProductsProps) {
           </Flex>
         }
         Right={
-          <Box display={["block", "block", "block", "none"]}>
-            <Menu>
-              <MenuButton
-                as={IconButton}
-                aria-label="Options"
-                icon={<SiMicrosoftexcel />}
-                fontSize="1.5rem"
-                color="white"
-                ml="-1"
-                variant="ghost"
-                colorScheme="whiteAlpha"
-              />
-              <MenuList>
-                <MenuItem fontSize="md" onClick={() => handleExportList({})}>
-                  Exportar listagem com Imagem
-                </MenuItem>
-                <MenuItem
-                  fontSize="md"
-                  onClick={() => handleExportList({ noImage: true })}
-                >
-                  Exportar listagem sem Imagem
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          </Box>
+          user.eCliente ? (
+            <ShoppingButton
+              qtdItens={totalItems}
+              onClick={onOpenOrder}
+              disabledTitle
+            />
+          ) : (
+            <Box display={["block", "block", "block", "none"]}>
+              <Menu>
+                <MenuButton
+                  as={IconButton}
+                  aria-label="Options"
+                  icon={<SiMicrosoftexcel />}
+                  fontSize="1.5rem"
+                  color="white"
+                  ml="-1"
+                  variant="ghost"
+                  colorScheme="whiteAlpha"
+                />
+                <MenuList>
+                  <MenuItem fontSize="md" onClick={() => handleExportList({})}>
+                    Exportar listagem com Imagem
+                  </MenuItem>
+                  <MenuItem
+                    fontSize="md"
+                    onClick={() => handleExportList({ noImage: true })}
+                  >
+                    Exportar listagem sem Imagem
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </Box>
+          )
         }
         Center={
           <Box width={"100%"} paddingX={["0.5rem", "0.5rem", "0.5rem", "0"]}>
             <Search
               size={"md"}
-              setSearch={setSearch}
-              search={search}
+              handleChangeSearch={(search) => {
+                setSearch(search);
+              }}
+              currentSearch={search}
               placeholder="Buscar na Alpar do Brasil por produtos"
             />
           </Box>
@@ -820,7 +837,7 @@ export default function Produtos({ me }: ProductsProps) {
                 aria-label="Options"
                 icon={<SiMicrosoftexcel />}
                 variant="outline"
-                color="#147b45"
+                color="gray.800"
                 fontSize="1.5rem"
                 ml="2"
               />
@@ -852,12 +869,13 @@ export default function Produtos({ me }: ProductsProps) {
                 size="md"
                 checked={!isVisibleFilters}
                 onChange={(e) => setIsVisibleFilters(!e.target.checked)}
+                colorScheme="gray"
               />
             </Flex>
           </HeaderToList>
 
           <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
-            <SimpleGrid columns={[2, 2, 3, 4, 4, 5]} spacing="1" mb="1rem">
+            <SimpleGrid columns={[2, 2, 3, 4, 4]} spacing="1" mb="1rem">
               {data?.pages.map((page) =>
                 page?.products.map((product, i) =>
                   i === page?.products.length - 4 ? (
@@ -1110,18 +1128,8 @@ export default function Produtos({ me }: ProductsProps) {
           </Flex>
         </Box>
       </Slide>
+
+      <Cart isOpen={isOpenOrder} onClose={onCloseOrder} />
     </>
   );
 }
-
-export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
-  const apiClient = setupAPIClient(ctx);
-
-  const response = await apiClient.get("/auth/me");
-
-  return {
-    props: {
-      me: response.data,
-    },
-  };
-});

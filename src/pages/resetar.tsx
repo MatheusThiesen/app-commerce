@@ -1,8 +1,8 @@
+import { Link } from "@chakra-ui/next-js";
 import {
   Box,
   Button,
   Center,
-  Link as ChakraLink,
   Flex,
   Stack,
   Text,
@@ -11,7 +11,7 @@ import {
 
 import { yupResolver } from "@hookform/resolvers/yup";
 import Head from "next/head";
-import Link from "next/link";
+
 import { useRouter } from "next/router";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { FaLock } from "react-icons/fa";
@@ -149,9 +149,7 @@ export default function Reset() {
             </Button>
 
             <Center pt="20px">
-              <Link href="/" passHref>
-                <ChakraLink>Voltar</ChakraLink>
-              </Link>
+              <Link href="/">Voltar</Link>
             </Center>
           </Flex>
         </Box>

@@ -23,39 +23,45 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaCartPlus } from "react-icons/fa";
+import { ImExit } from "react-icons/im";
+import { TbShoppingCartCancel } from "react-icons/tb";
 import { Me } from "../../../../@types/me";
 import { Cart } from "../../../../components/Cart";
 import { InputQuantity } from "../../../../components/Form/InputQuantity";
 import { HeaderNavigation } from "../../../../components/HeaderNavigation";
+import { ModalAlert } from "../../../../components/ModalAlert";
 import { ModalSelectPriceList } from "../../../../components/ModalSelectPriceList";
 import { ProductImageCarouse } from "../../../../components/ProductImageCarouse";
 import { ShoppingButton } from "../../../../components/ShoppingButton";
 import { VariationsProduct } from "../../../../components/VariationsProduct";
 import { useLoading } from "../../../../contexts/LoadingContext";
 import { useStore } from "../../../../contexts/StoreContext";
+import { spaceImages } from "../../../../global/parameters";
 import {
   StockLocation,
   useProductOne,
 } from "../../../../hooks/queries/useProducts";
 import { useImagesProduct } from "../../../../hooks/useImagesProduct";
 import { setupAPIClient } from "../../../../service/api";
-import { withSSRAuth } from "../../../../utils/withSSRAuth";
 
-interface ProdutoProps {
-  me: Me;
-}
-
-export default function Produto(props: ProdutoProps) {
+export default function Produto() {
   const router = useRouter();
   const { setLoading } = useLoading();
   const toast = useToast();
 
-  const { totalItems, orders, client, changePriceList } = useStore();
+  const { totalItems, orders, client, changePriceList, exitOrder } = useStore();
+
+  const {
+    isOpen: isConfirmExitOrder,
+    onOpen: onOpenConfirmExitOrder,
+    onClose: onCloseConfirmExitOrder,
+  } = useDisclosure();
 
   const {
     isOpen: isOpenOrder,
@@ -181,7 +187,16 @@ export default function Produto(props: ProdutoProps) {
             currentReference={product?.referencia ?? ""}
             uri={`/pedidos/novo/produtos`}
             hrefBack={hrefBack ? String(hrefBack) : undefined}
-            onClick={() => setLoading(true)}
+            onClick={() => {
+              setImages([
+                `${spaceImages}/Produtos/${
+                  product.imagemPreview
+                    ? product.imagemPreview
+                    : product.referencia + "_01"
+                }_smaller`,
+              ]);
+              setLoading(true);
+            }}
           />
         )}
 
@@ -200,7 +215,9 @@ export default function Produto(props: ProdutoProps) {
               value={product?.codigo}
             >
               {product?.grades?.map((grid) => (
-                <option value={grid.codigo}>{grid.descricaoAdicional}</option>
+                <option key={grid.codigo} value={grid.codigo}>
+                  {grid.descricaoAdicional}
+                </option>
               ))}
             </Select>
           </Box>
@@ -349,8 +366,32 @@ export default function Produto(props: ProdutoProps) {
         isInativeEventScroll
         onGoBack={handleGoBack}
         title="Detalhes"
-        user={{ name: props.me.email }}
-        Right={<ShoppingButton qtdItens={totalItems} onClick={onOpenOrder} />}
+        Right={
+          <Stack direction="row" pr="2">
+            <Button
+              p="0"
+              bg="transparent"
+              display="flex"
+              _hover={{ bg: "transparent" }}
+              alignItems="center"
+              justifyContent="center"
+              onClick={onOpenConfirmExitOrder}
+              ml={["2", "2", "2", "0"]}
+              mr={["0", "0", "0", "1rem "]}
+            >
+              <ImExit color="white" fontSize={"1.8rem"} />
+              <Text
+                color="white"
+                ml="1"
+                display={["none", "none", "flex", "flex"]}
+              >
+                Sair
+              </Text>
+            </Button>
+
+            <ShoppingButton qtdItens={totalItems} onClick={onOpenOrder} />
+          </Stack>
+        }
         isNotNavigation
         contentHeight={2}
         content={
@@ -659,6 +700,22 @@ export default function Produto(props: ProdutoProps) {
 
       <Cart isOpen={isOpenOrder} onClose={onCloseOrder} />
 
+      <ModalAlert
+        isOpen={isConfirmExitOrder}
+        onClose={onCloseConfirmExitOrder}
+        data={{
+          Icon: TbShoppingCartCancel,
+          title:
+            "Tem certeza que deseja sair? Ao sair seus itens no carrinho serão perdidos.",
+        }}
+        confirmOptions={{
+          onConfirm: exitOrder,
+          onClose: onCloseConfirmExitOrder,
+          titleButtonConfirm: "Sim, sair do pedido!",
+          titleButtonClose: "Cancelar",
+        }}
+      />
+
       <ModalSelectPriceList
         isOpen={isOpenSeleteListPrice}
         onClose={onCloseSeleteListPrice}
@@ -671,7 +728,7 @@ export default function Produto(props: ProdutoProps) {
   );
 }
 
-export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const apiClient = setupAPIClient(ctx);
 
   const response = await apiClient.get<Me>("/auth/me");
@@ -679,14 +736,12 @@ export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   if (response.data.eVendedor === false)
     return {
       redirect: {
-        destination: "/produtos",
+        destination: "/inicio",
         permanent: true,
       },
     };
 
   return {
-    props: {
-      me: response.data,
-    },
+    props: {},
   };
-});
+};

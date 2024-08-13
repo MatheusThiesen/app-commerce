@@ -5,9 +5,18 @@ import {
   Flex,
   HStack,
   Icon,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Stack,
   Tag,
   Text,
+  useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
@@ -17,7 +26,6 @@ import { IoBagHandle } from "react-icons/io5";
 import { Me } from "../../@types/me";
 
 import { setupAPIClient } from "../../service/api";
-import { withSSRAuth } from "../../utils/withSSRAuth";
 
 import { useLoading } from "../../contexts/LoadingContext";
 import {
@@ -26,29 +34,53 @@ import {
   useOrderOne,
 } from "../../hooks/queries/useOrder";
 
-import * as reactPDF from "react-to-pdf";
+import { GetServerSideProps } from "next";
+import { FaTrash } from "react-icons/fa";
 import { Client } from "../../components/Client";
 import { DifferentiatedApproval } from "../../components/DifferentiatedApproval";
 import { DifferentiatedCard } from "../../components/DifferentiatedCard";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductOrder } from "../../components/ProductOrder";
+import { useAuth } from "../../contexts/AuthContext";
 import { useStore } from "../../contexts/StoreContext";
+import { api } from "../../service/apiClient";
 
-interface Props {
-  me: Me;
-}
-
-export default function Order({ me }: Props) {
+export default function Order() {
   const router = useRouter();
+  const toast = useToast();
   const { sketchOrder } = useStore();
   const { setLoading } = useLoading();
-  const { toPDF, targetRef } = reactPDF.usePDF({ filename: "page.pdf" });
+  // const { toPDF, targetRef } = reactPDF.usePDF({ filename: "page.pdf" });
   const { codigo } = router.query;
+  const { user } = useAuth();
 
   const { data: order, isLoading } = useOrderOne(Number(codigo));
 
+  const {
+    isOpen: isOpenConfirmDeleteOrder,
+    onOpen: onOpenConfirmDeleteOrder,
+    onClose: onCloseConfirmDeleteOrder,
+  } = useDisclosure();
+
   async function handleSketch() {
     if (order?.codigo) await sketchOrder(order.codigo);
+  }
+
+  async function handleDeleteOrder() {
+    onOpenConfirmDeleteOrder();
+  }
+
+  async function deleteOrder() {
+    api.delete(`/orders/${order?.codigo}`);
+
+    await router.push("/pedidos");
+
+    return toast({
+      title: "Pedido excluído",
+      status: "success",
+      position: "top",
+      isClosable: true,
+    });
   }
 
   useEffect(() => {
@@ -57,9 +89,9 @@ export default function Order({ me }: Props) {
 
   return (
     <>
-      <button onClick={() => toPDF({ filename: "FILE.PDF" })}>
+      {/* <button onClick={() => toPDF({ filename: "FILE.PDF" })}>
         Download PDF
-      </button>
+      </button> */}
 
       <Head>
         <title> Pedido | App Alpar do Brasil</title>
@@ -69,22 +101,36 @@ export default function Order({ me }: Props) {
         isInativeEventScroll
         isGoBack
         title="Detalhes"
-        user={{ name: me.email }}
         Right={
           order?.eRascunho && (
-            <Button
-              onClick={handleSketch}
-              variant="unstyled"
-              display={["flex", "flex", "flex", "none"]}
-              justifyContent="center"
-              alignItems="center"
-              mr="4"
-              leftIcon={
-                <Icon as={IoBagHandle} color="white" fontSize={"1.8rem"} />
-              }
-            >
-              <Text color="white">Digitar</Text>
-            </Button>
+            <HStack>
+              <Button
+                onClick={handleDeleteOrder}
+                variant="unstyled"
+                display={["flex", "flex", "flex", "none"]}
+                justifyContent="center"
+                alignItems="center"
+                mr="4"
+                leftIcon={
+                  <Icon as={FaTrash} color="white" fontSize={"1.8rem"} />
+                }
+              >
+                <Text color="white">Excluir</Text>
+              </Button>
+              <Button
+                onClick={handleSketch}
+                variant="unstyled"
+                display={["flex", "flex", "flex", "none"]}
+                justifyContent="center"
+                alignItems="center"
+                mr="4"
+                leftIcon={
+                  <Icon as={IoBagHandle} color="white" fontSize={"1.8rem"} />
+                }
+              >
+                <Text color="white">Digitar</Text>
+              </Button>
+            </HStack>
           )
         }
       />
@@ -263,7 +309,10 @@ export default function Order({ me }: Props) {
                 </Box>
               </Box>
 
-              <Box width="full" ref={targetRef}>
+              <Box
+                width="full"
+                // ref={targetRef}
+              >
                 <Text fontSize="lg" fontWeight="light">
                   {`ITENS DO PEDIDO (${order?.itens.length})`}
                 </Text>
@@ -280,7 +329,7 @@ export default function Order({ me }: Props) {
                 </Stack>
               </Box>
 
-              {order.eDiferenciado && !order.eRascunho && (
+              {user.eVendedor && order.eDiferenciado && !order.eRascunho && (
                 <>
                   <Box width="full">
                     <Text fontSize="lg" fontWeight="light">
@@ -301,7 +350,7 @@ export default function Order({ me }: Props) {
 
                   {order?.situacaoPedido?.codigo === 6 &&
                     order.vendedorPendenteDiferenciadoCodigo ===
-                      me.vendedorCodigo && (
+                      user.vendedorCodigo && (
                       <Box width="full">
                         <Text fontSize="lg" fontWeight="light">
                           Aprovar Diferenciado
@@ -317,52 +366,123 @@ export default function Order({ me }: Props) {
       </Flex>
 
       {order?.eRascunho && (
-        <Button
-          onClick={handleSketch}
-          colorScheme="blue"
-          rounded="full"
-          position={["fixed"]}
-          bottom="12"
-          right="8"
-          display={["none", "none", "none", "flex"]}
-          justifyContent="center"
-          alignItems="center"
-          h="16"
-          w="16"
-        >
-          <Flex position="relative" justifyContent="center" alignItems="center">
-            <Icon as={IoBagHandle} color="white" fontSize={"1.8rem"} />
-
-            <Text
-              fontWeight="normal"
-              color="white"
-              position="absolute"
-              bottom="-12"
-              bg="gray.600"
-              opacity={0.8}
-              px="6px"
-              py="2px"
-              rounded="md"
+        <>
+          <Button
+            onClick={handleSketch}
+            colorScheme="blue"
+            rounded="full"
+            position={["fixed"]}
+            bottom="12"
+            right="8"
+            display={["none", "none", "none", "flex"]}
+            justifyContent="center"
+            alignItems="center"
+            h="14"
+            w="14"
+          >
+            <Flex
+              position="relative"
+              justifyContent="center"
+              alignItems="center"
             >
-              DIGITAR
-            </Text>
-          </Flex>
-        </Button>
+              <Icon as={IoBagHandle} color="white" fontSize={"1.8rem"} />
+
+              <Text
+                fontWeight="normal"
+                color="white"
+                position="absolute"
+                bottom="-10"
+                bg="gray.600"
+                opacity={0.8}
+                px="6px"
+                py="2px"
+                rounded="md"
+                fontSize="md"
+              >
+                DIGITAR
+              </Text>
+            </Flex>
+          </Button>
+
+          <Button
+            onClick={handleDeleteOrder}
+            colorScheme="red"
+            rounded="full"
+            position={["fixed"]}
+            bottom="12"
+            right="7.5rem"
+            display={["none", "none", "none", "flex"]}
+            justifyContent="center"
+            alignItems="center"
+            h="14"
+            w="14"
+          >
+            <Flex
+              position="relative"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Icon as={FaTrash} color="white" fontSize={"1.7rem"} />
+
+              <Text
+                fontWeight="normal"
+                color="white"
+                position="absolute"
+                bottom="-10"
+                bg="gray.600"
+                opacity={0.8}
+                px="6px"
+                py="2px"
+                rounded="md"
+                fontSize="md"
+              >
+                DELETAR
+              </Text>
+            </Flex>
+          </Button>
+        </>
       )}
+
+      <Modal
+        isOpen={isOpenConfirmDeleteOrder}
+        onClose={onCloseConfirmDeleteOrder}
+        size="lg"
+        isCentered
+      >
+        <ModalOverlay backdropFilter="blur(5px)" />
+        <ModalContent>
+          <ModalHeader>Excluir rascunho</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>Você tem certeza que deseja excluir o rascunho?</Text>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button mr={3} onClick={onCloseConfirmDeleteOrder}>
+              Cancelar
+            </Button>
+
+            <Button colorScheme="red" onClick={deleteOrder}>
+              Excluir
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 }
 
-export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const apiClient = setupAPIClient(ctx);
-  var me = {};
 
   const response = await apiClient.get<Me>("/auth/me");
 
-  if (response.data.eVendedor === false)
+  const redirect = response.data.eCliente || response.data.eVendedor;
+
+  if (!redirect)
     return {
       redirect: {
-        destination: "/produtos",
+        destination: "/inicio",
         permanent: true,
       },
     };
@@ -372,4 +492,4 @@ export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
       me: response.data,
     },
   };
-});
+};

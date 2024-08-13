@@ -1,20 +1,19 @@
 import {
   Box,
-  Button,
   Icon,
   Input,
   InputGroup,
   InputLeftElement,
   InputProps,
-  InputRightElement,
-  Text,
 } from "@chakra-ui/react";
-import { ChangeEvent, memo, useState } from "react";
+import { ChangeEvent, memo, useEffect, useState } from "react";
 import { IoSearch } from "react-icons/io5";
+import { useDebounce } from "use-debounce";
 
 export interface SearchProps extends InputProps {
-  setSearch: (t: string) => void;
-  search: string;
+  handleChangeSearch: (search: string) => void;
+  currentSearch: string;
+
   placeholder?: string;
   size?:
     | "sm"
@@ -32,27 +31,23 @@ export interface SearchProps extends InputProps {
 }
 
 const SearchComponent = ({
-  setSearch,
-  search,
+  currentSearch,
+  handleChangeSearch,
   size = "lg",
   placeholder = "Buscar na Alpar do Brasil",
   ...rest
 }: SearchProps) => {
-  const [searchService, setSearchService] = useState(search);
+  const [search, setSearch] = useState(currentSearch);
+  const [debouncedSearch] = useDebounce<string>(search, 700);
 
-  async function handleSearch() {
-    setSearch(searchService);
-  }
-  async function handleBlur(e: ChangeEvent<HTMLInputElement>) {
-    setSearch(e?.target?.value);
-  }
-  async function handleChange(e: ChangeEvent<HTMLInputElement>) {
-    setSearchService(e?.target?.value);
-  }
   async function handleSubmit(e: ChangeEvent<HTMLInputElement>) {
     e.preventDefault();
-    handleSearch();
+    handleChangeSearch(search);
   }
+
+  useEffect(() => {
+    handleChangeSearch(debouncedSearch ?? "");
+  }, [debouncedSearch]);
 
   return (
     <Box as="form" onSubmit={handleSubmit}>
@@ -67,7 +62,7 @@ const SearchComponent = ({
           bg="white"
           pr={["3.6rem", "3.6rem", "5.6rem"]}
           border="0"
-          borderRadius="lg"
+          borderRadius="1.5rem"
           _focus={{
             bgColor: "white",
           }}
@@ -78,31 +73,10 @@ const SearchComponent = ({
             bgColor: "white",
           }}
           colorScheme="whiteAlpha"
-          onBlur={handleBlur}
-          onChange={handleChange}
-          value={searchService}
+          onChange={(e) => setSearch(e.target.value)}
+          value={search}
           {...(rest as any)}
         />
-        <InputRightElement width={["3.5rem", "3.5rem", "5rem"]}>
-          <Button
-            colorScheme="whiteAlpha"
-            size="sm"
-            borderTopLeftRadius={0}
-            borderBottomStartRadius={0}
-            onClick={handleSearch}
-            borderLeftWidth={1}
-            borderLeftColor={"gray.100"}
-            background="transparent"
-          >
-            <Text
-              fontWeight="bold"
-              fontSize={["14", "sm", "sm", "sm"]}
-              color="gray.500"
-            >
-              Buscar
-            </Text>
-          </Button>
-        </InputRightElement>
       </InputGroup>
     </Box>
   );

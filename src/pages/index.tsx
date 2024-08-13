@@ -1,7 +1,7 @@
+import { Link } from "@chakra-ui/next-js";
 import {
   Box,
   Button,
-  Link as ChakraLink,
   Flex,
   Image,
   Stack,
@@ -9,8 +9,9 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { yupResolver } from "@hookform/resolvers/yup";
+
 import Head from "next/head";
-import Link from "next/link";
+
 import { SubmitHandler, useForm } from "react-hook-form";
 import { FaLock } from "react-icons/fa";
 import { IoMdMail } from "react-icons/io";
@@ -115,18 +116,17 @@ export default function SignIn() {
               />
             </Stack>
 
-            <Link href="/esquecido" passHref>
-              <ChakraLink
-                mt="2"
-                fontWeight="bold"
-                _hover={{
-                  textDecoration: "none",
-                  filter: "brightness(1.2)",
-                }}
-                transition=" all 0.3s"
-              >
-                Esqueci minha senha
-              </ChakraLink>
+            <Link
+              href="/esquecido"
+              mt="2"
+              fontWeight="bold"
+              _hover={{
+                textDecoration: "none",
+                filter: "brightness(1.2)",
+              }}
+              transition=" all 0.3s"
+            >
+              Esqueci minha senha
             </Link>
 
             <Button

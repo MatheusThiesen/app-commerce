@@ -23,21 +23,15 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { IoChevronForwardSharp } from "react-icons/io5";
-import { Me } from "../../@types/me";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductImageCarouse } from "../../components/ProductImageCarouse";
 import { VariationsProduct } from "../../components/VariationsProduct";
 import { useLoading } from "../../contexts/LoadingContext";
+import { spaceImages } from "../../global/parameters";
 import { useProductOne } from "../../hooks/queries/useProducts";
 import { useImagesProduct } from "../../hooks/useImagesProduct";
-import { setupAPIClient } from "../../service/api";
-import { withSSRAuth } from "../../utils/withSSRAuth";
 
-interface ProdutoProps {
-  me: Me;
-}
-
-export default function Produto(props: ProdutoProps) {
+export default function Produto() {
   const router = useRouter();
   const { codigo, hrefBack } = router.query;
   const [images, setImages] = useState<string[]>([]);
@@ -92,7 +86,16 @@ export default function Produto(props: ProdutoProps) {
           currentReference={product?.referencia ?? ""}
           uri={`/produtos`}
           hrefBack={hrefBack ? String(hrefBack) : undefined}
-          onClick={() => setLoading(true)}
+          onClick={() => {
+            setImages([
+              `${spaceImages}/Produtos/${
+                product.imagemPreview
+                  ? product.imagemPreview
+                  : product.referencia + "_01"
+              }_smaller`,
+            ]);
+            setLoading(true);
+          }}
         />
       )}
 
@@ -183,7 +186,6 @@ export default function Produto(props: ProdutoProps) {
         isInativeEventScroll
         onGoBack={handleGoBack}
         title="Detalhes"
-        user={{ name: props.me.email }}
       />
 
       {isLoading && product ? (
@@ -442,17 +444,3 @@ export default function Produto(props: ProdutoProps) {
     </>
   );
 }
-
-export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
-  const apiClient = setupAPIClient(ctx);
-  var me = {};
-
-  const response = await apiClient.get("/auth/me");
-  me = response.data;
-
-  return {
-    props: {
-      me: me,
-    },
-  };
-});

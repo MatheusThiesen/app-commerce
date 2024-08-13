@@ -169,11 +169,10 @@ export default function Catalog() {
                 </Text>
 
                 <Search
-                  search={search}
-                  setSearch={(s) => {
-                    setPageSwipe(layout === 2 ? 3 : 0);
-                    setSearch(s);
+                  handleChangeSearch={(search) => {
+                    setSearch(search);
                   }}
+                  currentSearch={search}
                   placeholder="Buscar"
                   size="sm"
                 />

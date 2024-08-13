@@ -4,7 +4,7 @@ import { GlobalStyleProps, mode } from "@chakra-ui/theme-tools";
 export const themeColors = {
   primary: "rgb(17 24 39)",
   "primary.hover": "rgb(31 41 55)",
-  background: "rgb(229 231 235)",
+  background: "rgb(244, 246, 250)",
 };
 
 export const theme: ThemeConfig = extendTheme({
@@ -21,7 +21,7 @@ export const theme: ThemeConfig = extendTheme({
       "400": "rgb(156 163 175)",
       "300": "rgb(209 213 219)",
       "200": "rgb(209 213 219)",
-      "100": "rgb(229 231 235)",
+      "100": "rgb(244, 246, 250)",
       "50": "#EEEEF2",
     },
     red: {

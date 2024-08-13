@@ -12,7 +12,6 @@ import Head from "next/head";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { Me } from "../../@types/me";
 import { Client } from "../../components/Client";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
@@ -20,12 +19,11 @@ import { ListFilter, SelectedFilter } from "../../components/ListFilter";
 import { ModalFilter } from "../../components/ModalFilter";
 import { ModalOrderBy } from "../../components/ModalOrderBy";
 import { OrderBy } from "../../components/OrderBy";
+import { PanelLayout } from "../../components/PanelLayout";
 import { Search } from "../../components/Search";
 import { useClients } from "../../hooks/queries/useClients";
 import { FilterList } from "../../hooks/queries/useProductsFilters";
-import { setupAPIClient } from "../../service/api";
 import { api } from "../../service/apiClient";
-import { withSSRAuth } from "../../utils/withSSRAuth";
 
 const clientOrderByItems = [
   {
@@ -46,11 +44,7 @@ const clientOrderByItems = [
   },
 ];
 
-interface ClientProps {
-  me: Me;
-}
-
-export default function Clientes({ me }: ClientProps) {
+export default function Clientes() {
   const { ref, inView } = useInView();
 
   const {
@@ -102,7 +96,6 @@ export default function Clientes({ me }: ClientProps) {
       </Head>
 
       <HeaderNavigation
-        user={{ name: me?.email }}
         title="Clientes"
         contentHeight={2.5}
         content={
@@ -149,166 +142,137 @@ export default function Clientes({ me }: ClientProps) {
           <Box width={"100%"} paddingX={["0.5rem", "0.5rem", "0.5rem", "0"]}>
             <Search
               size="md"
-              setSearch={setSearch}
-              search={search}
+              handleChangeSearch={(search) => {
+                setSearch(search);
+              }}
+              currentSearch={search}
               placeholder="Buscar na Alpar do Brasil por clientes"
             />
           </Box>
         }
       />
 
-      {isLoadingFilters ? (
-        <Flex h="100vh" w="100%" justify="center" align="center">
-          <Spinner ml="4" size="xl" />
+      <PanelLayout isLoading={isLoadingFilters}>
+        <Flex
+          w="18rem"
+          mr="8"
+          display={["none", "none", "none", "flex"]}
+          flexDirection="column"
+        >
+          <Box borderRadius="md">
+            <FilterSelectedList filters={filters} setFilters={setFilters} />
+
+            {dataFilters && (
+              <ListFilter
+                filters={dataFilters}
+                selectedFilter={filters}
+                onChangeSelectedFilter={(a) => {
+                  setFilters(a);
+                }}
+              />
+            )}
+          </Box>
         </Flex>
-      ) : (
-        <>
-          <Flex
-            pt={["6.5rem", "6.5rem", "6.5rem", "8rem"]}
-            pb={["7rem"]}
-            justify="center"
-            w="full"
-          >
-            <Flex w="full" maxW="1200px">
-              <Flex
-                w="22rem"
-                mr="3rem"
-                display={["none", "none", "none", "flex"]}
-                flexDirection="column"
-              >
-                <Box borderRadius="md">
-                  <FilterSelectedList
-                    filters={filters}
-                    setFilters={setFilters}
-                  />
 
-                  {dataFilters && (
-                    <ListFilter
-                      filters={dataFilters}
-                      selectedFilter={filters}
-                      onChangeSelectedFilter={(a) => {
-                        setFilters(a);
-                      }}
-                    />
-                  )}
-                </Box>
-              </Flex>
+        <Box w="full">
+          <Flex display={["none", "none", "none", "block"]}>
+            <Text
+              as="h1"
+              fontSize="4xl"
+              fontWeight="bold"
+              color="gray.700"
+              lineHeight="2rem"
+            >
+              Clientes
+              {isLoading && <Spinner ml="4" size="md" />}
+            </Text>
 
-              <Box w="full">
-                <Flex display={["none", "none", "none", "block"]}>
-                  <Text
-                    as="h1"
-                    fontSize="4xl"
-                    fontWeight="bold"
-                    color="gray.700"
-                    lineHeight="2rem"
-                  >
-                    Clientes
-                    {isLoading && <Spinner ml="4" size="md" />}
-                  </Text>
+            <Flex justifyContent="space-between" mt="1" mb="2">
+              <Text fontSize="md" color="gray.600">
+                Total {data?.pages[data?.pages.length - 1].total} resultados
+              </Text>
 
-                  <Flex justifyContent="space-between" mt="1" mb="2">
-                    <Text fontSize="md" color="gray.600">
-                      Total {data?.pages[data?.pages.length - 1].total}{" "}
-                      resultados
-                    </Text>
-
-                    <OrderBy
-                      onChange={setOrderBy}
-                      currentValue={orderBy}
-                      data={clientOrderByItems}
-                    />
-                  </Flex>
-                </Flex>
-
-                {isLoading ? (
-                  <Flex h="50vh" w="100%" justify="center" align="center">
-                    <Spinner ml="4" size="xl" />
-                  </Flex>
-                ) : (
-                  <>
-                    <Stack mb="1rem">
-                      {data?.pages.map((page) =>
-                        page?.clients.map((client, i) =>
-                          i === page?.clients?.length - 3 ? (
-                            <Link
-                              key={client.codigo}
-                              href={`/clientes/${client.codigo}`}
-                              passHref
-                            >
-                              <ChakraLink
-                                ref={ref}
-                                _hover={{
-                                  filter: "brightness(0.95)",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                <Client client={client} />
-                              </ChakraLink>
-                            </Link>
-                          ) : (
-                            <Link
-                              key={client.codigo}
-                              href={`/clientes/${client.codigo}`}
-                              passHref
-                            >
-                              <ChakraLink
-                                _hover={{
-                                  filter: "brightness(0.95)",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                <Client client={client} />
-                              </ChakraLink>
-                            </Link>
-                          )
-                        )
-                      )}
-                    </Stack>
-
-                    {isFetchingNextPage && (
-                      <Flex w="100%" justify="center" align="center">
-                        <Spinner mt="4" ml="4" size="lg" />
-                      </Flex>
-                    )}
-                  </>
-                )}
-              </Box>
+              <OrderBy
+                onChange={setOrderBy}
+                currentValue={orderBy}
+                data={clientOrderByItems}
+              />
             </Flex>
           </Flex>
 
-          <ModalFilter
-            isOpen={isOpenFilter}
-            onClose={onCloseFilter}
-            dataFilters={dataFilters}
-            filters={filters}
-            setFilters={setFilters}
-          />
+          {isLoading ? (
+            <Flex h="50vh" w="100%" justify="center" align="center">
+              <Spinner ml="4" size="xl" />
+            </Flex>
+          ) : (
+            <>
+              <Stack mb="1rem">
+                {data?.pages.map((page) =>
+                  page?.clients.map((client, i) =>
+                    i === page?.clients?.length - 3 ? (
+                      <Link
+                        key={client.codigo}
+                        href={`/clientes/${client.codigo}`}
+                        passHref
+                      >
+                        <ChakraLink
+                          ref={ref}
+                          _hover={{
+                            filter: "brightness(0.95)",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <Client client={client} />
+                        </ChakraLink>
+                      </Link>
+                    ) : (
+                      <Link
+                        key={client.codigo}
+                        href={`/clientes/${client.codigo}`}
+                        passHref
+                      >
+                        <ChakraLink
+                          _hover={{
+                            filter: "brightness(0.95)",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <Client client={client} />
+                        </ChakraLink>
+                      </Link>
+                    )
+                  )
+                )}
+              </Stack>
 
-          <ModalOrderBy
-            isOpen={isOpenOrderBy}
-            onClose={onCloseOrderBy}
-            orderByItems={clientOrderByItems}
-            currentOrderByValue={orderBy}
-            setOrderBy={(orderByValue) => {
-              setOrderBy(String(orderByValue));
-              onCloseOrderBy();
-            }}
-          />
-        </>
-      )}
+              {isFetchingNextPage && (
+                <Flex w="100%" justify="center" align="center">
+                  <Spinner mt="4" ml="4" size="lg" />
+                </Flex>
+              )}
+            </>
+          )}
+        </Box>
+      </PanelLayout>
+
+      <ModalFilter
+        isOpen={isOpenFilter}
+        onClose={onCloseFilter}
+        dataFilters={dataFilters}
+        filters={filters}
+        setFilters={setFilters}
+      />
+
+      <ModalOrderBy
+        isOpen={isOpenOrderBy}
+        onClose={onCloseOrderBy}
+        orderByItems={clientOrderByItems}
+        currentOrderByValue={orderBy}
+        setOrderBy={(orderByValue) => {
+          setOrderBy(String(orderByValue));
+          onCloseOrderBy();
+        }}
+      />
     </>
   );
 }
-
-export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
-  const apiClient = setupAPIClient(ctx);
-
-  const response = await apiClient.get("/auth/me");
-
-  return {
-    props: {
-      me: response.data,
-    },
-  };
-});

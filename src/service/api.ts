@@ -1,116 +1,90 @@
-import axios, { AxiosError } from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import * as https from "https";
 import { GetServerSidePropsContext } from "next";
-import { parseCookies, setCookie } from "nookies";
-import { signOut } from "../contexts/AuthContext";
-import { AuthTokenError } from "./errors/AuthTokenError";
+import { parseCookies } from "nookies";
+import { refreshToken } from "../contexts/AuthContext";
 
-let isRefreshing = false;
-let failedRequestQueue: any[] = [];
+interface RetryQueueItem {
+  resolve: (value?: any) => void;
+  reject: (error?: any) => void;
+  config: AxiosRequestConfig;
+}
 
 const agent = new https.Agent({
   rejectUnauthorized: false,
 });
 
+export const BASE_URL =
+  process.env.NODE_ENV !== "development"
+    ? "https://api-app.alpardobrasil.com.br/"
+    : "http://0.0.0.0:4444/";
+
 export function setupAPIClient(
   ctx: GetServerSidePropsContext | undefined = undefined
 ) {
-  let cookies = parseCookies(ctx);
+  const refreshAndRetryQueue: RetryQueueItem[] = [];
+  let isRefreshing = false;
 
   const api = axios.create({
-    baseURL:
-      process.env.NODE_ENV !== "development"
-        ? "https://api-app.alpardobrasil.com.br/"
-        : "http://0.0.0.0:4444/",
-    // : "http://192.168.0.155:4444/",
-    // : "http://localhost:4444/",
-    headers: {
-      Authorization: `Bearer ${cookies["nextauth.token"]}`,
-    },
     httpsAgent: agent,
-    timeout: 300000,
+    baseURL: BASE_URL,
   });
 
+  api.interceptors.request.use(
+    (config) => {
+      let cookies = parseCookies(ctx);
+      const { "nextauth.token": token } = cookies;
+
+      if (token) {
+        config.headers!["Authorization"] = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
   api.interceptors.response.use(
-    (success) => success,
-    (error: AxiosError) => {
-      if (
-        error?.response?.status === 401 &&
-        error?.config?.url !== "/auth/sso"
-      ) {
-        if (error?.response?.data?.message === "Unauthorized") {
-          cookies = parseCookies(ctx);
+    (response) => response,
+    async (error) => {
+      let cookies = parseCookies(ctx);
+      const { "nextauth.refreshToken": tokenRefresh } = cookies;
 
-          const { "nextauth.refreshToken": refreshToken } = cookies;
-          const originalConfig = error.config;
+      const originalRequest: AxiosRequestConfig = error.config;
 
-          if (!isRefreshing) {
-            isRefreshing = true;
+      if (error.response && error.response.status === 401 && !!tokenRefresh) {
+        if (!isRefreshing) {
+          isRefreshing = true;
+          try {
+            const newAccessToken = await refreshToken(ctx);
 
-            api
-              .post(
-                "/auth/refresh",
-                {},
-                {
-                  headers: {
-                    ["Authorization"]: `Bearer ${refreshToken}`,
-                  },
-                }
-              )
-              .then((response) => {
-                const {
-                  access_token: token,
-                  refresh_token: refresh_token_new,
-                } = response.data;
+            error.config.headers["Authorization"] = `Bearer ${newAccessToken}`;
 
-                setCookie(ctx, "nextauth.token", token, {
-                  maxAge: 60 * 60 * 24 * 30, //30 Days
-                  path: "/",
-                });
-                setCookie(ctx, "nextauth.refreshToken", refresh_token_new, {
-                  maxAge: 60 * 60 * 24 * 30, //30 Days
-                  path: "/",
-                });
-
-                //@ts-ignore
-                api?.defaults?.headers["Authorization"] = `Bearer ${token}`;
-
-                failedRequestQueue.forEach((request) =>
-                  request.onSuccess(token)
-                );
-                failedRequestQueue = [];
-              })
-              .catch((err) => {
-                failedRequestQueue.forEach((request) => request.onFailure(err));
-                failedRequestQueue = [];
-
-                if (process.browser) {
-                  signOut();
-                }
-              })
-              .finally(() => {
-                isRefreshing = false;
-              });
-          }
-
-          return new Promise((resolve, reject) => {
-            failedRequestQueue.push({
-              onSuccess: (token: string) => {
-                //@ts-ignore
-                originalConfig.headers["Authorization"] = `Bearer ${token}`;
-
-                resolve(api(originalConfig));
-              },
-              onFailure: (err: AxiosError) => reject(err),
+            refreshAndRetryQueue.forEach(({ config, resolve, reject }) => {
+              api
+                .request(config)
+                .then((response) => resolve(response))
+                .catch((err) => reject(err));
             });
-          });
-        } else {
-          if (process.browser) {
-            signOut();
-          } else {
-            return Promise.reject(new AuthTokenError());
+
+            refreshAndRetryQueue.length = 0;
+
+            return api(originalRequest);
+          } catch (refreshError) {
+            throw refreshError;
+          } finally {
+            isRefreshing = false;
           }
         }
+
+        return new Promise<void>((resolve, reject) => {
+          refreshAndRetryQueue.push({
+            config: originalRequest,
+            resolve,
+            reject,
+          });
+        });
       }
 
       return Promise.reject(error);

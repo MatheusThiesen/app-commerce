@@ -94,7 +94,7 @@ export type Product = {
   imagemPreview?: string;
 };
 
-export interface VariationsProduct {
+export type VariationsProduct = {
   codigo: number;
   codigoAlternativo: number;
   referencia: string;
@@ -104,7 +104,7 @@ export interface VariationsProduct {
   imagens?: {
     nome: string;
   }[];
-}
+};
 
 type ProductApiResponse = {
   data: Product[];

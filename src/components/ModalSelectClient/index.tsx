@@ -78,8 +78,10 @@ export function ModalSelectClient({
             </Flex>
 
             <Search
-              setSearch={setSearch}
-              search={search}
+              handleChangeSearch={(search) => {
+                setSearch(search);
+              }}
+              currentSearch={search}
               placeholder="Buscar cliente"
             />
           </Stack>

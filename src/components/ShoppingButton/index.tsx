@@ -3,9 +3,14 @@ import { AiOutlineShoppingCart } from "react-icons/ai";
 
 interface ShoppingButtonProps extends ButtonProps {
   qtdItens: number;
+  disabledTitle?: boolean;
 }
 
-export const ShoppingButton = ({ qtdItens, ...rest }: ShoppingButtonProps) => {
+export const ShoppingButton = ({
+  qtdItens,
+  disabledTitle = false,
+  ...rest
+}: ShoppingButtonProps) => {
   return (
     <Button
       mr={["2", "2", "2", "4"]}
@@ -32,13 +37,16 @@ export const ShoppingButton = ({ qtdItens, ...rest }: ShoppingButtonProps) => {
         </Flex>
       )}
       <Icon as={AiOutlineShoppingCart} color="white" fontSize={"2rem"} />
-      <Text
-        color="white"
-        display={["none", "none", "block", "block"]}
-        ml="0.5rem"
-      >
-        Carrinho
-      </Text>
+
+      {!disabledTitle && (
+        <Text
+          color="white"
+          display={["none", "none", "block", "block"]}
+          ml="0.5rem"
+        >
+          Carrinho
+        </Text>
+      )}
     </Button>
   );
 };

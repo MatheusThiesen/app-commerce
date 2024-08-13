@@ -1,4 +1,7 @@
+"use client";
+
 import axios, { AxiosError } from "axios";
+import { GetServerSidePropsContext } from "next";
 import Router from "next/router";
 import nookies, { parseCookies, setCookie } from "nookies";
 import {
@@ -9,6 +12,8 @@ import {
   useState,
 } from "react";
 import { Me } from "../@types/me";
+import { ROUTE_HOME } from "../middleware";
+import { BASE_URL } from "../service/api";
 import { api } from "../service/apiClient";
 
 type SignCredentials = {
@@ -18,10 +23,13 @@ type SignCredentials = {
 
 type AuthContextData = {
   signIn(creandentials: SignCredentials): Promise<ReponseSignIn | void>;
+  refreshToken(
+    ctx?: GetServerSidePropsContext | undefined
+  ): Promise<string | undefined>;
   signOut: () => void;
   sso: (token: string) => Promise<void>;
   reset(p: ResetProps): Promise<ReponseSignIn | void>;
-  user?: Me;
+  user: Me;
   isAuthenticated: boolean;
 };
 
@@ -41,8 +49,6 @@ type ResetProps = {
 
 export const AuthContext = createContext({} as AuthContextData);
 
-const route_home = "/produtos";
-
 export function signOut() {
   nookies.set({}, "nextauth.token", "", {
     maxAge: -1,
@@ -53,13 +59,47 @@ export function signOut() {
     path: "/",
   });
 
-  window.location.reload();
+  Router.push("/");
+  // window.location.reload();
+}
+export async function refreshToken(
+  ctx: GetServerSidePropsContext | undefined = undefined
+): Promise<string | undefined> {
+  const { "nextauth.refreshToken": tokenRefresh } = parseCookies(ctx);
+
+  try {
+    const refreshTokenResponse = await axios.post<{
+      refresh_token: string;
+      access_token: string;
+    }>(`${BASE_URL}auth/refresh`, {
+      token: tokenRefresh,
+    });
+
+    setCookie(ctx, "nextauth.token", refreshTokenResponse.data.access_token, {
+      maxAge: 60 * 60 * 24 * 30, //30 Days
+      path: "/",
+    });
+    setCookie(
+      ctx,
+      "nextauth.refreshToken",
+      refreshTokenResponse.data.refresh_token,
+      {
+        maxAge: 60 * 60 * 24 * 30, //30 Days
+        path: "/",
+      }
+    );
+
+    return refreshTokenResponse.data.access_token;
+  } catch (error) {
+    console.log(error);
+    signOut();
+  }
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const { "nextauth.token": token } = parseCookies();
 
-  const [user, setUser] = useState<Me>();
+  const [user, setUser] = useState<Me>({} as Me);
   const isAuthenticated = !!user && !!token;
 
   useEffect(() => {
@@ -85,15 +125,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       path: "/",
     });
 
-    //@ts-ignore
-    api.defaults.headers["Authorization"] = `Bearer ${token}`;
-
-    const me = await api.get("/auth/me");
-    setUser(me.data);
-
-    // authChannel.postMessage("signIn");
-    Router.push(route_home);
     window.location.reload();
+    Router.push(ROUTE_HOME);
   }
 
   async function signIn({
@@ -133,7 +166,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       await authenticate({ token, refreshToken });
     } catch (err) {
-      const error = err as AxiosError;
+      const error = err as AxiosError<any>;
 
       if (error.response?.status === 400) {
         return {
@@ -170,7 +203,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ signIn, isAuthenticated, user, signOut, reset, sso }}
+      value={{
+        signIn,
+        isAuthenticated,
+        user,
+        signOut,
+        reset,
+        sso,
+        refreshToken,
+      }}
     >
       {children}
     </AuthContext.Provider>

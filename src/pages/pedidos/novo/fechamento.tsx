@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import { Me } from "../../../@types/me";
 import { setupAPIClient } from "../../../service/api";
-import { withSSRAuth } from "../../../utils/withSSRAuth";
 
 import { IoArrowBack } from "react-icons/io5";
 import { MdShoppingCartCheckout } from "react-icons/md";
@@ -35,6 +34,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 
+import { GetServerSideProps } from "next";
 import { BiCartDownload } from "react-icons/bi";
 import { Input } from "../../../components/Form/Input";
 import { InputSelect } from "../../../components/Form/InputSelect";
@@ -42,10 +42,6 @@ import { Textarea } from "../../../components/Form/TextArea";
 import { useBrands } from "../../../hooks/queries/useBrands";
 import { useDiscountScope } from "../../../hooks/queries/useDiscountScope";
 import { api } from "../../../service/apiClient";
-
-interface Props {
-  me: Me;
-}
 
 type PaymentConditionResponse = {
   paymentConditions: PaymentCondition[];
@@ -65,7 +61,7 @@ type PaymentConditionState = {
   brandCod: number;
 };
 
-export default function CheckoutOrder({ me }: Props) {
+export default function CheckoutOrder() {
   const toast = useToast();
   const { data } = useBrands({});
   const discountScope = useDiscountScope();
@@ -296,7 +292,6 @@ export default function CheckoutOrder({ me }: Props) {
       <HeaderNavigation
         isGoBack
         title="Fechamento"
-        user={{ name: me.email }}
         isNotNavigation
         isInativeEventScroll
       />
@@ -730,7 +725,7 @@ export default function CheckoutOrder({ me }: Props) {
   );
 }
 
-export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const apiClient = setupAPIClient(ctx);
 
   const response = await apiClient.get<Me>("/auth/me");
@@ -738,14 +733,12 @@ export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   if (response.data.eVendedor === false)
     return {
       redirect: {
-        destination: "/produtos",
+        destination: "/inicio",
         permanent: true,
       },
     };
 
   return {
-    props: {
-      me: response.data,
-    },
+    props: {},
   };
-});
+};

@@ -14,7 +14,6 @@ import { useEffect, useState } from "react";
 import { ImExit } from "react-icons/im";
 
 import { setupAPIClient } from "../../../service/api";
-import { withSSRAuth } from "../../../utils/withSSRAuth";
 
 import { Me } from "../../../@types/me";
 
@@ -27,6 +26,7 @@ import {
   useQueryParamsFilterList,
 } from "../../../hooks/useQueryParamsFilterList";
 
+import { GetServerSideProps } from "next";
 import { TbShoppingCartCancel } from "react-icons/tb";
 import { Accordion } from "../../../components/Accordion";
 import { Cart } from "../../../components/Cart";
@@ -44,11 +44,7 @@ import { PanelLayout } from "../../../components/PanelLayout";
 import { Search } from "../../../components/Search";
 import { ShoppingButton } from "../../../components/ShoppingButton";
 
-interface OrderProps {
-  me: Me;
-}
-
-export default function Order({ me }: OrderProps) {
+export default function Order() {
   const router = useRouter();
   const { setQueryParams } = useQueryParams({ router });
   const { client, priceList, totalItems, exitOrder, changePriceList } =
@@ -96,7 +92,9 @@ export default function Order({ me }: OrderProps) {
   const [groupProduct, setGroupProduct] = useState<
     undefined | string | "codigoAlternativo"
   >(() => {
-    return router?.query?.distinct ? String(router.query.distinct) : "";
+    return router?.query?.distinct
+      ? String(router.query.distinct)
+      : "codigoAlternativo";
   });
 
   useQueryParamsFilterList({
@@ -140,7 +138,6 @@ export default function Order({ me }: OrderProps) {
       </Head>
 
       <HeaderNavigation
-        user={{ name: me?.email }}
         title="Pedido"
         contentHeight={4}
         Right={
@@ -177,8 +174,10 @@ export default function Order({ me }: OrderProps) {
           >
             <Search
               size="md"
-              setSearch={setSearch}
-              search={search}
+              handleChangeSearch={(search) => {
+                setSearch(search);
+              }}
+              currentSearch={search}
               placeholder="Buscar..."
             />
           </Flex>
@@ -277,8 +276,8 @@ export default function Order({ me }: OrderProps) {
       >
         {isVisibleFilters && (
           <Flex
-            w="22rem"
-            mr="3rem"
+            w="18rem"
+            mr="8"
             display={["none", "none", "none", "flex"]}
             flexDirection="column"
           >
@@ -402,7 +401,13 @@ export default function Order({ me }: OrderProps) {
               </Button>
             )}
 
-            <Flex justify="center" align="center" flexDir="row" ml="auto">
+            <Flex
+              justify="center"
+              align="center"
+              flexDir="row"
+              ml="auto"
+              mr="4"
+            >
               <Text as={"span"} fontSize="sm" fontWeight="normal">
                 OCULTAR FILTROS
               </Text>
@@ -411,6 +416,7 @@ export default function Order({ me }: OrderProps) {
                 size="md"
                 checked={!isVisibleFilters}
                 onChange={(e) => setIsVisibleFilters(!e.target.checked)}
+                colorScheme="gray"
               />
             </Flex>
           </HeaderToList>
@@ -555,7 +561,8 @@ export default function Order({ me }: OrderProps) {
     </>
   );
 }
-export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const apiClient = setupAPIClient(ctx);
 
   const response = await apiClient.get<Me>("/auth/me");
@@ -563,14 +570,12 @@ export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
   if (response.data.eVendedor === false)
     return {
       redirect: {
-        destination: "/produtos",
+        destination: "/inicio",
         permanent: true,
       },
     };
 
   return {
-    props: {
-      me: response.data,
-    },
+    props: {},
   };
-});
+};

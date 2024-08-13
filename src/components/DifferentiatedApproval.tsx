@@ -268,6 +268,15 @@ export function DifferentiatedApproval({ order }: Props) {
         borderRadius="lg"
       >
         <Stack>
+          <Input
+            label="Mark-up"
+            value={Number(
+              (order.valorTotal - currentAmountDiscount) / order.valorTotalCusto
+            ).toFixed(2)}
+            name="markup"
+            isReadOnly
+          />
+
           <InputSelect
             label="Tipo de desconto"
             {...register("type", { onChange: onChangeInput })}

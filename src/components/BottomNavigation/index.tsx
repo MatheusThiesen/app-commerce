@@ -4,6 +4,7 @@ import { BsBoxSeam } from "react-icons/bs";
 import { FiUsers } from "react-icons/fi";
 import { IoBagHandleOutline, IoHomeOutline } from "react-icons/io5";
 import { useAuth } from "../../contexts/AuthContext";
+import { SELLER_EMAILS_ACCEPT } from "../HeaderNavigation";
 import { MainNavLink } from "./MainNavLink";
 import { NavLink } from "./NavLink";
 
@@ -41,39 +42,37 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
               Inicio
             </NavLink>
           </ListItem>
-          <ListItem h="full">
-            <NavLink href="/clientes" icon={FiUsers}>
-              Clientes
-            </NavLink>
-          </ListItem>
 
-          {user?.eVendedor &&
-            [
-              "amanda.medeiros@alpardobrasil.com.br",
-              "rardy.maciel@alpardobrasil.com.br",
-              "yasmin.santos@alpardobrasil.com.br",
-              "vanessa.rodrigues@alpardobrasil.com.br",
-              "mariana.fonseca@alpardobrasil.com.br",
-              "lucas.machado@alpardobrasil.com.br",
-              "matheus.thiesen@alpardobrasil.com.br",
-              "joaoo@alpardobrasil.com.br",
-              "vinicius@alpardobrasil.com.br",
-              "fernando@alpardobrasil.com.br",
-              "bruna.anjos@alpardobrasil.com.br",
-              "diulia.abbott@alpardobrasil.com.br",
-            ].includes(user.email) && (
-              <ListItem h="full">
-                <MainNavLink href="/pedidos" icon={IoBagHandleOutline}>
-                  Pedidos
-                </MainNavLink>
-              </ListItem>
-            )}
+          {!user.eCliente && (
+            <ListItem h="full">
+              <NavLink href="/clientes" icon={FiUsers}>
+                Clientes
+              </NavLink>
+            </ListItem>
+          )}
+
+          {user?.eVendedor && SELLER_EMAILS_ACCEPT.includes(user.email) && (
+            <ListItem h="full">
+              <MainNavLink href="/pedidos" icon={IoBagHandleOutline}>
+                Pedidos
+              </MainNavLink>
+            </ListItem>
+          )}
 
           <ListItem h="full">
             <NavLink href="/produtos" icon={BsBoxSeam}>
               Produtos
             </NavLink>
           </ListItem>
+
+          {user?.eCliente && (
+            <ListItem h="full">
+              <NavLink href="/pedidos" icon={IoBagHandleOutline}>
+                Pedidos
+              </NavLink>
+            </ListItem>
+          )}
+
           <ListItem h="full">
             <NavLink href="/mais" icon={BiDotsHorizontalRounded}>
               mais

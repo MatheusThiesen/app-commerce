@@ -30,6 +30,7 @@ export type Order = {
   createdAtFormat: string;
   valorTotal: number;
   valorTotalFormat: string;
+  valorTotalCusto: number;
   eRascunho: boolean;
   eDiferenciado: boolean;
   tipoDesconto?: "VALOR" | "PERCENTUAL";
@@ -239,6 +240,11 @@ export async function getOrderOne(
       cepFormat: mask(data.cliente.cep, "99999-999"),
       cnpjFormat: mask(data.cliente.cnpj, "99.999.999/9999-99"),
     },
+    valorTotalCusto: data.itens.reduce(
+      (previousValue, current) =>
+        current.quantidade * current.produto.precoVendaEmpresa + previousValue,
+      0
+    ),
     valorTotalFormat: data.valorTotal.toLocaleString("pt-br", {
       style: "currency",
       currency: "BRL",

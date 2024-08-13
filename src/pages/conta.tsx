@@ -22,17 +22,9 @@ import * as Yup from "yup";
 import { Input } from "../components/Form/Input";
 import { InputFake } from "../components/Form/InputFake";
 import { HeaderNavigation } from "../components/HeaderNavigation";
+import { useAuth } from "../contexts/AuthContext";
 import { regexHelper } from "../helpers/regex";
-import { setupAPIClient } from "../service/api";
 import { api } from "../service/apiClient";
-import { withSSRAuth } from "../utils/withSSRAuth";
-
-interface ContaProps {
-  me: {
-    id: string;
-    email: string;
-  };
-}
 
 interface ChangePasswordProps {
   oldPassword: string;
@@ -53,7 +45,8 @@ const changePasswordFormSchema = Yup.object().shape({
     .required("Confirmação de senha é obrigatório"),
 });
 
-export default function Conta(props: ContaProps) {
+export default function Conta() {
+  const { user } = useAuth();
   const {
     isOpen: isOpenModalUpdatePassword,
     onOpen: onOpenModalUpdatePassword,
@@ -120,12 +113,7 @@ export default function Conta(props: ContaProps) {
         <title>Conta - App Alpar do Brasil</title>
       </Head>
 
-      <HeaderNavigation
-        isInativeEventScroll
-        user={{ name: props.me.email }}
-        title="Conta"
-        isGoBack
-      />
+      <HeaderNavigation isInativeEventScroll title="Conta" isGoBack />
 
       <Flex justify="center" pt="3rem" px="1.25rem">
         <Box bg="white" borderRadius="md" p="6" maxW="47.75rem" w="full">
@@ -136,7 +124,7 @@ export default function Conta(props: ContaProps) {
           </Box>
 
           <Stack spacing="4" mt="6">
-            <InputFake label="E-mail" value={props.me?.email} />
+            <InputFake label="E-mail" value={user?.email ?? ""} />
             <InputFake
               label="Password"
               value="************"
@@ -217,15 +205,3 @@ export default function Conta(props: ContaProps) {
     </>
   );
 }
-
-export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
-  const apiClient = setupAPIClient(ctx);
-
-  const response = await apiClient.get("/auth/me");
-
-  return {
-    props: {
-      me: response.data,
-    },
-  };
-});

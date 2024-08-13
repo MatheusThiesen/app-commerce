@@ -14,18 +14,11 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { IoChevronForwardSharp } from "react-icons/io5";
-import { Me } from "../../@types/me";
 import { InputFake } from "../../components/Form/InputFake";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { useClientOne } from "../../hooks/queries/useClients";
-import { setupAPIClient } from "../../service/api";
-import { withSSRAuth } from "../../utils/withSSRAuth";
 
-interface ClientProps {
-  me: Me;
-}
-
-export default function Client(props: ClientProps) {
+export default function Client() {
   const router = useRouter();
   const { codigo } = router.query;
 
@@ -36,12 +29,7 @@ export default function Client(props: ClientProps) {
         <title> Cliente | App Alpar do Brasil</title>
       </Head>
 
-      <HeaderNavigation
-        isInativeEventScroll
-        isGoBack
-        title="Detalhes"
-        user={{ name: props.me.email }}
-      />
+      <HeaderNavigation isInativeEventScroll isGoBack title="Detalhes" />
 
       {isLoading ? (
         <Flex h="100vh" w="100%" justify="center" align="center">
@@ -234,17 +222,3 @@ export default function Client(props: ClientProps) {
     </>
   );
 }
-
-export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
-  const apiClient = setupAPIClient(ctx);
-  var me = {};
-
-  const response = await apiClient.get("/auth/me");
-  me = response.data;
-
-  return {
-    props: {
-      me: me,
-    },
-  };
-});

@@ -17,7 +17,6 @@ import { useInView } from "react-intersection-observer";
 import { Me } from "../../@types/me";
 
 import { setupAPIClient } from "../../service/api";
-import { withSSRAuth } from "../../utils/withSSRAuth";
 
 import { useLoading } from "../../contexts/LoadingContext";
 import { useStore } from "../../contexts/StoreContext";
@@ -25,7 +24,9 @@ import { useStore } from "../../contexts/StoreContext";
 import { useOrders } from "../../hooks/queries/useOrder";
 import { useOrdersFilters } from "../../hooks/queries/useOrdersFilters";
 
+import { GetServerSideProps } from "next";
 import { Alert } from "../../components/Alert";
+import { Cart } from "../../components/Cart";
 import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ListFilter, SelectedFilter } from "../../components/ListFilter";
@@ -37,10 +38,8 @@ import { OrderBy } from "../../components/OrderBy";
 import { OrderByMobile } from "../../components/OrderByMobile";
 import { PanelLayout } from "../../components/PanelLayout";
 import { Search } from "../../components/Search";
-
-interface OrdersProps {
-  me: Me;
-}
+import { ShoppingButton } from "../../components/ShoppingButton";
+import { useAuth } from "../../contexts/AuthContext";
 
 const OrderByItems = [
   {
@@ -53,7 +52,7 @@ const OrderByItems = [
   },
 ];
 
-export default function Orders({ me }: OrdersProps) {
+export default function Orders() {
   const {
     isOpen: isOpenFilter,
     onOpen: onOpenFilter,
@@ -71,11 +70,6 @@ export default function Orders({ me }: OrdersProps) {
     onClose: onCloseSeleteClient,
   } = useDisclosure();
   const {
-    isOpen: isOpenSeleteListPrice,
-    onOpen: onOpenSeleteListPrice,
-    onClose: onCloseSeleteListPrice,
-  } = useDisclosure();
-  const {
     isOpen: isOpenAlertBilletClient,
     onOpen: onOpenAlertBilletClient,
     onClose: onCloseAlertBilletClient,
@@ -89,6 +83,7 @@ export default function Orders({ me }: OrdersProps) {
     return "createdAt.desc";
   });
   const { setLoading } = useLoading();
+  const { user } = useAuth();
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useOrders({
@@ -102,7 +97,12 @@ export default function Orders({ me }: OrdersProps) {
     {}
   );
 
-  const { createOrder } = useStore();
+  const { createOrder, totalItems } = useStore();
+  const {
+    isOpen: isOpenOrder,
+    onOpen: onOpenOrder,
+    onClose: onCloseOrder,
+  } = useDisclosure();
 
   useEffect(() => {
     if (inView && hasNextPage) {
@@ -120,26 +120,33 @@ export default function Orders({ me }: OrdersProps) {
       </Head>
 
       <HeaderNavigation
-        user={{ name: me?.email }}
         title="Pedidos"
         Right={
-          <Button
-            onClick={onOpenSeleteClient}
-            variant="unstyled"
-            display={["flex", "flex", "flex", "none"]}
-            justifyContent="center"
-            alignItems="center"
-          >
-            <IoMdAddCircle color="white" fontSize={"1.8rem"} />
-          </Button>
+          user.eCliente ? (
+            <ShoppingButton
+              qtdItens={totalItems}
+              onClick={onOpenOrder}
+              disabledTitle
+            />
+          ) : (
+            <Button
+              onClick={onOpenSeleteClient}
+              variant="unstyled"
+              display={["flex", "flex", "flex", "none"]}
+              justifyContent="center"
+              alignItems="center"
+            >
+              <IoMdAddCircle color="white" fontSize={"1.8rem"} />
+            </Button>
+          )
         }
         contentHeight={2.5}
         Center={
           <Box width={"100%"} paddingX={["0.5rem", "0.5rem", "0.5rem", "0"]}>
             <Search
               size="md"
-              setSearch={setSearch}
-              search={search}
+              currentSearch={search}
+              handleChangeSearch={(s) => setSearch(s)}
               placeholder="Buscar na Alpar do Brasil por pedidos"
             />
           </Box>
@@ -189,8 +196,8 @@ export default function Orders({ me }: OrdersProps) {
       <PanelLayout isLoading={isLoadingFilters}>
         <Flex w="full" maxW="1200px">
           <Flex
-            w="22rem"
-            mr="3rem"
+            w="18rem"
+            mr="8"
             display={["none", "none", "none", "flex"]}
             flexDirection="column"
           >
@@ -222,13 +229,15 @@ export default function Orders({ me }: OrdersProps) {
               >
                 Pedidos
                 {isLoading && <Spinner ml="4" size="md" />}
-                <Button type="button" ml="2" onClick={onOpenSeleteClient}>
-                  <Icon
-                    as={IoMdAddCircle}
-                    color="primary"
-                    fontSize={"1.8rem"}
-                  />
-                </Button>
+                {user.eVendedor && (
+                  <Button type="button" ml="2" onClick={onOpenSeleteClient}>
+                    <Icon
+                      as={IoMdAddCircle}
+                      color="primary"
+                      fontSize={"1.8rem"}
+                    />
+                  </Button>
+                )}
               </Text>
 
               <Flex justifyContent="space-between" mt="1" mb="2">
@@ -378,8 +387,6 @@ export default function Orders({ me }: OrdersProps) {
           if (!!client?.titulo?.length && client?.titulo?.length >= 1) {
             onOpenAlertBilletClient();
           } else {
-            onOpenSeleteListPrice();
-
             createOrder({
               client,
               priceList: { codigo: 28, descricao: "28 DDL" },
@@ -387,26 +394,27 @@ export default function Orders({ me }: OrdersProps) {
           }
         }}
       />
+
+      <Cart isOpen={isOpenOrder} onClose={onCloseOrder} />
     </>
   );
 }
 
-export const getServerSideProps = withSSRAuth<{}>(async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const apiClient = setupAPIClient(ctx);
-
   const response = await apiClient.get<Me>("/auth/me");
 
-  if (response.data.eVendedor === false)
+  const redirect = response.data.eCliente || response.data.eVendedor;
+
+  if (!redirect)
     return {
       redirect: {
-        destination: "/produtos",
+        destination: "/inicio",
         permanent: true,
       },
     };
 
   return {
-    props: {
-      me: response.data,
-    },
+    props: {},
   };
-});
+};

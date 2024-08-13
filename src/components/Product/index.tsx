@@ -1,6 +1,6 @@
+import { Link } from "@chakra-ui/next-js";
 import { Box, Button, Flex, Icon, Image, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import { memo } from "react";
 import { FaCartArrowDown } from "react-icons/fa";
 import {
@@ -59,12 +59,11 @@ export function ProductComponent({
       bg="white"
       px="2"
       py="2"
-      borderRadius="md"
+      borderRadius="6px"
       boxShadow="base"
       _hover={{
         textDecoration: "none",
       }}
-      whileHover={{ boxShadow: "0px 10px 15px 4px rgba(0,0,0,0.20)" }}
       viewport={{ once: true }}
       whileTap={{ scale: 0.98 }}
     >
@@ -99,77 +98,80 @@ export function ProductComponent({
             />
           </Button>
         </Box> */}
-        <Link href={`/${href}/${cod}?hrefBack=${hrefBack}`} passHref>
+
+        <Link
+          href={`/${href}/${cod}?hrefBack=${hrefBack}`}
+          as="a"
+          flexDir="column"
+          justifyContent="space-between"
+          _hover={{
+            textDecor: "none",
+          }}
+          mt={isCatalog ? "4" : 0}
+          w="100%"
+          flex={1}
+          onClick={() => {
+            if (onClickProduct) onClickProduct();
+          }}
+        >
           <Flex
-            as="a"
-            flexDir="column"
-            justifyContent="space-between"
-            mt={isCatalog ? "4" : 0}
-            w="100%"
+            w="full"
+            flexDirection="column"
+            align="center"
+            justify="center"
             flex={1}
-            onClick={() => {
-              if (onClickProduct) onClickProduct();
-            }}
           >
-            <Flex
+            <Image
               w="full"
-              flexDirection="column"
-              align="center"
-              justify="center"
-              flex={1}
+              minH="13rem"
+              maxH="13rem"
+              src={uri}
+              objectFit="contain"
+              objectPosition="50% 50%"
+              onError={({ currentTarget }) => {
+                currentTarget.onerror = null; // prevents looping
+                currentTarget.src = defaultNoImage;
+              }}
+            />
+          </Flex>
+
+          <Box w="95%">
+            <Text
+              w="full"
+              mt="4"
+              fontSize="md"
+              fontWeight="400"
+              whiteSpace="nowrap"
+              overflow="hidden"
+              textOverflow="ellipsis"
             >
-              <Image
-                w="full"
-                minH="40"
-                maxH="40"
-                src={uri}
-                objectFit="contain"
-                objectPosition="50% 50%"
-                onError={({ currentTarget }) => {
-                  currentTarget.onerror = null; // prevents looping
-                  currentTarget.src = defaultNoImage;
-                }}
-              />
-            </Flex>
+              {name}
+            </Text>
 
-            <Box w="full">
+            <Flex flexDir="column" mb="1.5">
               <Text
-                w="full"
-                mt="4"
-                fontSize="md"
-                fontWeight="400"
-                whiteSpace="nowrap"
-                overflow="hidden"
-                textOverflow="ellipsis"
+                as="span"
+                fontSize="smaller"
+                color="gray.600"
+                fontWeight="light"
               >
-                {name}
+                Referência {reference}
               </Text>
-
-              <Flex flexDir="column" mb="1.5">
+              {product.subInfo && (
                 <Text
                   as="span"
                   fontSize="smaller"
                   color="gray.600"
                   fontWeight="light"
                 >
-                  Referência {reference}
+                  {product.subInfo}
                 </Text>
-                {product.subInfo && (
-                  <Text
-                    as="span"
-                    fontSize="smaller"
-                    color="gray.600"
-                    fontWeight="light"
-                  >
-                    {product.subInfo}
-                  </Text>
-                )}
-              </Flex>
-              <Text fontSize="lg" fontWeight="bold">
-                {amount}
-              </Text>
-            </Box>
-          </Flex>
+              )}
+            </Flex>
+            <Text fontSize="lg" fontWeight="bold">
+              {amount}
+            </Text>
+          </Box>
         </Link>
 
         {onAddCard && (

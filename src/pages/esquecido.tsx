@@ -2,24 +2,23 @@ import {
   Box,
   Button,
   Center,
-  Link as ChakraLink,
   Flex,
   Stack,
   Text,
   useToast,
 } from "@chakra-ui/react";
 
+import { Link } from "@chakra-ui/next-js";
+
 import { yupResolver } from "@hookform/resolvers/yup";
 import { AxiosError } from "axios";
 import Head from "next/head";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { IoMdMail } from "react-icons/io";
 import * as Yup from "yup";
 import { Input } from "../components/Form/Input";
 import { api } from "../service/apiClient";
-import { withSSRGuest } from "../utils/withSSRGuest";
 
 type ForgotFormData = {
   email: string;
@@ -53,7 +52,7 @@ export default function Forgot() {
         isClosable: true,
       });
     } catch (err) {
-      const error = err as AxiosError;
+      const error = err as AxiosError<any>;
 
       if (error.response?.status === 400) {
         setError(
@@ -133,17 +132,16 @@ export default function Forgot() {
             </Button>
 
             <Center pt="20px">
-              <Link href="/" passHref>
-                <ChakraLink
-                  fontWeight={"light"}
-                  _hover={{
-                    textDecoration: "none",
-                    filter: "brightness(0.9)",
-                  }}
-                  transition=" all 0.3s"
-                >
-                  Voltar
-                </ChakraLink>
+              <Link
+                href="/"
+                fontWeight={"light"}
+                _hover={{
+                  textDecoration: "none",
+                  filter: "brightness(0.9)",
+                }}
+                transition=" all 0.3s"
+              >
+                Voltar
               </Link>
             </Center>
           </Flex>
@@ -152,9 +150,3 @@ export default function Forgot() {
     </>
   );
 }
-
-export const getServerSideProps = withSSRGuest<{}>(async (ctx) => {
-  return {
-    props: {},
-  };
-});
