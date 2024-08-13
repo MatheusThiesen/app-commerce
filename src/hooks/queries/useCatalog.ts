@@ -79,7 +79,7 @@ export async function getCatalog({
         }) ?? "-",
     };
   } catch (err) {
-    const error = err as AxiosError;
+    const error = err as AxiosError<any>;
 
     const responseError = {
       products: [],

@@ -78,7 +78,7 @@ export default function Conta() {
         isClosable: true,
       });
     } catch (err) {
-      const error = err as AxiosError;
+      const error = err as AxiosError<any>;
 
       if (
         error.response?.status === 400 &&

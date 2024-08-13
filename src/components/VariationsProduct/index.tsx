@@ -1,11 +1,10 @@
 import { Box, HStack, Image } from "@chakra-ui/react";
-import { VariationsProduct } from "../../hooks/queries/useProducts";
-
 import { useRouter } from "next/router";
 import { defaultNoImage, spaceImages } from "../../global/parameters";
+import { VariationsProduct as VariationsProductQueryHook } from "../../hooks/queries/useProducts";
 
 interface VariationsProductProps {
-  variationsProduct: VariationsProduct[];
+  variationsProduct: VariationsProductQueryHook[];
   currentReference: string;
   uri?: string;
   hrefBack?: string;

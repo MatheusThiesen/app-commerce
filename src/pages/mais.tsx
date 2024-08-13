@@ -22,7 +22,7 @@ export default function Home() {
         <Avatar size="xl" bg="gray.500" />
         <Flex mt="1rem">
           <Text fontSize={"lg"} fontWeight="light">
-            Olá, {user?.name}
+            Olá, {user?.nome}
           </Text>
         </Flex>
 
