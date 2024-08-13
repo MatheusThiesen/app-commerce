@@ -1,3 +1,7 @@
+import Head from "next/head";
+import { useRouter } from "next/router";
+import { useEffect, useRef, useState } from "react";
+
 import {
   Box,
   Button,
@@ -18,13 +22,10 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import * as ExcelJS from "exceljs";
-import Head from "next/head";
-import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+
 import { IoBook } from "react-icons/io5";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
-
 import { Accordion } from "../../components/Accordion";
 import { Cart } from "../../components/Cart";
 import { FilterRangeAmount } from "../../components/FilterRangeAmount";
@@ -654,7 +655,7 @@ export default function Produtos() {
           </Flex>
         }
         Right={
-          user.eCliente ? (
+          user?.eCliente ? (
             <ShoppingButton
               qtdItens={totalItems}
               onClick={onOpenOrder}
