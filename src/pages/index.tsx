@@ -16,9 +16,11 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { FaLock } from "react-icons/fa";
 import { IoMdMail } from "react-icons/io";
 
+import { useEffect } from "react";
 import * as Yup from "yup";
 import { Input } from "../components/Form/Input";
 import { useAuth } from "../contexts/AuthContext";
+import { useLoading } from "../contexts/LoadingContext";
 import { withSSRGuest } from "../utils/withSSRGuest";
 
 type SignInFormData = {
@@ -38,6 +40,7 @@ export default function SignIn() {
   const { errors } = formState;
 
   const { signIn } = useAuth();
+  const { setLoading } = useLoading();
   const toast = useToast();
 
   const HandleSignIn: SubmitHandler<SignInFormData> = async (data) => {
@@ -54,6 +57,10 @@ export default function SignIn() {
       });
     }
   };
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   return (
     <>
