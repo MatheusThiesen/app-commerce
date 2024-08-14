@@ -90,9 +90,7 @@ export default function Produtos() {
   const [groupProduct, setGroupProduct] = useState<
     undefined | string | "codigoAlternativo"
   >(() => {
-    return router?.query?.distinct
-      ? String(router.query.distinct)
-      : "codigoAlternativo";
+    return router?.query?.distinct ? String(router.query.distinct) : "";
   });
   const [stockLocation, setStockLocation] = useState(false);
   const [isVisibleFilters, setIsVisibleFilters] = useState(true);
