@@ -15,7 +15,7 @@ export default class MyDocument extends Document {
             href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
             rel="stylesheet"
           />
-          <link rel="icon" href="/favicon.png" />
+          <link rel="icon" href="/favicon.svg" />
           <meta name="theme-color" content={themeColors.primary} />
 
           <meta name="application-name" content="Catálogo Alpar" />

@@ -14,5 +14,4 @@ module.exports = nextConfig;
 
 module.exports = withPWA({
   ...nextConfig,
-  // next.js config
 });
