@@ -111,9 +111,7 @@ export default function Produtos() {
   const [groupProduct, setGroupProduct] = useState<
     undefined | string | "codigoAlternativo" | "referencia"
   >(() => {
-    return router.query.distinct
-      ? String(router.query.distinct)
-      : "codigoAlternativo";
+    return router.query.distinct ? String(router.query.distinct) : "";
   });
   const [stockLocation, setStockLocation] = useState(false);
   const [isVisibleFilters, setIsVisibleFilters] = useState(true);
@@ -181,7 +179,7 @@ export default function Produtos() {
         page: 1,
         filters: filters,
         orderby: orderBy,
-        pagesize: 100000,
+        pagesize: 10000,
         search: search,
         isReport: true,
       });

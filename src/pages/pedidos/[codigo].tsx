@@ -115,7 +115,9 @@ export default function Order() {
                   <Icon as={FaTrash} color="white" fontSize={"1.8rem"} />
                 }
               >
-                <Text color="white">Excluir</Text>
+                <Text color="white" display={["none", "none", "flex", "flex"]}>
+                  Excluir
+                </Text>
               </Button>
               <Button
                 onClick={handleSketch}
@@ -128,7 +130,9 @@ export default function Order() {
                   <Icon as={IoBagHandle} color="white" fontSize={"1.8rem"} />
                 }
               >
-                <Text color="white">Digitar</Text>
+                <Text color="white" display={["none", "none", "flex", "flex"]}>
+                  Digitar
+                </Text>
               </Button>
             </HStack>
           )
