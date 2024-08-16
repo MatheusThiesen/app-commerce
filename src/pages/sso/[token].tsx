@@ -1,3 +1,4 @@
+import { ROUTE_HOME } from "@/middleware";
 import { Flex, Spinner, useToast } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -13,17 +14,19 @@ export default function Sso() {
 
   useEffect(() => {
     (async () => {
-      try {
-        await sso(String(token));
-        history.push("/produtos");
-      } catch (error) {
-        // toast({
-        //   title: "Ocorreu erro com seu acesso direto, realize seu login!",
-        //   status: "error",
-        //   position: "top",
-        //   isClosable: true,
-        // });
-        history.push("/");
+      if (token) {
+        try {
+          await sso(String(token));
+          history.push(ROUTE_HOME);
+        } catch (error) {
+          toast({
+            title: "Ocorreu erro com seu acesso direto, realize seu login!",
+            status: "error",
+            position: "top",
+            isClosable: true,
+          });
+          history.push("/");
+        }
       }
     })();
   }, [token]);

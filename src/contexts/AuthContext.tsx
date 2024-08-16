@@ -198,7 +198,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { access_token: accessToken, refresh_token: refreshToken } =
       response.data;
 
-    await authenticate({ token: accessToken, refreshToken });
+    setCookie(undefined, "nextauth.token", accessToken, {
+      maxAge: 60 * 60 * 24 * 30, //30 Days
+      path: "/",
+    });
+    setCookie(undefined, "nextauth.refreshToken", refreshToken, {
+      maxAge: 60 * 60 * 24 * 30, //30 Days
+      path: "/",
+    });
   }
 
   return (

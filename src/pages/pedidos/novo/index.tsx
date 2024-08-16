@@ -92,9 +92,7 @@ export default function Order() {
   const [groupProduct, setGroupProduct] = useState<
     undefined | string | "codigoAlternativo"
   >(() => {
-    return router?.query?.distinct
-      ? String(router.query.distinct)
-      : "codigoAlternativo";
+    return router?.query?.distinct ? String(router.query.distinct) : "";
   });
 
   useQueryParamsFilterList({
