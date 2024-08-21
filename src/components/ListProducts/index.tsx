@@ -19,18 +19,34 @@ interface Props {
   filters?: ItemFilter[] | undefined;
   search?: string;
   distinct?: "codigoAlternativo" | "referencia";
+
+  isCatalog?: boolean;
+  isButtonAddCart?: boolean;
 }
 
-export function ListProducts({ filters, orderby, distinct, search }: Props) {
+export function ListProducts({
+  filters,
+  orderby,
+  distinct,
+  search,
+  isCatalog,
+  isButtonAddCart,
+}: Props) {
   const { ref, inView } = useInView();
   const router = useRouter();
   const { setLoading } = useLoading();
   const { priceList } = useStore();
+
   const {
     data: scrollPosition,
     onRemove: onRemoveScrollPosition,
     onSet: onSetScrollPosition,
   } = useLocalStore("@ScrollY-Products-Order");
+  const {
+    data: scrollPositionProducts,
+    onRemove: onRemoveScrollPositionProducts,
+    onSet: onSetScrollPositionProducts,
+  } = useLocalStore("@ScrollY-Products");
 
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useProducts({
@@ -87,8 +103,11 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
               i === page?.products.length - 4 ? (
                 <Box key={product.codigo} ref={ref}>
                   <Product
+                    isCatalog={isCatalog}
                     onClickProduct={handleClickProduct}
-                    onAddCard={handleProductAddToCart}
+                    onAddCard={
+                      isButtonAddCart ? handleProductAddToCart : undefined
+                    }
                     hrefBack={router.asPath.replaceAll("&", "!")}
                     href="pedidos/novo/produtos"
                     product={{
@@ -96,23 +115,28 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
                       name: product.descricao,
                       descriptionAdditional: product.descricaoAdicional,
                       reference: product.referencia,
-                      subInfo: `${priceList?.descricao} ${
-                        //@ts-ignore
-                        product[`precoTabela${priceList?.codigo}Format`]
-                      }`,
                       amount: "PDV " + product.precoVendaFormat ?? "-",
                       uri: `${spaceImages}/Produtos/${
                         product?.imagemPreview
                           ? product.imagemPreview
                           : product.referencia + "_01"
                       }_smaller`,
+                      subInfo: isButtonAddCart
+                        ? `${priceList?.descricao} ${
+                            //@ts-ignore
+                            product[`precoTabela${priceList?.codigo}Format`]
+                          }`
+                        : undefined,
                     }}
                   />
                 </Box>
               ) : (
                 <Product
+                  isCatalog={isCatalog}
                   onClickProduct={handleClickProduct}
-                  onAddCard={handleProductAddToCart}
+                  onAddCard={
+                    isButtonAddCart ? handleProductAddToCart : undefined
+                  }
                   hrefBack={router.asPath.replaceAll("&", "!")}
                   href="pedidos/novo/produtos"
                   key={product.codigo}
@@ -121,16 +145,18 @@ export function ListProducts({ filters, orderby, distinct, search }: Props) {
                     name: product.descricao,
                     descriptionAdditional: product.descricaoAdicional,
                     reference: product.referencia,
-                    subInfo: `${priceList?.descricao} ${
-                      //@ts-ignore
-                      product[`precoTabela${priceList?.codigo}Format`]
-                    }`,
                     amount: "PDV " + product.precoVendaFormat ?? "-",
                     uri: `${spaceImages}/Produtos/${
                       product?.imagemPreview
                         ? product.imagemPreview
                         : product.referencia + "_01"
                     }_smaller`,
+                    subInfo: isButtonAddCart
+                      ? `${priceList?.descricao} ${
+                          //@ts-ignore
+                          product[`precoTabela${priceList?.codigo}Format`]
+                        }`
+                      : undefined,
                   }}
                 />
               )

@@ -8,7 +8,6 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  SimpleGrid,
   Slide,
   Spinner,
   Stack,
@@ -25,6 +24,7 @@ import { IoBook } from "react-icons/io5";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
 
+import { ListProducts } from "@/components/ListProducts";
 import { Accordion } from "../../components/Accordion";
 import { Cart } from "../../components/Cart";
 import { FilterRangeAmount } from "../../components/FilterRangeAmount";
@@ -32,22 +32,16 @@ import { FilterSelectedList } from "../../components/FilterSelectedList";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { HeaderToList } from "../../components/HeaderToList";
 import { ListFilter, SelectedFilter } from "../../components/ListFilter";
-import { LoadingInfiniteScroll } from "../../components/LoadingInfiniteScroll";
 import { ModalFilter } from "../../components/ModalFilter";
 import { ModalOrderBy } from "../../components/ModalOrderBy";
 import { PanelLayout } from "../../components/PanelLayout";
-import { Product } from "../../components/Product";
 import { Search } from "../../components/Search";
 import { ShoppingButton } from "../../components/ShoppingButton";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useStore } from "../../contexts/StoreContext";
 import { spaceImages } from "../../global/parameters";
-import {
-  getProducts,
-  productsOrderBy,
-  useProducts,
-} from "../../hooks/queries/useProducts";
+import { getProducts, productsOrderBy } from "../../hooks/queries/useProducts";
 import { useProductsFilters } from "../../hooks/queries/useProductsFilters";
 import { useLocalStore } from "../../hooks/useLocalStore";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
@@ -69,6 +63,8 @@ export default function Produtos() {
   const { setQueryParams } = useQueryParams({ router });
 
   const { isOpen, onToggle } = useDisclosure();
+
+  const { priceList, totalItems } = useStore();
 
   const {
     isActivated: isActivatedCatalog,
@@ -116,7 +112,6 @@ export default function Produtos() {
   const [stockLocation, setStockLocation] = useState(false);
   const [isVisibleFilters, setIsVisibleFilters] = useState(true);
 
-  const { totalItems } = useStore();
   const {
     isOpen: isOpenOrder,
     onOpen: onOpenOrder,
@@ -128,17 +123,23 @@ export default function Produtos() {
     filters,
   });
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useProducts({
-      pagesize: 40,
-      orderby: orderBy,
-      filters: filters,
-      distinct: groupProduct ? "codigoAlternativo" : undefined,
-      search: search,
-    });
-
   const { data: productsFilters, isLoading: isLoadingProductsFilters } =
-    useProductsFilters({});
+    useProductsFilters({
+      filters: [
+        {
+          value: user.clienteCodigo ?? 0,
+          name: "clientCod",
+          field: "clientCod",
+        },
+        {
+          value: priceList?.codigo ?? 0,
+          name: "priceListCod",
+          field: "priceListCod",
+        },
+      ].filter((f) =>
+        user?.eCliente ? true : !["priceListCod", "clientCod"].includes(f.name)
+      ),
+    });
 
   function setPositionScroll() {
     onSetScrollPosition(window.scrollY.toString());
@@ -573,12 +574,6 @@ export default function Produtos() {
   }, [isActivatedCatalog]);
 
   useEffect(() => {
-    if (inView && hasNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, fetchNextPage, hasNextPage]);
-
-  useEffect(() => {
     setQueryParams({ type: "set", data: { field: "orderby", value: orderBy } });
   }, [orderBy]);
   useEffect(() => {
@@ -591,9 +586,6 @@ export default function Produtos() {
     });
   }, [groupProduct]);
 
-  useEffect(() => {
-    setLoading(isLoading);
-  }, [isLoading]);
   useEffect(() => {
     const scrollY = Number(scrollPosition);
     if (!isNaN(scrollY)) {
@@ -795,7 +787,6 @@ export default function Produtos() {
         <Box w="full">
           <HeaderToList
             title="Produtos"
-            isLoading={isLoading}
             orderBy={{
               onChange: setOrderBy,
               currentValue: orderBy,
@@ -829,28 +820,30 @@ export default function Produtos() {
               </Button>
             )}
 
-            <Menu>
-              <MenuButton
-                as={IconButton}
-                aria-label="Options"
-                icon={<SiMicrosoftexcel />}
-                variant="outline"
-                color="gray.800"
-                fontSize="1.5rem"
-                ml="2"
-              />
-              <MenuList>
-                <MenuItem fontSize="md" onClick={() => handleExportList({})}>
-                  Exportar listagem com Imagem
-                </MenuItem>
-                <MenuItem
-                  fontSize="md"
-                  onClick={() => handleExportList({ noImage: true })}
-                >
-                  Exportar listagem sem Imagem
-                </MenuItem>
-              </MenuList>
-            </Menu>
+            {!user.eCliente && (
+              <Menu>
+                <MenuButton
+                  as={IconButton}
+                  aria-label="Options"
+                  icon={<SiMicrosoftexcel />}
+                  variant="outline"
+                  color="gray.800"
+                  fontSize="1.5rem"
+                  ml="2"
+                />
+                <MenuList>
+                  <MenuItem fontSize="md" onClick={() => handleExportList({})}>
+                    Exportar listagem com Imagem
+                  </MenuItem>
+                  <MenuItem
+                    fontSize="md"
+                    onClick={() => handleExportList({ noImage: true })}
+                  >
+                    Exportar listagem sem Imagem
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            )}
 
             <Flex
               justify="center"
@@ -872,7 +865,32 @@ export default function Produtos() {
             </Flex>
           </HeaderToList>
 
-          <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
+          <ListProducts
+            orderby={orderBy}
+            distinct={groupProduct ? "codigoAlternativo" : undefined}
+            search={search}
+            isCatalog={!user.eCliente}
+            isButtonAddCart={user.eCliente}
+            filters={[
+              ...filters,
+              {
+                value: user.clienteCodigo ?? 0,
+                name: "clientCod",
+                field: "clientCod",
+              },
+              {
+                value: priceList?.codigo ?? 0,
+                name: "priceListCod",
+                field: "priceListCod",
+              },
+            ].filter((f) =>
+              user?.eCliente
+                ? true
+                : !["priceListCod", "clientCod"].includes(f.name)
+            )}
+          />
+
+          {/* <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
             <SimpleGrid columns={[2, 2, 3, 4, 4]} spacing="1" mb="1rem">
               {data?.pages.map((page) =>
                 page?.products.map((product, i) =>
@@ -922,7 +940,7 @@ export default function Produtos() {
                 )
               )}
             </SimpleGrid>
-          </LoadingInfiniteScroll>
+          </LoadingInfiniteScroll> */}
         </Box>
       </PanelLayout>
 

@@ -730,7 +730,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   const response = await apiClient.get<Me>("/auth/me");
 
-  if (response.data.eVendedor === false)
+  if (!(response.data.eVendedor || response.data.eCliente))
     return {
       redirect: {
         destination: "/inicio",

@@ -34,6 +34,12 @@ import {
   useOrderOne,
 } from "../../hooks/queries/useOrder";
 
+import {
+  DetailGoBack,
+  DetailHeader,
+  DetailPage,
+  DetailTitle,
+} from "@/components/layouts/detail";
 import { GetServerSideProps } from "next";
 import { FaTrash } from "react-icons/fa";
 import { Client } from "../../components/Client";
@@ -138,6 +144,15 @@ export default function Order() {
           )
         }
       />
+
+      <DetailPage>
+        <DetailHeader className="justify-between">
+          <div className="flex">
+            <DetailGoBack />
+            <DetailTitle>Pedido #{order?.codigo}</DetailTitle>
+          </div>
+        </DetailHeader>
+      </DetailPage>
 
       <Flex
         flexDir="column"

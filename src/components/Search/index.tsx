@@ -38,7 +38,7 @@ const SearchComponent = ({
   ...rest
 }: SearchProps) => {
   const [search, setSearch] = useState(currentSearch);
-  const [debouncedSearch] = useDebounce<string>(search, 700);
+  const [debouncedSearch] = useDebounce<string>(search, 1200);
 
   async function handleSubmit(e: ChangeEvent<HTMLInputElement>) {
     e.preventDefault();

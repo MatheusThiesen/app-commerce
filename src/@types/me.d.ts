@@ -1,3 +1,5 @@
+import { Client } from "@/hooks/queries/useClients";
+
 export type Me = {
   id: string;
   email: string;
@@ -8,11 +10,7 @@ export type Me = {
   eAdmin: boolean;
 
   clienteCodigo: number;
-  cliente: {
-    codigo: number;
-    cnpj: string;
-    nomeFantasia: string;
-  };
+  cliente: Client;
   vendedorCodigo: number;
   vendedor: {
     codigo: number;

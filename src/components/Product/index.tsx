@@ -21,9 +21,9 @@ export interface ProductProps {
 }
 interface ProductComponentProps {
   product: ProductProps;
-  isCatalog?: boolean;
   href: string;
   hrefBack?: string;
+  isCatalog?: boolean;
   onClickProduct?: () => void;
   onAddCard?: (product: ProductProps) => void;
 }
