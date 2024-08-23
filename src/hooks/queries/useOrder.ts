@@ -38,6 +38,7 @@ export type Order = {
   descontoCalculadoFormat?: string;
   descontoPercentual?: number;
   descontoValor?: number;
+  descontoValorFormat: string;
   vendedorPendenteDiferenciadoCodigo?: number;
   diferenciados: Differentiated[];
   situacaoPedido?: {
@@ -65,10 +66,10 @@ export type Order = {
     codigo: number;
     descricao: string;
   };
-  itens: Item[];
+  itens: ItemOrder[];
 };
 
-export type Item = {
+export type ItemOrder = {
   codigo: string;
   quantidade: number;
   valorUnitario: number;
@@ -153,6 +154,17 @@ export function selectStatusIcon(statusCode?: number) {
   }
 }
 
+export const orderStatusStyle = {
+  1: { textColor: "text-yellow-600", bgColor: "bg-yellow-600" },
+  2: { textColor: "text-blue-600", bgColor: "bg-blue-700" },
+  3: { textColor: "text-green-600", bgColor: "bg-green-600" },
+  4: { textColor: "text-red-600", bgColor: "bg-red-600" },
+  5: { textColor: "text-red-600", bgColor: "bg-red-600" },
+  6: { textColor: "text-purple-600", bgColor: "bg-purple-600" },
+  7: { textColor: "text-orange-600", bgColor: "bg-orange-500" },
+  8: { textColor: "text-red-600", bgColor: "bg-red-600" },
+};
+
 export async function getOrders({
   page,
   pagesize,
@@ -185,6 +197,8 @@ export async function getOrders({
         }
       ),
       createdAtFormat: new Date(order.createdAt).toLocaleString("pt-br", {
+        hour: "2-digit",
+        minute: "2-digit",
         day: "2-digit",
         month: "long",
         year: "numeric",
@@ -220,10 +234,27 @@ export async function getOrderOne(
   const order: Order = {
     ...data,
     createdAtFormat: new Date(data.createdAt).toLocaleString("pt-br", {
+      hour: "2-digit",
+      minute: "2-digit",
       day: "2-digit",
       month: "long",
       year: "numeric",
     }),
+    descontoCalculado: data.valorTotal - (data.descontoCalculado ?? 0),
+    descontoCalculadoFormat: (
+      data.valorTotal - (data.descontoCalculado ?? 0)
+    ).toLocaleString("pt-br", {
+      style: "currency",
+      currency: "BRL",
+    }),
+    descontoValor: data.descontoCalculado ?? 0,
+    descontoValorFormat: Number(data?.descontoCalculado ?? 0).toLocaleString(
+      "pt-br",
+      {
+        style: "currency",
+        currency: "BRL",
+      }
+    ),
     dataFaturamentoFormat:
       data.periodoEstoque.periodo === "pronta-entrega"
         ? new Date(data.dataFaturamento).toLocaleString("pt-br", {
@@ -249,13 +280,7 @@ export async function getOrderOne(
       style: "currency",
       currency: "BRL",
     }),
-    descontoCalculadoFormat: Number(data.descontoCalculado || 0).toLocaleString(
-      "pt-br",
-      {
-        style: "currency",
-        currency: "BRL",
-      }
-    ),
+
     diferenciados: data.diferenciados.map((differentiated) => ({
       ...differentiated,
       descontoCalculadoFormat: Number(

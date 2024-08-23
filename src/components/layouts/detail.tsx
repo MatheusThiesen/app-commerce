@@ -173,18 +173,27 @@ export const DetailActionButton = ({
 };
 
 type DetailOptionsActionsProps = {
+  detailOptionsActionsTrigger?: ReactNode;
+
   data: {
     description: string;
     handle: () => void;
   }[];
 };
-export const DetailOptionsActions = ({ data }: DetailOptionsActionsProps) => {
+export const DetailOptionsActions = ({
+  data,
+  detailOptionsActionsTrigger,
+}: DetailOptionsActionsProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="p-5">
-          Mais ações <ChevronDown className="ml-2 size-4 " />
-        </Button>
+        {detailOptionsActionsTrigger ? (
+          detailOptionsActionsTrigger
+        ) : (
+          <Button variant="outline" className="p-5">
+            Mais ações <ChevronDown className="ml-2 size-4 " />
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48 mr-8">
         {data.map((item) => (

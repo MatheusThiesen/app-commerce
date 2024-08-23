@@ -1,20 +1,20 @@
+import { GroupInput } from "@/components/form-tailwind/GroupInput";
+import { InputBase } from "@/components/form-tailwind/InputBase";
+import { TextareaBase } from "@/components/form-tailwind/TextareaBase";
 import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Link as CharkraLink,
-  Divider,
-  Flex,
-  Spinner,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+  DetailBox,
+  DetailBoxSubtitle,
+  DetailBoxTitle,
+  DetailContent,
+  DetailGoBack,
+  DetailHeader,
+  DetailMain,
+  DetailPage,
+  DetailTitle,
+} from "@/components/layouts/detail";
+import { ScreenLoading } from "@/components/loading-screen";
 import Head from "next/head";
-import Link from "next/link";
 import { useRouter } from "next/router";
-import { IoChevronForwardSharp } from "react-icons/io5";
-import { InputFake } from "../../components/Form/InputFake";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { useClientOne } from "../../hooks/queries/useClients";
 
@@ -22,7 +22,10 @@ export default function Client() {
   const router = useRouter();
   const { codigo } = router.query;
 
-  const { data, isLoading } = useClientOne(Number(codigo));
+  const { data: client, isLoading } = useClientOne(Number(codigo));
+
+  if (isLoading || !client) return <ScreenLoading />;
+
   return (
     <>
       <Head>
@@ -31,194 +34,144 @@ export default function Client() {
 
       <HeaderNavigation isInativeEventScroll isGoBack title="Detalhes" />
 
-      {isLoading ? (
-        <Flex h="100vh" w="100%" justify="center" align="center">
-          <Spinner ml="4" size="xl" />
-        </Flex>
-      ) : (
-        <Flex
-          flexDir="column"
-          align="center"
-          width="full"
-          mt={["0", "0", "0", "8"]}
-        >
-          <Flex
-            flexDir="column"
-            width="full"
-            align="center"
-            maxW="1200px"
-            px={["0", "0", "0", "4"]}
-          >
-            <Flex
-              w="full"
-              mb="2"
-              align="center"
-              display={["none", "none", "none", "flex"]}
-            >
-              <Link href="/clientes">
-                <CharkraLink h="full" color="gray.600">
-                  Voltar à listagem
-                </CharkraLink>
-              </Link>
+      <DetailPage>
+        <DetailHeader className="hidden lg:flex">
+          <DetailGoBack />
+          <DetailTitle>{client.razaoSocial}</DetailTitle>
+        </DetailHeader>
 
-              <Divider h="1rem" mx="2" orientation="vertical" />
+        <DetailMain>
+          <DetailContent
+            secondaryColumn={
+              <>
+                <DetailBox>
+                  <DetailBoxTitle>Classificação</DetailBoxTitle>
 
-              <Breadcrumb
-                spacing="8px"
-                separator={<IoChevronForwardSharp color="gray.500" />}
-              >
-                <BreadcrumbItem>
-                  <Link href={`/clientes/${data?.codigo}`}>
-                    <BreadcrumbLink>{`${data?.codigo} - ${data?.razaoSocial}`}</BreadcrumbLink>
-                  </Link>
-                </BreadcrumbItem>
-              </Breadcrumb>
-            </Flex>
-
-            <Flex
-              flexDirection="column"
-              w="full"
-              bg="white"
-              borderRadius="md"
-              shadow="md"
-              mb="5rem"
-              p="6"
-            >
-              <Box>
-                <Text as="h2" fontWeight="bold" fontSize="2xl">
-                  Cadastro
-                </Text>
-              </Box>
-
-              <Stack spacing="4" mt="4">
-                <Stack
-                  direction={["column", "column", "column", "row"]}
-                  spacing="4"
-                >
-                  <InputFake
-                    label="Código"
-                    value={data?.codigo.toString() || "-"}
-                  />
-                  <InputFake
-                    label="Nome Fantasia"
-                    value={data?.nomeFantasia || "-"}
-                  />
-                  <InputFake
-                    label="Razão Social"
-                    value={data?.razaoSocial || "-"}
-                  />
-                  <InputFake label="CNPJ" value={data?.cnpjFormat || "-"} />
-                  <InputFake
-                    label="Inscrição Estadual"
-                    value={data?.incricaoEstadual || "-"}
-                  />
-                </Stack>
-              </Stack>
-
-              <Box mt="4">
-                <Text as="h2" fontWeight="bold" fontSize="2xl">
-                  Endereço
-                </Text>
-              </Box>
-
-              <Stack spacing="4" mt="4">
-                <Stack
-                  direction={["column", "column", "column", "row"]}
-                  spacing="4"
-                >
-                  <InputFake
-                    label="Logradouro"
-                    value={data?.logradouro || "-"}
-                  />
-                  <InputFake label="Número" value={data?.numero || "-"} />
-
-                  <InputFake label="Cidade" value={data?.cidade || "-"} />
-                  <InputFake label="Bairro" value={data?.bairro || "-"} />
-                  <InputFake label="UF" value={data?.uf || "-"} />
-
-                  <InputFake
-                    label="Complemento"
-                    value={data?.complemento || "-"}
-                  />
-                </Stack>
-              </Stack>
-
-              <Box mt="4">
-                <Text as="h2" fontWeight="bold" fontSize="2xl">
-                  Contato
-                </Text>
-              </Box>
-
-              <Stack spacing="4" mt="4">
-                <Stack
-                  direction={["column", "column", "column", "row"]}
-                  spacing="4"
-                >
-                  <InputFake label="E-Mail" value={data?.email || "-"} />
-                  <InputFake
-                    label="Telefone"
-                    value={data?.telefoneFormat || "-"}
-                  />
-
-                  <InputFake label="E-Mail 2" value={data?.email2 || "-"} />
-                  <InputFake
-                    label="Telefone 2"
-                    value={data?.telefone2Format || "-"}
-                  />
-                </Stack>
-              </Stack>
-
-              <Box mt="4">
-                <Text as="h2" fontWeight="bold" fontSize="2xl">
-                  Classificação
-                </Text>
-              </Box>
-
-              <Stack spacing="4" mt="4">
-                <Stack
-                  direction={["column", "column", "column", "row"]}
-                  spacing="4"
-                >
-                  <InputFake
+                  <InputBase
+                    name="activity-field"
                     label="Ramo de Atividade"
-                    value={data?.ramoAtividade?.descricao || "-"}
+                    value={client.ramoAtividade?.descricao}
                   />
 
-                  <InputFake
+                  <InputBase
+                    name="concept"
                     label="Conceito"
-                    value={data?.conceito?.descricao || "-"}
+                    value={client.conceito?.descricao}
                   />
-                </Stack>
-              </Stack>
+                </DetailBox>
 
-              <Box mt="4">
-                <Text as="h2" fontWeight="bold" fontSize="2xl">
-                  Observações
-                </Text>
-              </Box>
+                <DetailBox>
+                  <DetailBoxTitle>Endereço</DetailBoxTitle>
 
-              <Stack spacing="4" mt="4">
-                <Stack
-                  direction={["column", "column", "column", "row"]}
-                  spacing="4"
-                >
-                  <Flex
-                    px="1rem"
-                    py="1rem"
-                    bgColor="gray.50"
-                    color="gray.900"
-                    borderRadius="md"
-                    align="center"
-                    justify="space-between"
-                  >
-                    <Text as="span">{data?.obs || "-"}</Text>
-                  </Flex>
-                </Stack>
-              </Stack>
-            </Flex>
-          </Flex>
-        </Flex>
-      )}
+                  <InputBase
+                    name="zip-code"
+                    label="CEP"
+                    value={client.cepFormat}
+                  />
+
+                  <InputBase name="uf" label="UF" value={client.uf} />
+
+                  <InputBase name="city" label="Cidade" value={client.cidade} />
+
+                  <InputBase
+                    name="address"
+                    label="Endereço"
+                    value={client.logradouro}
+                  />
+
+                  <InputBase
+                    name="addressNumber"
+                    label="Número"
+                    value={client.numero}
+                  />
+
+                  <TextareaBase
+                    name="complement"
+                    label="Complemento"
+                    value={client.complemento}
+                  />
+                </DetailBox>
+
+                <DetailBox className="w-full">
+                  <DetailBoxTitle>Observação</DetailBoxTitle>
+
+                  <TextareaBase
+                    name="obs"
+                    defaultValue={client.obs}
+                    readOnly
+                    className="h-40"
+                  />
+                </DetailBox>
+              </>
+            }
+          >
+            <DetailBox className="w-full">
+              <div>
+                <DetailBoxTitle>{client.razaoSocial}</DetailBoxTitle>
+                <DetailBoxSubtitle>{client.cnpjFormat}</DetailBoxSubtitle>
+              </div>
+            </DetailBox>
+
+            <DetailBox className="w-full">
+              <DetailBoxTitle>Cadastro</DetailBoxTitle>
+
+              <InputBase name="code" label="Código" value={client.codigo} />
+
+              <InputBase name="cnpj" label="CNPJ" value={client.cnpjFormat} />
+
+              <InputBase
+                name="name"
+                label="Nome fantasia"
+                value={client.nomeFantasia}
+              />
+
+              <InputBase
+                name="socialReason"
+                label="Razão social"
+                value={client.razaoSocial}
+              />
+
+              <InputBase
+                name="stateRegistration"
+                label="Inscrição Estadual"
+                value={client.incricaoEstadual}
+              />
+            </DetailBox>
+
+            <DetailBox className="w-full">
+              <DetailBoxTitle>Contatos</DetailBoxTitle>
+
+              <GroupInput>
+                <InputBase name="email" label="E-mail" value={client.email} />
+                <InputBase
+                  name="email2"
+                  label="E-mail 2"
+                  value={client.email2}
+                />
+              </GroupInput>
+
+              <InputBase
+                name="cellPhone"
+                label="Celular"
+                value={client.celularFormat}
+              />
+
+              <GroupInput>
+                <InputBase
+                  name="phone"
+                  label="Telefone"
+                  value={client.telefoneFormat}
+                />
+                <InputBase
+                  name="phone2"
+                  label="Telefone 2"
+                  value={client.telefone2Format}
+                />
+              </GroupInput>
+            </DetailBox>
+          </DetailContent>
+        </DetailMain>
+      </DetailPage>
     </>
   );
 }
