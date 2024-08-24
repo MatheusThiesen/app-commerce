@@ -22,6 +22,7 @@ interface Props {
 
   isCatalog?: boolean;
   isButtonAddCart?: boolean;
+  pathList?: "products" | "createOrder";
 }
 
 export function ListProducts({
@@ -31,6 +32,7 @@ export function ListProducts({
   search,
   isCatalog,
   isButtonAddCart,
+  pathList = "products",
 }: Props) {
   const { ref, inView } = useInView();
   const router = useRouter();
@@ -109,7 +111,11 @@ export function ListProducts({
                       isButtonAddCart ? handleProductAddToCart : undefined
                     }
                     hrefBack={router.asPath.replaceAll("&", "!")}
-                    href="pedidos/novo/produtos"
+                    href={
+                      pathList === "createOrder"
+                        ? "pedidos/novo/produtos"
+                        : "produtos"
+                    }
                     product={{
                       cod: product.codigo,
                       name: product.descricao,
@@ -138,7 +144,11 @@ export function ListProducts({
                     isButtonAddCart ? handleProductAddToCart : undefined
                   }
                   hrefBack={router.asPath.replaceAll("&", "!")}
-                  href="pedidos/novo/produtos"
+                  href={
+                    pathList === "createOrder"
+                      ? "pedidos/novo/produtos"
+                      : "produtos"
+                  }
                   key={product.codigo}
                   product={{
                     cod: product.codigo,
