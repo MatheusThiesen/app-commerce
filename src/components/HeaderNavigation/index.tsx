@@ -37,6 +37,8 @@ export const SELLER_EMAILS_ACCEPT = [
   "flavioxavier.rs.oakley@gmail.com",
   "flavioxavier.rs.nike@gmail.com",
   "flavioxavier.rs.adidas@gmail.com",
+  "carlos.junior@alpardobrasil.com.br",
+  "uglio.scaravaglione@alpardobrasil.com.br",
 ];
 
 export interface HeaderProps {
