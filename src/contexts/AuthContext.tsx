@@ -113,7 +113,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           signOut();
         });
     }
-  }, []);
+  }, [token]);
 
   async function authenticate(data: { token: string; refreshToken: string }) {
     setCookie(undefined, "nextauth.token", data.token, {
