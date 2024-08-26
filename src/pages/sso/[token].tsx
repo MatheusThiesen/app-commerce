@@ -18,7 +18,6 @@ export default function Sso() {
         try {
           await sso(String(token));
           history.push(ROUTE_HOME);
-          window.location.reload();
         } catch (error) {
           toast({
             title: "Ocorreu erro com seu acesso direto, realize seu login!",
