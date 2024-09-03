@@ -7,6 +7,7 @@ import { api } from "../../service/apiClient";
 
 export type Client = {
   codigo: number;
+  eAtivo: boolean;
   razaoSocial: string;
   nomeFantasia: string;
   cidade: string;
@@ -22,8 +23,10 @@ export type Client = {
   complemento?: string;
   telefone: string;
   telefone2?: string;
+  celular?: string;
   telefoneFormat?: string;
   telefone2Format?: string;
+  celularFormat?: string;
   obs?: string;
   email?: string;
   email2?: string;

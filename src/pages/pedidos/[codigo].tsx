@@ -1,9 +1,6 @@
 import {
   Box,
   Button,
-  Link as CharkraLink,
-  Flex,
-  HStack,
   Icon,
   Modal,
   ModalBody,
@@ -13,34 +10,49 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
-  Tag,
   Text,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import Head from "next/head";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { IoBagHandle } from "react-icons/io5";
 import { Me } from "../../@types/me";
 
 import { setupAPIClient } from "../../service/api";
 
 import { useLoading } from "../../contexts/LoadingContext";
 import {
+  orderStatusStyle,
   selectStatusColor,
   selectStatusIcon,
   useOrderOne,
 } from "../../hooks/queries/useOrder";
 
+import { GroupInput } from "@/components/form-tailwind/GroupInput";
+import { InputBase } from "@/components/form-tailwind/InputBase";
+import {
+  DetailBox,
+  DetailBoxTitle,
+  DetailContent,
+  DetailGoBack,
+  DetailHeader,
+  DetailMain,
+  DetailOptionsActions,
+  DetailPage,
+  DetailTitle,
+} from "@/components/layouts/detail";
+import { ScreenLoading } from "@/components/loading-screen";
+import { ProductItem } from "@/components/product-item";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { Download, EllipsisVertical, ShoppingBag, Trash2 } from "lucide-react";
 import { GetServerSideProps } from "next";
-import { FaTrash } from "react-icons/fa";
-import { Client } from "../../components/Client";
+import { Resolution, usePDF } from "react-to-pdf";
 import { DifferentiatedApproval } from "../../components/DifferentiatedApproval";
 import { DifferentiatedCard } from "../../components/DifferentiatedCard";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
-import { ProductOrder } from "../../components/ProductOrder";
 import { useAuth } from "../../contexts/AuthContext";
 import { useStore } from "../../contexts/StoreContext";
 import { api } from "../../service/apiClient";
@@ -50,11 +62,16 @@ export default function Order() {
   const toast = useToast();
   const { sketchOrder } = useStore();
   const { setLoading } = useLoading();
-  // const { toPDF, targetRef } = reactPDF.usePDF({ filename: "page.pdf" });
+
   const { codigo } = router.query;
   const { user } = useAuth();
 
   const { data: order, isLoading } = useOrderOne(Number(codigo));
+
+  const { toPDF, targetRef } = usePDF({
+    filename: `Pedido #${codigo} - Alpar Store`,
+    resolution: Resolution.LOW,
+  });
 
   const {
     isOpen: isOpenConfirmDeleteOrder,
@@ -68,6 +85,10 @@ export default function Order() {
 
   async function handleDeleteOrder() {
     onOpenConfirmDeleteOrder();
+  }
+
+  function handleExportOrder() {
+    toPDF();
   }
 
   async function deleteOrder() {
@@ -87,12 +108,10 @@ export default function Order() {
     setLoading(isLoading);
   }, [isLoading]);
 
+  if (isLoading || !order) return <ScreenLoading />;
+
   return (
     <>
-      {/* <button onClick={() => toPDF({ filename: "FILE.PDF" })}>
-        Download PDF
-      </button> */}
-
       <Head>
         <title> Pedido | App Alpar do Brasil</title>
       </Head>
@@ -100,89 +119,185 @@ export default function Order() {
       <HeaderNavigation
         isInativeEventScroll
         isGoBack
-        title="Detalhes"
+        title={`Pedido #${order?.codigo}`}
         Right={
-          order?.eRascunho && (
-            <HStack>
-              <Button
-                onClick={handleDeleteOrder}
-                variant="unstyled"
-                display={["flex", "flex", "flex", "none"]}
-                justifyContent="center"
-                alignItems="center"
-                mr="4"
-                leftIcon={
-                  <Icon as={FaTrash} color="white" fontSize={"1.8rem"} />
-                }
-              >
-                <Text color="white" display={["none", "none", "flex", "flex"]}>
-                  Excluir
-                </Text>
-              </Button>
-              <Button
-                onClick={handleSketch}
-                variant="unstyled"
-                display={["flex", "flex", "flex", "none"]}
-                justifyContent="center"
-                alignItems="center"
-                mr="4"
-                leftIcon={
-                  <Icon as={IoBagHandle} color="white" fontSize={"1.8rem"} />
-                }
-              >
-                <Text color="white" display={["none", "none", "flex", "flex"]}>
-                  Digitar
-                </Text>
-              </Button>
-            </HStack>
-          )
+          <div className="flex lg:hidden">
+            <DetailOptionsActions
+              detailOptionsActionsTrigger={
+                <Button
+                  bg="transparent"
+                  display="flex"
+                  _hover={{ bg: "transparent" }}
+                  className="flex items-center justify-center mr-3"
+                >
+                  <EllipsisVertical color="white" className="size-7" />
+                  <span className="text-white ">Mais</span>
+                </Button>
+              }
+              data={[
+                {
+                  description: "Espelho pedido",
+                  handle: handleExportOrder,
+                  icon: Download,
+                },
+                {
+                  description: "Digitar rascunho",
+                  handle: handleSketch,
+                  icon: ShoppingBag,
+                },
+                {
+                  description: "Deletar pedido",
+                  handle: handleDeleteOrder,
+                  icon: Trash2,
+                },
+              ].filter((f) =>
+                order?.eRascunho
+                  ? true
+                  : !["Deletar pedido", "Digitar rascunho"].includes(
+                      f.description
+                    )
+              )}
+            />
+          </div>
         }
       />
 
-      <Flex
-        flexDir="column"
-        align="center"
-        width="full"
-        mt={["0", "0", "0", "4"]}
-      >
-        <Flex
-          flexDir="column"
-          width="full"
-          align="center"
-          maxW="1200px"
-          px={["4", "4", "4", "4"]}
-          pt={["4", "4", "4", "0"]}
-          mb="8rem"
-        >
-          <Flex
-            w="full"
-            mb="2"
-            align="center"
-            display={["none", "none", "none", "flex"]}
-          >
-            <Link href="/pedidos">
-              <CharkraLink h="full" color="gray.600">
-                Voltar à listagem
-              </CharkraLink>
-            </Link>
-          </Flex>
+      <DetailPage>
+        <DetailHeader className="justify-between hidden lg:flex">
+          <div className="flex ">
+            <DetailGoBack />
+            <DetailTitle>Pedido #{order?.codigo}</DetailTitle>
+          </div>
 
-          {!isLoading && order && (
-            <Stack w="full" align="center" spacing="6" mt="2">
-              <Stack
-                w="full"
-                direction={["column", "column", "column", "row", "row"]}
-              >
-                <Flex
-                  w="full"
-                  flexDir="column"
-                  justify="start"
-                  bg="white"
-                  p="3"
-                  borderRadius="lg"
-                  h={"6.5rem"}
-                >
-                  <HStack>
+          <DetailOptionsActions
+            data={[
+              {
+                description: "Espelho pedido",
+                handle: handleExportOrder,
+                icon: Download,
+              },
+              {
+                description: "Digitar rascunho",
+                handle: handleSketch,
+                icon: ShoppingBag,
+              },
+              {
+                description: "Deletar pedido",
+                handle: handleDeleteOrder,
+                icon: Trash2,
+              },
+            ].filter((f) =>
+              order?.eRascunho
+                ? true
+                : !["Deletar pedido", "Digitar rascunho"].includes(
+                    f.description
+                  )
+            )}
+          />
+        </DetailHeader>
+
+        <DetailMain>
+          <div ref={targetRef} className="bg-slate-100">
+            <DetailContent
+              secondaryColumn={
+                <>
+                  <DetailBox className="hidden lg:flex">
+                    <div className="flex flex-row justify-between items-center w-full">
+                      <DetailBoxTitle>Situação</DetailBoxTitle>
+                      <div className="flex gap-x-2">
+                        <Icon
+                          as={selectStatusIcon(
+                            order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                          )}
+                          color={selectStatusColor(
+                            order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                          )}
+                          fontSize="4xl"
+                        />
+
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            orderStatusStyle[
+                              (order.situacaoPedido?.codigo ?? 1) as 1
+                            ].bgColor,
+                            "text-white rounded-lg hover:bg text-md "
+                          )}
+                        >
+                          {order.situacaoPedido?.descricao}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {order.codigoErp > 0 && (
+                      <div className="text-sm w-full">
+                        <span className="font-thin">CÓDIGO ERP:</span>
+                        <span className="font-bold">{order.codigoErp}</span>
+                      </div>
+                    )}
+                  </DetailBox>
+
+                  <DetailBox className="w-full">
+                    <DetailBoxTitle>Cliente</DetailBoxTitle>
+
+                    <InputBase
+                      name="clientCod"
+                      label="Código"
+                      defaultValue={order.cliente.codigo}
+                      readOnly
+                    />
+                    <InputBase
+                      name="clienteName"
+                      label="Razão social"
+                      defaultValue={order.cliente.razaoSocial}
+                      readOnly
+                    />
+                    <InputBase
+                      name="cnpj"
+                      label="CNPJ"
+                      defaultValue={order.cliente.cnpjFormat}
+                      readOnly
+                    />
+                  </DetailBox>
+
+                  {order.vendedores.map((seller) => (
+                    <DetailBox
+                      key={
+                        seller.vendedor.codigo.toLocaleString() + seller.tipo
+                      }
+                      className="w-full"
+                    >
+                      <DetailBoxTitle>
+                        {seller.tipo === 1 ? "Vendedor" : "Preposto"}
+                      </DetailBoxTitle>
+
+                      <InputBase
+                        name="sellerCod"
+                        label="Código"
+                        defaultValue={seller.vendedor.codigo}
+                        readOnly
+                      />
+                      <InputBase
+                        name="sellerName"
+                        label="Abreviação"
+                        defaultValue={seller.vendedor.nomeGuerra}
+                        readOnly
+                      />
+                      <InputBase
+                        name="sellerAllName"
+                        label="Nome"
+                        defaultValue={seller.vendedor.nome}
+                        readOnly
+                      />
+                    </DetailBox>
+                  ))}
+                </>
+              }
+            >
+              <DetailBox className="flex lg:hidden">
+                <div className="flex flex-row justify-between items-center w-full">
+                  <DetailBoxTitle>Situação</DetailBoxTitle>
+                  <div className="flex gap-x-2">
                     <Icon
                       as={selectStatusIcon(
                         order.eRascunho ? 99 : order.situacaoPedido?.codigo
@@ -193,259 +308,159 @@ export default function Order() {
                       fontSize="4xl"
                     />
 
-                    <Tag
-                      size="sm"
-                      variant="solid"
-                      color="white"
-                      bg={selectStatusColor(
-                        order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        orderStatusStyle[
+                          (order.situacaoPedido?.codigo ?? 1) as 1
+                        ].bgColor,
+                        "text-white rounded-lg hover:bg text-md "
                       )}
-                      textTransform="uppercase"
                     >
-                      {order.eRascunho
-                        ? "RASCUNHO"
-                        : order.situacaoPedido?.descricao
-                        ? order.situacaoPedido?.descricao
-                        : "-"}
-                    </Tag>
-                  </HStack>
+                      {order.situacaoPedido?.descricao}
+                    </Badge>
+                  </div>
+                </div>
 
-                  <HStack mt="1.5" spacing={1}>
-                    <Text fontSize="sm" fontWeight="light" color="gray.600">
-                      CÓDIGO ERP:
-                    </Text>
+                {order.codigoErp > 0 && (
+                  <div className="text-sm w-full">
+                    <span className="font-thin">CÓDIGO ERP:</span>
+                    <span className="font-bold">{order.codigoErp}</span>
+                  </div>
+                )}
+              </DetailBox>
 
-                    <Text fontSize="lg" fontWeight="bold" color="gray.800">
-                      {order.codigoErp ?? "-"}
-                    </Text>
-                  </HStack>
-                </Flex>
+              <DetailBox className="w-full">
+                <DetailBoxTitle>Detalhes</DetailBoxTitle>
 
-                <Box
-                  w="full"
-                  h={"6.5rem"}
-                  overflow="hidden"
-                  bg="white"
-                  borderRadius="lg"
-                >
-                  <Client
-                    client={order?.cliente}
-                    colorTag={selectStatusColor(
-                      order.eRascunho ? 99 : order.situacaoPedido?.codigo
-                    )}
+                {order.codigoErp > 0 && (
+                  <InputBase
+                    name="codeErp"
+                    label="Código ERP"
+                    defaultValue={order.codigoErp ?? "-"}
+                    readOnly
                   />
-                </Box>
+                )}
 
-                {order.vendedores.map((seller) => (
-                  <Box
-                    key={`${seller.vendedor.codigo}-${seller.tipo}`}
-                    w="full"
-                    display="block"
-                    bg="white"
-                    p="3"
-                    h={"6.5rem"}
-                    borderRadius="lg"
-                  >
-                    <HStack>
-                      <Tag
-                        size="md"
-                        variant="solid"
-                        color="white"
-                        bg={selectStatusColor(
+                <InputBase
+                  name="priceList"
+                  label="Lista de preço"
+                  defaultValue={order.tabelaPreco.descricao}
+                  readOnly
+                />
+
+                <InputBase
+                  name="paymentCondition"
+                  label="Condição pagamento"
+                  defaultValue={order.condicaoPagamento.descricao}
+                  readOnly
+                />
+
+                <InputBase
+                  name="stockPeriod"
+                  label="Tipo da venda"
+                  defaultValue={order.periodoEstoque.descricao}
+                  readOnly
+                />
+
+                <GroupInput>
+                  <InputBase
+                    name="createAt"
+                    label="Data de entrada"
+                    defaultValue={order.createdAtFormat}
+                    readOnly
+                  />
+                  <InputBase
+                    name="billingDate"
+                    label="Data de faturamento"
+                    defaultValue={order.dataFaturamentoFormat}
+                    readOnly
+                  />
+                </GroupInput>
+              </DetailBox>
+
+              <DetailBox className="w-full">
+                <DetailBoxTitle>Resumo</DetailBoxTitle>
+
+                {order.itens.map((item) => (
+                  <div key={item.codigo}>
+                    <ProductItem
+                      data={item}
+                      status={order.situacaoPedido?.descricao}
+                    />
+
+                    {<Separator />}
+                  </div>
+                ))}
+
+                <div className="flex justify-between  text-sm">
+                  <span>Subtotal</span>
+                  <span>{order.valorTotalFormat}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-sm ">
+                  <span>Descontos</span>
+                  <span className="text-green-500">
+                    -{order.descontoValorFormat}
+                  </span>
+                </div>
+
+                {Number(order.cancelamentoValor ?? 0) > 0 && (
+                  <>
+                    <Separator />
+                    <div className="flex justify-between text-sm ">
+                      <span>Cancelamentos</span>
+                      <span className="text-red-400">
+                        -{order.cancelamentoValorFormat}
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                <Separator />
+                <div className="flex justify-between text-md font-bold">
+                  <span>Valor total</span>
+                  <span>{order.descontoCalculadoFormat}</span>
+                </div>
+              </DetailBox>
+            </DetailContent>
+          </div>
+
+          <Stack w="full" align="center" spacing="6" mt="1.5rem">
+            {user.eVendedor && order.eDiferenciado && !order.eRascunho && (
+              <>
+                <Box width="full">
+                  <Text fontSize="lg" fontWeight="light">
+                    Histórico de Diferenciado
+                  </Text>
+                  <Stack bg="transparent" borderRadius="lg" rowGap="4">
+                    {order?.diferenciados?.map((differentiated) => (
+                      <DifferentiatedCard
+                        differentiated={differentiated}
+                        key={differentiated.id}
+                        colorTag={selectStatusColor(
                           order.eRascunho ? 99 : order.situacaoPedido?.codigo
                         )}
-                        borderRadius="lg"
-                      >
-                        {seller.vendedor.codigo}
-                      </Tag>
-                      <Text fontSize="md" fontWeight="light">
-                        {seller.tipo === 1 ? "VENDEDOR" : "PREPOSTO"}
-                      </Text>
-                    </HStack>
-
-                    <Box mt="1.5">
-                      <Text fontSize="lg" fontWeight="bold" color="gray.800">
-                        {seller.vendedor.nomeGuerra}
-                      </Text>
-                      <Text fontSize="sm" fontWeight="light" color="gray.600">
-                        {seller.vendedor.nome}
-                      </Text>
-                    </Box>
-                  </Box>
-                ))}
-              </Stack>
-
-              <Box width="full">
-                <Text fontSize="lg" fontWeight="light">
-                  DETALHES
-                </Text>
-                <Box bg="white" p="3" borderRadius="lg">
-                  <Box mt="1.5">
-                    <Text fontWeight="light" fontSize="small" color="gray.500">
-                      LISTA DE PREÇO
-                    </Text>
-                    <Text>{order.tabelaPreco?.descricao}</Text>
-                  </Box>
-                  <Box mt="1.5">
-                    <Text fontWeight="light" fontSize="small" color="gray.500">
-                      CONDIÇÃO PAGAMENTO
-                    </Text>
-                    <Text>{order.condicaoPagamento.descricao}</Text>
-                  </Box>
-                  <Box mt="1.5">
-                    <Text fontWeight="light" fontSize="small" color="gray.500">
-                      DATA DE ENTRADA
-                    </Text>
-                    <Text>{order.createdAtFormat}</Text>
-                  </Box>
-                  <Box mt="1.5">
-                    <Text fontWeight="light" fontSize="small" color="gray.500">
-                      DATA DE FATURAMENTO
-                    </Text>
-                    <Text>{order.dataFaturamentoFormat}</Text>
-                  </Box>
-                  <Box mt="1.5">
-                    <Text fontWeight="light" fontSize="small" color="gray.500">
-                      VALOR TOTAL
-                    </Text>
-                    <Text>{order.valorTotalFormat}</Text>
-                  </Box>
+                      />
+                    ))}
+                  </Stack>
                 </Box>
-              </Box>
 
-              <Box
-                width="full"
-                // ref={targetRef}
-              >
-                <Text fontSize="lg" fontWeight="light">
-                  {`ITENS DO PEDIDO (${order?.itens.length})`}
-                </Text>
-                <Stack borderRadius="lg">
-                  {order?.itens.map((item) => (
-                    <ProductOrder
-                      key={item.codigo}
-                      product={item.produto}
-                      amount={item.valorTotalFormat}
-                      qtd={item.quantidade}
-                      unitAmount={item.valorUnitarioFormat}
-                    />
-                  ))}
-                </Stack>
-              </Box>
-
-              {user.eVendedor && order.eDiferenciado && !order.eRascunho && (
-                <>
-                  <Box width="full">
-                    <Text fontSize="lg" fontWeight="light">
-                      Histórico de Diferenciado
-                    </Text>
-                    <Stack bg="transparent" borderRadius="lg" rowGap="1">
-                      {order?.diferenciados?.map((differentiated) => (
-                        <DifferentiatedCard
-                          differentiated={differentiated}
-                          key={differentiated.id}
-                          colorTag={selectStatusColor(
-                            order.eRascunho ? 99 : order.situacaoPedido?.codigo
-                          )}
-                        />
-                      ))}
-                    </Stack>
-                  </Box>
-
-                  {order?.situacaoPedido?.codigo === 6 &&
-                    order.vendedorPendenteDiferenciadoCodigo ===
-                      user.vendedorCodigo && (
-                      <Box width="full">
-                        <Text fontSize="lg" fontWeight="light">
-                          Aprovar Diferenciado
-                        </Text>
-                        <DifferentiatedApproval order={order} />
-                      </Box>
-                    )}
-                </>
-              )}
-            </Stack>
-          )}
-        </Flex>
-      </Flex>
-
-      {order?.eRascunho && (
-        <>
-          <Button
-            onClick={handleSketch}
-            colorScheme="blue"
-            rounded="full"
-            position={["fixed"]}
-            bottom="12"
-            right="8"
-            display={["none", "none", "none", "flex"]}
-            justifyContent="center"
-            alignItems="center"
-            h="14"
-            w="14"
-          >
-            <Flex
-              position="relative"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Icon as={IoBagHandle} color="white" fontSize={"1.8rem"} />
-
-              <Text
-                fontWeight="normal"
-                color="white"
-                position="absolute"
-                bottom="-10"
-                bg="gray.600"
-                opacity={0.8}
-                px="6px"
-                py="2px"
-                rounded="md"
-                fontSize="md"
-              >
-                DIGITAR
-              </Text>
-            </Flex>
-          </Button>
-
-          <Button
-            onClick={handleDeleteOrder}
-            colorScheme="red"
-            rounded="full"
-            position={["fixed"]}
-            bottom="12"
-            right="7.5rem"
-            display={["none", "none", "none", "flex"]}
-            justifyContent="center"
-            alignItems="center"
-            h="14"
-            w="14"
-          >
-            <Flex
-              position="relative"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Icon as={FaTrash} color="white" fontSize={"1.7rem"} />
-
-              <Text
-                fontWeight="normal"
-                color="white"
-                position="absolute"
-                bottom="-10"
-                bg="gray.600"
-                opacity={0.8}
-                px="6px"
-                py="2px"
-                rounded="md"
-                fontSize="md"
-              >
-                DELETAR
-              </Text>
-            </Flex>
-          </Button>
-        </>
-      )}
+                {order?.situacaoPedido?.codigo === 6 &&
+                  order.vendedorPendenteDiferenciadoCodigo ===
+                    user.vendedorCodigo && (
+                    <Box width="full">
+                      <Text fontSize="lg" fontWeight="light">
+                        Aprovar Diferenciado
+                      </Text>
+                      <DifferentiatedApproval order={order} />
+                    </Box>
+                  )}
+              </>
+            )}
+          </Stack>
+        </DetailMain>
+      </DetailPage>
 
       <Modal
         isOpen={isOpenConfirmDeleteOrder}

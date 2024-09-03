@@ -30,6 +30,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FaCartPlus } from "react-icons/fa";
 import { ImExit } from "react-icons/im";
+import { IoChevronForwardSharp } from "react-icons/io5";
 import { TbShoppingCartCancel } from "react-icons/tb";
 import { Me } from "../../../../@types/me";
 import { Cart } from "../../../../components/Cart";
@@ -477,22 +478,47 @@ export default function Produto() {
 
                 <Divider h="1rem" mx="2" orientation="vertical" />
 
-                <Breadcrumb fontSize={"sm"}>
-                  {/* <BreadcrumbItem>
-                    <Link href="/produtos" >
-                      <BreadcrumbLink>
-                        {product?.genero?.descricao}
-                      </BreadcrumbLink>
-                    </Link>
-                  </BreadcrumbItem> */}
-                  <BreadcrumbItem>
-                    <Link
-                      href={`/produtos/${product?.codigo}?hrefBack=${hrefBack}`}
-                    >
-                      <BreadcrumbLink>{product?.descricao}</BreadcrumbLink>
-                    </Link>
-                  </BreadcrumbItem>
-                </Breadcrumb>
+                {product && (
+                  <Breadcrumb
+                    spacing="8px"
+                    separator={<IoChevronForwardSharp color="gray.500" />}
+                  >
+                    <BreadcrumbItem>
+                      <Link
+                        href={`/pedidos/novo?generoCodigo=${product?.genero?.descricao}|${product?.genero?.codigo}`}
+                      >
+                        <BreadcrumbLink>
+                          {product?.genero?.descricao}
+                        </BreadcrumbLink>
+                      </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>
+                      <Link
+                        href={`/pedidos/novo?grupoCodigo=${product?.grupo?.descricao}|${product?.grupo?.codigo}`}
+                      >
+                        <BreadcrumbLink>
+                          {product?.grupo?.descricao}
+                        </BreadcrumbLink>
+                      </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>
+                      <Link
+                        href={`/pedidos/novo?linhaCodigo=${product?.linha?.descricao}|${product?.linha?.codigo}`}
+                      >
+                        <BreadcrumbLink>
+                          {product?.linha?.descricao}
+                        </BreadcrumbLink>
+                      </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>
+                      <Link
+                        href={`/pedidos/novo/${product?.codigo}?hrefBack=${hrefBack}`}
+                      >
+                        <BreadcrumbLink>{product?.descricao}</BreadcrumbLink>
+                      </Link>
+                    </BreadcrumbItem>
+                  </Breadcrumb>
+                )}
               </Flex>
 
               <Flex

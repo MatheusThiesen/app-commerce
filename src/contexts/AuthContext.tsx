@@ -1,5 +1,7 @@
 "use client";
 
+import { Client } from "@/hooks/queries/useClients";
+import { useLocalStore } from "@/hooks/useLocalStore";
 import axios, { AxiosError } from "axios";
 import { GetServerSidePropsContext } from "next";
 import Router from "next/router";
@@ -15,6 +17,7 @@ import { Me } from "../@types/me";
 import { ROUTE_HOME } from "../middleware";
 import { BASE_URL } from "../service/api";
 import { api } from "../service/apiClient";
+import { PriceList } from "./StoreContext";
 
 type SignCredentials = {
   email: string;
@@ -99,6 +102,10 @@ export async function refreshToken(
 export function AuthProvider({ children }: AuthProviderProps) {
   const { "nextauth.token": token } = parseCookies();
 
+  const { onSet: onSetStoragePriceList } =
+    useLocalStore<PriceList>("@Order-price-list");
+  const { onSet: onSetStorageClient } = useLocalStore<Client>("@Order-client");
+
   const [user, setUser] = useState<Me>({} as Me);
   const isAuthenticated = !!user && !!token;
 
@@ -108,6 +115,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .get<Me>("/auth/me")
         .then((response) => {
           setUser(response.data);
+
+          onSetStoragePriceList({ codigo: 28, descricao: "28 DDL" });
+          if (response?.data?.cliente)
+            onSetStorageClient(response.data.cliente);
         })
         .catch(() => {
           signOut();

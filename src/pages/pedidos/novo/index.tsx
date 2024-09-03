@@ -108,11 +108,6 @@ export default function Order() {
           name: "clientCod",
           field: "clientCod",
         },
-        {
-          value: priceList?.codigo ?? 0,
-          name: "priceListCod",
-          field: "priceListCod",
-        },
       ],
     });
 
@@ -420,6 +415,8 @@ export default function Order() {
           </HeaderToList>
           {client && priceList && (
             <ListProducts
+              pathList="createOrder"
+              isButtonAddCart
               orderby={orderBy}
               distinct={groupProduct ? "codigoAlternativo" : undefined}
               search={search}

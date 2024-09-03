@@ -1,8 +1,10 @@
 import { Link } from "@chakra-ui/next-js";
-import { Avatar, Button, Flex, Icon, Stack, Text } from "@chakra-ui/react";
+import { Avatar, Box, Button, Flex, Icon, Stack, Text } from "@chakra-ui/react";
 import Head from "next/head";
 import { HeaderNavigation } from "../components/HeaderNavigation";
 
+import { accessSsoPortal } from "@/hooks/accessSsoPortal";
+import { Globe } from "lucide-react";
 import { FaUserAlt } from "react-icons/fa";
 import { IoIosArrowForward } from "react-icons/io";
 import { useAuth } from "../contexts/AuthContext";
@@ -58,6 +60,35 @@ export default function Home() {
               />
             </Flex>
           </Link>
+
+          {(user.eCliente || user.eVendedor) && (
+            <Box
+              h="full"
+              bg="white"
+              color="gray.600"
+              py="4"
+              px="4"
+              _hover={{
+                cursor: "pointer",
+                textDecoration: "none",
+                bg: "gray.200",
+              }}
+              onClick={accessSsoPortal}
+            >
+              <Flex flexDir="row" justify="space-between" align="center">
+                <Flex>
+                  <Globe className="text-slate-600" />
+                  <Text ml="4">Acessar Portal Alpar</Text>
+                </Flex>
+
+                <Icon
+                  as={IoIosArrowForward}
+                  fontSize={"1.5rem"}
+                  color="gray.500"
+                />
+              </Flex>
+            </Box>
+          )}
         </Stack>
 
         <Stack mt="1rem" w="full">

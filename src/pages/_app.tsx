@@ -1,3 +1,4 @@
+import "@/styles/globals.css";
 import { ChakraProvider } from "@chakra-ui/react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
@@ -9,7 +10,6 @@ import { StoreProvider } from "../contexts/StoreContext";
 import { BottomNavigationProvider } from "../hooks/useBottomNavigation";
 import { ProductCatalogProvider } from "../hooks/useProductCatalog";
 import { queryClient } from "../service/queryClient";
-import "../styles/global.css";
 import { theme } from "../styles/theme";
 
 function MyApp({ Component, pageProps }: AppProps) {

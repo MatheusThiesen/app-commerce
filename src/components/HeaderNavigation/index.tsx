@@ -1,6 +1,6 @@
+import { accessSsoPortal } from "@/hooks/accessSsoPortal";
 import { Link } from "@chakra-ui/next-js";
 import {
-  Avatar,
   Box,
   Button,
   Flex,
@@ -19,6 +19,7 @@ import Router from "next/router";
 import { ReactNode, memo, useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import { useAuth } from "../../contexts/AuthContext";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import { NavLink } from "./NavLink";
 
 export const SELLER_EMAILS_ACCEPT = [
@@ -39,6 +40,7 @@ export const SELLER_EMAILS_ACCEPT = [
   "flavioxavier.rs.adidas@gmail.com",
   "carlos.junior@alpardobrasil.com.br",
   "uglio.scaravaglione@alpardobrasil.com.br",
+  
 ];
 
 export interface HeaderProps {
@@ -269,7 +271,11 @@ export function HeaderNavigationComponent({
                 <Menu>
                   <MenuButton>
                     <Flex align={"center"}>
-                      <Avatar size="sm" name={user?.nome} bg="white" />
+                      <Avatar>
+                        <AvatarFallback>
+                          {user?.nome?.[0] ?? "-"}
+                        </AvatarFallback>
+                      </Avatar>
 
                       <Flex flexDir="column" alignItems="start">
                         <Text
@@ -302,6 +308,14 @@ export function HeaderNavigationComponent({
                         <Link href="/conta" _hover={{ textDecoration: "none" }}>
                           Minha conta
                         </Link>
+                      </MenuItem>
+                      <MenuItem>
+                        <Box
+                          onClick={accessSsoPortal}
+                          _hover={{ textDecoration: "none" }}
+                        >
+                          Acessar Portal Alpar
+                        </Box>
                       </MenuItem>
                       <MenuDivider />
                       <MenuItem onClick={signOut}>Sair </MenuItem>
