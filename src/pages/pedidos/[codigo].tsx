@@ -47,8 +47,9 @@ import { ProductItem } from "@/components/product-item";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { EllipsisVertical } from "lucide-react";
+import { Download, EllipsisVertical, ShoppingBag, Trash2 } from "lucide-react";
 import { GetServerSideProps } from "next";
+import { Resolution, usePDF } from "react-to-pdf";
 import { DifferentiatedApproval } from "../../components/DifferentiatedApproval";
 import { DifferentiatedCard } from "../../components/DifferentiatedCard";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
@@ -67,6 +68,11 @@ export default function Order() {
 
   const { data: order, isLoading } = useOrderOne(Number(codigo));
 
+  const { toPDF, targetRef } = usePDF({
+    filename: `Pedido #${codigo} - Alpar Store`,
+    resolution: Resolution.LOW,
+  });
+
   const {
     isOpen: isOpenConfirmDeleteOrder,
     onOpen: onOpenConfirmDeleteOrder,
@@ -81,7 +87,9 @@ export default function Order() {
     onOpenConfirmDeleteOrder();
   }
 
-  function handleExportOrder() {}
+  function handleExportOrder() {
+    toPDF();
+  }
 
   async function deleteOrder() {
     api.delete(`/orders/${order?.codigo}`);
@@ -129,20 +137,25 @@ export default function Order() {
               data={[
                 {
                   description: "Espelho pedido",
-                  handle: () => handleExportOrder,
-                },
-                {
-                  description: "Deletar",
-                  handle: handleDeleteOrder,
+                  handle: handleExportOrder,
+                  icon: Download,
                 },
                 {
                   description: "Digitar rascunho",
                   handle: handleSketch,
+                  icon: ShoppingBag,
+                },
+                {
+                  description: "Deletar pedido",
+                  handle: handleDeleteOrder,
+                  icon: Trash2,
                 },
               ].filter((f) =>
                 order?.eRascunho
                   ? true
-                  : !["Deletar", "Digitar rascunho"].includes(f.description)
+                  : !["Deletar pedido", "Digitar rascunho"].includes(
+                      f.description
+                    )
               )}
             />
           </div>
@@ -160,227 +173,258 @@ export default function Order() {
             data={[
               {
                 description: "Espelho pedido",
-                handle: () => handleExportOrder,
-              },
-              {
-                description: "Deletar",
-                handle: handleDeleteOrder,
+                handle: handleExportOrder,
+                icon: Download,
               },
               {
                 description: "Digitar rascunho",
                 handle: handleSketch,
+                icon: ShoppingBag,
+              },
+              {
+                description: "Deletar pedido",
+                handle: handleDeleteOrder,
+                icon: Trash2,
               },
             ].filter((f) =>
               order?.eRascunho
                 ? true
-                : !["Deletar", "Digitar rascunho"].includes(f.description)
+                : !["Deletar pedido", "Digitar rascunho"].includes(
+                    f.description
+                  )
             )}
           />
         </DetailHeader>
 
         <DetailMain>
-          <DetailContent
-            secondaryColumn={
-              <>
-                <DetailBox className="hidden lg:flex">
-                  <div className="flex flex-row justify-between items-center w-full">
-                    <DetailBoxTitle>Situação</DetailBoxTitle>
-                    <div className="flex gap-x-2">
-                      <Icon
-                        as={selectStatusIcon(
-                          order.eRascunho ? 99 : order.situacaoPedido?.codigo
-                        )}
-                        color={selectStatusColor(
-                          order.eRascunho ? 99 : order.situacaoPedido?.codigo
-                        )}
-                        fontSize="4xl"
-                      />
+          <div ref={targetRef} className="bg-slate-100">
+            <DetailContent
+              secondaryColumn={
+                <>
+                  <DetailBox className="hidden lg:flex">
+                    <div className="flex flex-row justify-between items-center w-full">
+                      <DetailBoxTitle>Situação</DetailBoxTitle>
+                      <div className="flex gap-x-2">
+                        <Icon
+                          as={selectStatusIcon(
+                            order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                          )}
+                          color={selectStatusColor(
+                            order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                          )}
+                          fontSize="4xl"
+                        />
 
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          orderStatusStyle[
-                            (order.situacaoPedido?.codigo ?? 1) as 1
-                          ].bgColor,
-                          "text-white rounded-lg hover:bg text-md "
-                        )}
-                      >
-                        {order.situacaoPedido?.descricao}
-                      </Badge>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            orderStatusStyle[
+                              (order.situacaoPedido?.codigo ?? 1) as 1
+                            ].bgColor,
+                            "text-white rounded-lg hover:bg text-md "
+                          )}
+                        >
+                          {order.situacaoPedido?.descricao}
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
 
-                  {order.codigoErp > 0 && (
-                    <div className="text-sm w-full">
-                      <span className="font-thin">CÓDIGO ERP:</span>
-                      <span className="font-bold">{order.codigoErp}</span>
-                    </div>
-                  )}
-                </DetailBox>
+                    {order.codigoErp > 0 && (
+                      <div className="text-sm w-full">
+                        <span className="font-thin">CÓDIGO ERP:</span>
+                        <span className="font-bold">{order.codigoErp}</span>
+                      </div>
+                    )}
+                  </DetailBox>
 
-                <DetailBox className="w-full">
-                  <DetailBoxTitle>Cliente</DetailBoxTitle>
-
-                  <InputBase
-                    name="clientCod"
-                    label="Código"
-                    defaultValue={order.cliente.codigo}
-                    readOnly
-                  />
-                  <InputBase
-                    name="clienteName"
-                    label="Razão social"
-                    defaultValue={order.cliente.razaoSocial}
-                    readOnly
-                  />
-                  <InputBase
-                    name="cnpj"
-                    label="CNPJ"
-                    defaultValue={order.cliente.cnpjFormat}
-                    readOnly
-                  />
-                </DetailBox>
-
-                {order.vendedores.map((seller) => (
-                  <DetailBox
-                    key={seller.vendedor.codigo.toLocaleString() + seller.tipo}
-                    className="w-full"
-                  >
-                    <DetailBoxTitle>
-                      {seller.tipo === 1 ? "Vendedor" : "Preposto"}
-                    </DetailBoxTitle>
+                  <DetailBox className="w-full">
+                    <DetailBoxTitle>Cliente</DetailBoxTitle>
 
                     <InputBase
-                      name="sellerCod"
+                      name="clientCod"
                       label="Código"
-                      defaultValue={seller.vendedor.codigo}
+                      defaultValue={order.cliente.codigo}
                       readOnly
                     />
                     <InputBase
-                      name="sellerName"
-                      label="Abreviação"
-                      defaultValue={seller.vendedor.nomeGuerra}
+                      name="clienteName"
+                      label="Razão social"
+                      defaultValue={order.cliente.razaoSocial}
                       readOnly
                     />
                     <InputBase
-                      name="sellerAllName"
-                      label="Nome"
-                      defaultValue={seller.vendedor.nome}
+                      name="cnpj"
+                      label="CNPJ"
+                      defaultValue={order.cliente.cnpjFormat}
                       readOnly
                     />
                   </DetailBox>
-                ))}
-              </>
-            }
-          >
-            <DetailBox className="flex lg:hidden">
-              <div className="flex flex-row justify-between items-center w-full">
-                <DetailBoxTitle>Situação</DetailBoxTitle>
-                <div className="flex gap-x-2">
-                  <Icon
-                    as={selectStatusIcon(
-                      order.eRascunho ? 99 : order.situacaoPedido?.codigo
-                    )}
-                    color={selectStatusColor(
-                      order.eRascunho ? 99 : order.situacaoPedido?.codigo
-                    )}
-                    fontSize="4xl"
+
+                  {order.vendedores.map((seller) => (
+                    <DetailBox
+                      key={
+                        seller.vendedor.codigo.toLocaleString() + seller.tipo
+                      }
+                      className="w-full"
+                    >
+                      <DetailBoxTitle>
+                        {seller.tipo === 1 ? "Vendedor" : "Preposto"}
+                      </DetailBoxTitle>
+
+                      <InputBase
+                        name="sellerCod"
+                        label="Código"
+                        defaultValue={seller.vendedor.codigo}
+                        readOnly
+                      />
+                      <InputBase
+                        name="sellerName"
+                        label="Abreviação"
+                        defaultValue={seller.vendedor.nomeGuerra}
+                        readOnly
+                      />
+                      <InputBase
+                        name="sellerAllName"
+                        label="Nome"
+                        defaultValue={seller.vendedor.nome}
+                        readOnly
+                      />
+                    </DetailBox>
+                  ))}
+                </>
+              }
+            >
+              <DetailBox className="flex lg:hidden">
+                <div className="flex flex-row justify-between items-center w-full">
+                  <DetailBoxTitle>Situação</DetailBoxTitle>
+                  <div className="flex gap-x-2">
+                    <Icon
+                      as={selectStatusIcon(
+                        order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                      )}
+                      color={selectStatusColor(
+                        order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                      )}
+                      fontSize="4xl"
+                    />
+
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        orderStatusStyle[
+                          (order.situacaoPedido?.codigo ?? 1) as 1
+                        ].bgColor,
+                        "text-white rounded-lg hover:bg text-md "
+                      )}
+                    >
+                      {order.situacaoPedido?.descricao}
+                    </Badge>
+                  </div>
+                </div>
+
+                {order.codigoErp > 0 && (
+                  <div className="text-sm w-full">
+                    <span className="font-thin">CÓDIGO ERP:</span>
+                    <span className="font-bold">{order.codigoErp}</span>
+                  </div>
+                )}
+              </DetailBox>
+
+              <DetailBox className="w-full">
+                <DetailBoxTitle>Detalhes</DetailBoxTitle>
+
+                {order.codigoErp > 0 && (
+                  <InputBase
+                    name="codeErp"
+                    label="Código ERP"
+                    defaultValue={order.codigoErp ?? "-"}
+                    readOnly
                   />
+                )}
 
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      orderStatusStyle[(order.situacaoPedido?.codigo ?? 1) as 1]
-                        .bgColor,
-                      "text-white rounded-lg hover:bg text-md "
-                    )}
-                  >
-                    {order.situacaoPedido?.descricao}
-                  </Badge>
-                </div>
-              </div>
-
-              {order.codigoErp > 0 && (
-                <div className="text-sm w-full">
-                  <span className="font-thin">CÓDIGO ERP:</span>
-                  <span className="font-bold">{order.codigoErp}</span>
-                </div>
-              )}
-            </DetailBox>
-
-            <DetailBox className="w-full">
-              <DetailBoxTitle>Resumo</DetailBoxTitle>
-
-              {order.itens.map((item, index) => (
-                <div key={item.codigo}>
-                  {index > 0 && <Separator />}
-
-                  <ProductItem data={item} />
-                </div>
-              ))}
-
-              <div className="flex justify-between mt-4 text-sm">
-                <span>Subtotal</span>
-                <span>{order.valorTotalFormat}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between  text-sm text-red-400">
-                <span>Descontos</span>
-                <span>-{order.descontoValorFormat}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between text-md font-bold text-green-400">
-                <span>Total</span>
-                <span>{order.descontoCalculadoFormat}</span>
-              </div>
-            </DetailBox>
-
-            <DetailBox className="w-full">
-              <DetailBoxTitle>Detalhes</DetailBoxTitle>
-
-              <InputBase
-                name="codeErp"
-                label="Código ERP"
-                defaultValue={order.codigoErp ?? "-"}
-                readOnly
-              />
-              <InputBase
-                name="priceList"
-                label="Lista de preço"
-                defaultValue={order.tabelaPreco.descricao}
-                readOnly
-              />
-
-              <InputBase
-                name="paymentCondition"
-                label="Condição pagamento"
-                defaultValue={order.condicaoPagamento.descricao}
-                readOnly
-              />
-
-              <InputBase
-                name="stockPeriod"
-                label="Tipo da venda"
-                defaultValue={order.periodoEstoque.descricao}
-                readOnly
-              />
-
-              <GroupInput>
                 <InputBase
-                  name="createAt"
-                  label="Data de entrada"
-                  defaultValue={order.createdAtFormat}
+                  name="priceList"
+                  label="Lista de preço"
+                  defaultValue={order.tabelaPreco.descricao}
                   readOnly
                 />
+
                 <InputBase
-                  name="billingDate"
-                  label="Data de faturamento"
-                  defaultValue={order.dataFaturamentoFormat}
+                  name="paymentCondition"
+                  label="Condição pagamento"
+                  defaultValue={order.condicaoPagamento.descricao}
                   readOnly
                 />
-              </GroupInput>
-            </DetailBox>
-          </DetailContent>
+
+                <InputBase
+                  name="stockPeriod"
+                  label="Tipo da venda"
+                  defaultValue={order.periodoEstoque.descricao}
+                  readOnly
+                />
+
+                <GroupInput>
+                  <InputBase
+                    name="createAt"
+                    label="Data de entrada"
+                    defaultValue={order.createdAtFormat}
+                    readOnly
+                  />
+                  <InputBase
+                    name="billingDate"
+                    label="Data de faturamento"
+                    defaultValue={order.dataFaturamentoFormat}
+                    readOnly
+                  />
+                </GroupInput>
+              </DetailBox>
+
+              <DetailBox className="w-full">
+                <DetailBoxTitle>Resumo</DetailBoxTitle>
+
+                {order.itens.map((item) => (
+                  <div key={item.codigo}>
+                    <ProductItem
+                      data={item}
+                      status={order.situacaoPedido?.descricao}
+                    />
+
+                    {<Separator />}
+                  </div>
+                ))}
+
+                <div className="flex justify-between  text-sm">
+                  <span>Subtotal</span>
+                  <span>{order.valorTotalFormat}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-sm ">
+                  <span>Descontos</span>
+                  <span className="text-green-500">
+                    -{order.descontoValorFormat}
+                  </span>
+                </div>
+
+                {Number(order.cancelamentoValor ?? 0) > 0 && (
+                  <>
+                    <Separator />
+                    <div className="flex justify-between text-sm ">
+                      <span>Cancelamentos</span>
+                      <span className="text-red-400">
+                        -{order.cancelamentoValorFormat}
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                <Separator />
+                <div className="flex justify-between text-md font-bold">
+                  <span>Valor total</span>
+                  <span>{order.descontoCalculadoFormat}</span>
+                </div>
+              </DetailBox>
+            </DetailContent>
+          </div>
 
           <Stack w="full" align="center" spacing="6" mt="1.5rem">
             {user.eVendedor && order.eDiferenciado && !order.eRascunho && (
@@ -389,7 +433,7 @@ export default function Order() {
                   <Text fontSize="lg" fontWeight="light">
                     Histórico de Diferenciado
                   </Text>
-                  <Stack bg="transparent" borderRadius="lg" rowGap="1">
+                  <Stack bg="transparent" borderRadius="lg" rowGap="4">
                     {order?.diferenciados?.map((differentiated) => (
                       <DifferentiatedCard
                         differentiated={differentiated}

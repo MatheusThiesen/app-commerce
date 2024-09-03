@@ -224,25 +224,47 @@ export default function Produto() {
                 </Button>
 
                 <Divider h="1rem" mx="2" orientation="vertical" />
-
-                <Breadcrumb
-                  spacing="8px"
-                  separator={<IoChevronForwardSharp color="gray.500" />}
-                >
-                  <BreadcrumbItem>
-                    <Link
-                      href={`/produtos/${product?.codigo}?hrefBack=${hrefBack}`}
-                    >
-                      <BreadcrumbLink>{product?.descricao}</BreadcrumbLink>
-                    </Link>
-                  </BreadcrumbItem>
-
-                  {/* <BreadcrumbItem>
-                <Link href="/produtos?genero=masculino">
-                  <BreadcrumbLink>Calçados</BreadcrumbLink>
-                </Link>
-              </BreadcrumbItem> */}
-                </Breadcrumb>
+                {product && (
+                  <Breadcrumb
+                    spacing="8px"
+                    separator={<IoChevronForwardSharp color="gray.500" />}
+                  >
+                    <BreadcrumbItem>
+                      <Link
+                        href={`/produtos?generoCodigo=${product?.genero?.descricao}|${product?.genero?.codigo}`}
+                      >
+                        <BreadcrumbLink>
+                          {product?.genero?.descricao}
+                        </BreadcrumbLink>
+                      </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>
+                      <Link
+                        href={`/produtos?grupoCodigo=${product?.grupo?.descricao}|${product?.grupo?.codigo}`}
+                      >
+                        <BreadcrumbLink>
+                          {product?.grupo?.descricao}
+                        </BreadcrumbLink>
+                      </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>
+                      <Link
+                        href={`/produtos?linhaCodigo=${product?.linha?.descricao}|${product?.linha?.codigo}`}
+                      >
+                        <BreadcrumbLink>
+                          {product?.linha?.descricao}
+                        </BreadcrumbLink>
+                      </Link>
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>
+                      <Link
+                        href={`/produtos/${product?.codigo}?hrefBack=${hrefBack}`}
+                      >
+                        <BreadcrumbLink>{product?.descricao}</BreadcrumbLink>
+                      </Link>
+                    </BreadcrumbItem>
+                  </Breadcrumb>
+                )}
               </Flex>
 
               <Flex

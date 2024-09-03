@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import { ArrowLeft, ChevronDown, LucideProps } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ReactNode } from "react";
 import { ClassNameValue } from "tailwind-merge";
@@ -178,6 +178,7 @@ type DetailOptionsActionsProps = {
   data: {
     description: string;
     handle: () => void;
+    icon?: React.ForwardRefExoticComponent<Omit<LucideProps, "ref">>;
   }[];
 };
 export const DetailOptionsActions = ({
@@ -199,9 +200,10 @@ export const DetailOptionsActions = ({
         {data.map((item) => (
           <DropdownMenuCheckboxItem
             key={item.description}
-            className="text-start p-2 "
+            className="text-start p-2 flex justify-start items-center"
             onClick={() => item.handle()}
           >
+            {item.icon && <item.icon className="w-[1.2rem] h-[1.2rem] mr-2" />}{" "}
             {item.description}
           </DropdownMenuCheckboxItem>
         ))}

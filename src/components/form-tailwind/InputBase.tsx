@@ -8,7 +8,7 @@ interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const InputBase = ({ name, label, ...props }: Props) => {
   return (
-    <div className="grid flex-1  items-center gap-1">
+    <div className="grid flex-1 items-center gap-1">
       {label && (
         <Label htmlFor={name} className="text-sm font-normal">
           {label}

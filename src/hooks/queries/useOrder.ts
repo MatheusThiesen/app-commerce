@@ -19,6 +19,7 @@ import {
 import { FcClock } from "react-icons/fc";
 import { HiBadgeCheck } from "react-icons/hi";
 import { RiCloseCircleFill } from "react-icons/ri";
+import { TbAlertSquareFilled } from "react-icons/tb";
 import { Differentiated } from "../../contexts/StoreContext";
 
 export type Order = {
@@ -36,6 +37,8 @@ export type Order = {
   tipoDesconto?: "VALOR" | "PERCENTUAL";
   descontoCalculado?: number;
   descontoCalculadoFormat?: string;
+  cancelamentoValor?: number;
+  cancelamentoValorFormat?: string;
   descontoPercentual?: number;
   descontoValor?: number;
   descontoValorFormat: string;
@@ -66,6 +69,11 @@ export type Order = {
     codigo: number;
     descricao: string;
   };
+  pedidoErp?: {
+    dataFaturamento: Date;
+    valorTotal: number;
+    valorTotalFormat?: string;
+  };
   itens: ItemOrder[];
 };
 
@@ -77,6 +85,22 @@ export type ItemOrder = {
   valorTotalFormat: string;
   sequencia: number;
   produto: Product;
+
+  itemErp?: {
+    quantidade: number;
+    valorUnitario: number;
+    valorTotalFormat: string;
+    situacao: string;
+
+    motivoRecusa?: {
+      codigo: number;
+      descricao: string;
+    };
+    motivoCancelamento?: {
+      codigo: number;
+      descricao: string;
+    };
+  };
 };
 
 type OrderApiResponse = {
@@ -120,6 +144,8 @@ export function selectStatusColor(statusCode?: number): string {
       return "orange.400";
     case 8:
       return "red.500";
+    case 9:
+      return "purple.500";
     case 99:
       return "orange.400";
 
@@ -146,6 +172,8 @@ export function selectStatusIcon(statusCode?: number) {
       return BsFillFileTextFill;
     case 8:
       return RiCloseCircleFill;
+    case 9:
+      return TbAlertSquareFilled;
     case 99:
       return BsFillFileTextFill;
 
@@ -160,9 +188,10 @@ export const orderStatusStyle = {
   3: { textColor: "text-green-600", bgColor: "bg-green-600" },
   4: { textColor: "text-red-600", bgColor: "bg-red-600" },
   5: { textColor: "text-red-600", bgColor: "bg-red-600" },
-  6: { textColor: "text-purple-600", bgColor: "bg-purple-600" },
-  7: { textColor: "text-orange-600", bgColor: "bg-orange-500" },
+  6: { textColor: "text-purple-500", bgColor: "bg-purple-500" },
+  7: { textColor: "text-orange-500", bgColor: "bg-orange-500" },
   8: { textColor: "text-red-600", bgColor: "bg-red-600" },
+  9: { textColor: "text-purple-500", bgColor: "bg-purple-500" },
 };
 
 export async function getOrders({
@@ -231,8 +260,35 @@ export async function getOrderOne(
 
   const { data } = await apiClient.get<Order>(`/orders/${cod}`);
 
+  const cancelamentoValor = data.itens.reduce(
+    (previousValue, currentValue) =>
+      currentValue?.itemErp?.situacao === "Cancelado"
+        ? currentValue?.itemErp?.valorUnitario *
+            currentValue?.itemErp?.quantidade +
+          previousValue
+        : previousValue,
+    0
+  );
+
+  const descontoCalculado =
+    data.valorTotal - (data.descontoCalculado ?? 0) - cancelamentoValor;
+
   const order: Order = {
     ...data,
+
+    pedidoErp: data.pedidoErp
+      ? {
+          ...data.pedidoErp,
+          valorTotalFormat: data.pedidoErp?.valorTotal?.toLocaleString(
+            "pt-br",
+            {
+              style: "currency",
+              currency: "BRL",
+            }
+          ),
+        }
+      : undefined,
+
     createdAtFormat: new Date(data.createdAt).toLocaleString("pt-br", {
       hour: "2-digit",
       minute: "2-digit",
@@ -240,10 +296,8 @@ export async function getOrderOne(
       month: "long",
       year: "numeric",
     }),
-    descontoCalculado: data.valorTotal - (data.descontoCalculado ?? 0),
-    descontoCalculadoFormat: (
-      data.valorTotal - (data.descontoCalculado ?? 0)
-    ).toLocaleString("pt-br", {
+    descontoCalculado: descontoCalculado,
+    descontoCalculadoFormat: descontoCalculado.toLocaleString("pt-br", {
       style: "currency",
       currency: "BRL",
     }),
@@ -255,6 +309,11 @@ export async function getOrderOne(
         currency: "BRL",
       }
     ),
+    cancelamentoValor: cancelamentoValor,
+    cancelamentoValorFormat: Number(cancelamentoValor).toLocaleString("pt-br", {
+      style: "currency",
+      currency: "BRL",
+    }),
     dataFaturamentoFormat:
       data.periodoEstoque.periodo === "pronta-entrega"
         ? new Date(data.dataFaturamento).toLocaleString("pt-br", {
@@ -303,6 +362,17 @@ export async function getOrderOne(
         style: "currency",
         currency: "BRL",
       }),
+      itemErp: item.itemErp
+        ? {
+            ...item.itemErp,
+            valorTotalFormat: (
+              item.itemErp.valorUnitario * item.itemErp.quantidade
+            ).toLocaleString("pt-br", {
+              style: "currency",
+              currency: "BRL",
+            }),
+          }
+        : undefined,
     })),
   };
 

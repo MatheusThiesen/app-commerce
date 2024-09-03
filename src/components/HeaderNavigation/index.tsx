@@ -1,3 +1,4 @@
+import { accessSsoPortal } from "@/hooks/accessSsoPortal";
 import { Link } from "@chakra-ui/next-js";
 import {
   Box,
@@ -34,6 +35,9 @@ export const SELLER_EMAILS_ACCEPT = [
   "fernando@alpardobrasil.com.br",
   "bruna.anjos@alpardobrasil.com.br",
   "diulia.abbott@alpardobrasil.com.br",
+  "flavioxavier.rs.adidas@gmail.com",
+  "flavioxavier.rs.nike@gmail.com",
+  "flavioxavier.rs.oakley@gmail.com",
 ];
 
 export interface HeaderProps {
@@ -301,6 +305,14 @@ export function HeaderNavigationComponent({
                         <Link href="/conta" _hover={{ textDecoration: "none" }}>
                           Minha conta
                         </Link>
+                      </MenuItem>
+                      <MenuItem>
+                        <Box
+                          onClick={accessSsoPortal}
+                          _hover={{ textDecoration: "none" }}
+                        >
+                          Acessar Portal Alpar
+                        </Box>
                       </MenuItem>
                       <MenuDivider />
                       <MenuItem onClick={signOut}>Sair </MenuItem>
