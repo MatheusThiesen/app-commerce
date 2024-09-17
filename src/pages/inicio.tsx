@@ -3,6 +3,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { api } from "../service/apiClient";
 
+import { ShoppingButton } from "@/components/ShoppingButton";
+import { useStore } from "@/contexts/StoreContext";
 import { BannerCarousel } from "../components/BannerCarousel";
 import { Cart } from "../components/Cart";
 import { HeaderNavigation } from "../components/HeaderNavigation";
@@ -14,10 +16,10 @@ export default function Home() {
   const router = useRouter();
   const { user } = useAuth();
 
-  // const { totalItems } = useStore();
+  const { totalItems } = useStore();
   const {
     isOpen: isOpenOrder,
-    // onOpen: onOpenOrder,
+    onOpen: onOpenOrder,
     onClose: onCloseOrder,
   } = useDisclosure();
 
@@ -39,14 +41,13 @@ export default function Home() {
       <HeaderNavigation
         isInativeEventScroll
         Right={
-          user.eCliente &&
-          // <ShoppingButton
-          //   qtdItens={totalItems}
-          //   onClick={onOpenOrder}
-          //   disabledTitle
-          // />
-
-          null
+          user.eCliente && (
+            <ShoppingButton
+              qtdItens={totalItems}
+              onClick={onOpenOrder}
+              disabledTitle
+            />
+          )
         }
       />
 

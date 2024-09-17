@@ -1,4 +1,7 @@
+import { Cart } from "@/components/Cart";
+import { ShoppingButton } from "@/components/ShoppingButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStore } from "@/contexts/StoreContext";
 import {
   Box,
   Breadcrumb,
@@ -18,6 +21,7 @@ import {
   Th,
   Thead,
   Tr,
+  useDisclosure,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
@@ -40,7 +44,13 @@ export default function Produto() {
   const { data: product, isLoading } = useProductOne(Number(codigo));
   const { setLoading } = useLoading();
   const { user } = useAuth();
-  // const { priceList, totalItems } = useStore();
+  const { totalItems } = useStore();
+
+  const {
+    isOpen: isOpenOrder,
+    onOpen: onOpenOrder,
+    onClose: onCloseOrder,
+  } = useDisclosure();
 
   function handleGoBack() {
     const hrefBack = router.query?.hrefBack;
@@ -195,12 +205,13 @@ export default function Produto() {
         onGoBack={handleGoBack}
         title="Detalhes"
         Right={
-          user.eCliente && // <ShoppingButton
-          //   qtdItens={totalItems}
-          //   onClick={onOpenOrder}
-          //   disabledTitle
-          // />
-          null
+          user.eCliente && (
+            <ShoppingButton
+              qtdItens={totalItems}
+              onClick={onOpenOrder}
+              disabledTitle
+            />
+          )
         }
       />
 
@@ -479,6 +490,8 @@ export default function Produto() {
           </Flex>
         </>
       )}
+
+      <Cart isOpen={isOpenOrder} onClose={onCloseOrder} />
     </>
   );
 }

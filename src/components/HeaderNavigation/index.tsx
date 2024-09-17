@@ -252,11 +252,11 @@ export function HeaderNavigationComponent({
 
                 {!user.eCliente && <NavLink href="/clientes">Clientes</NavLink>}
 
-                {user.eVendedor &&
-                  SELLER_EMAILS_ACCEPT.includes(user.email) && (
-                    // ||user.eCliente
-                    <NavLink href="/pedidos">Pedidos</NavLink>
-                  )}
+                {(user.eCliente ||
+                  (user.eVendedor &&
+                    SELLER_EMAILS_ACCEPT.includes(user.email))) && (
+                  <NavLink href="/pedidos">Pedidos</NavLink>
+                )}
               </Stack>
             )}
           </Flex>

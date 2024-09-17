@@ -24,6 +24,8 @@ import { IoBook } from "react-icons/io5";
 import { SiMicrosoftexcel } from "react-icons/si";
 
 import { ListProducts } from "@/components/ListProducts";
+import { ShoppingButton } from "@/components/ShoppingButton";
+import { useStore } from "@/contexts/StoreContext";
 import { Accordion } from "../../components/Accordion";
 import { Cart } from "../../components/Cart";
 import { FilterRangeAmount } from "../../components/FilterRangeAmount";
@@ -57,7 +59,7 @@ export default function Produtos() {
   const { setQueryParams } = useQueryParams({ router });
   const { isOpen, onToggle } = useDisclosure();
 
-  // const { priceList, totalItems } = useStore();
+  const { totalItems } = useStore();
 
   const {
     isActivated: isActivatedCatalog,
@@ -610,11 +612,13 @@ export default function Produtos() {
           </Flex>
         }
         Right={
-          user.eCliente ? //   onClick={onOpenOrder} //   qtdItens={totalItems} // <ShoppingButton
-          //   disabledTitle
-          // />
-
-          null : (
+          user.eCliente ? (
+            <ShoppingButton
+              onClick={onOpenOrder}
+              qtdItens={totalItems}
+              disabledTitle
+            />
+          ) : (
             <Box display={["block", "block", "block", "none"]}>
               <Menu>
                 <MenuButton
@@ -833,9 +837,8 @@ export default function Produtos() {
             orderby={orderBy}
             distinct={groupProduct ? "codigoAlternativo" : undefined}
             search={search}
-            isCatalog
-            // isCatalog={!user.eCliente}
-            // isButtonAddCart={user.eCliente}
+            isCatalog={!user.eCliente}
+            isButtonAddCart={user.eCliente}
             filters={filters}
           />
         </Box>

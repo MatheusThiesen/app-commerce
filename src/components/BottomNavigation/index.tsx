@@ -65,13 +65,13 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
             </NavLink>
           </ListItem>
 
-          {/* {user?.eCliente && (
+          {user?.eCliente && (
             <ListItem h="full">
               <NavLink href="/pedidos" icon={IoBagHandleOutline}>
                 Pedidos
               </NavLink>
             </ListItem>
-          )} */}
+          )}
 
           <ListItem h="full">
             <NavLink href="/mais" icon={BiDotsHorizontalRounded}>
