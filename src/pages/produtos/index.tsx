@@ -610,8 +610,7 @@ export default function Produtos() {
           </Flex>
         }
         Right={
-          user.eCliente ? //   disabledTitle //   onClick={onOpenOrder} //   qtdItens={totalItems} // <ShoppingButton
-          // />
+          user.eCliente ? // /> //   disabledTitle //   onClick={onOpenOrder} //   qtdItens={totalItems} // <ShoppingButton
 
           null : (
             <Box display={["block", "block", "block", "none"]}>
@@ -832,7 +831,6 @@ export default function Produtos() {
             orderby={orderBy}
             distinct={groupProduct ? "codigoAlternativo" : undefined}
             search={search}
-            isCatalog
             isCatalog={!user.eCliente}
             // isButtonAddCart={user.eCliente}
             filters={filters}
