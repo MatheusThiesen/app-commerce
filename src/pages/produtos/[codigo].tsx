@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Box,
   Breadcrumb,
@@ -38,6 +39,8 @@ export default function Produto() {
 
   const { data: product, isLoading } = useProductOne(Number(codigo));
   const { setLoading } = useLoading();
+  const { user } = useAuth();
+  // const { priceList, totalItems } = useStore();
 
   function handleGoBack() {
     const hrefBack = router.query?.hrefBack;
@@ -138,41 +141,46 @@ export default function Produto() {
                 <Tr key={localEstoque.id}>
                   <Td>{localEstoque.descricao}</Td>
 
-                  <Td>{localEstoque.quantidade}</Td>
+                  <Td>
+                    {user?.eCliente ? "Disponível" : localEstoque.quantidade}
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
           }
         </Table>
       </TableContainer>
-      <TableContainer mt="6">
-        <Text mb="3" fontSize="lg">
-          Lista de Preço
-        </Text>
-        <Table size="sm" variant="simple">
-          {(product?.listaPreco?.length ?? 0) <= 0 && (
-            <TableCaption>Sem dados</TableCaption>
-          )}
 
-          <Thead>
-            <Tr>
-              <Th>Lista</Th>
-              <Th>Preço</Th>
-            </Tr>
-          </Thead>
-          {
-            <Tbody>
-              {product?.listaPreco?.map((localEstoque) => (
-                <Tr key={localEstoque.id}>
-                  <Td>{localEstoque.descricao}</Td>
+      {!user?.eCliente && (
+        <TableContainer mt="6">
+          <Text mb="3" fontSize="lg">
+            Lista de Preço
+          </Text>
+          <Table size="sm" variant="simple">
+            {(product?.listaPreco?.length ?? 0) <= 0 && (
+              <TableCaption>Sem dados</TableCaption>
+            )}
 
-                  <Td>{localEstoque.valorFormat}</Td>
-                </Tr>
-              ))}
-            </Tbody>
-          }
-        </Table>
-      </TableContainer>
+            <Thead>
+              <Tr>
+                <Th>Lista</Th>
+                <Th>Preço</Th>
+              </Tr>
+            </Thead>
+            {
+              <Tbody>
+                {product?.listaPreco?.map((localEstoque) => (
+                  <Tr key={localEstoque.id}>
+                    <Td>{localEstoque.descricao}</Td>
+
+                    <Td>{localEstoque.valorFormat}</Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            }
+          </Table>
+        </TableContainer>
+      )}
     </>
   );
 
@@ -186,6 +194,14 @@ export default function Produto() {
         isInativeEventScroll
         onGoBack={handleGoBack}
         title="Detalhes"
+        Right={
+          user.eCliente && // <ShoppingButton
+          //   qtdItens={totalItems}
+          //   onClick={onOpenOrder}
+          //   disabledTitle
+          // />
+          null
+        }
       />
 
       {isLoading && product ? (

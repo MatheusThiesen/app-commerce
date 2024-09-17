@@ -22,7 +22,6 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { IoBook } from "react-icons/io5";
 import { SiMicrosoftexcel } from "react-icons/si";
-import { useInView } from "react-intersection-observer";
 
 import { ListProducts } from "@/components/ListProducts";
 import { Accordion } from "../../components/Accordion";
@@ -36,10 +35,7 @@ import { ModalFilter } from "../../components/ModalFilter";
 import { ModalOrderBy } from "../../components/ModalOrderBy";
 import { PanelLayout } from "../../components/PanelLayout";
 import { Search } from "../../components/Search";
-import { ShoppingButton } from "../../components/ShoppingButton";
 import { useAuth } from "../../contexts/AuthContext";
-import { useLoading } from "../../contexts/LoadingContext";
-import { useStore } from "../../contexts/StoreContext";
 import { spaceImages } from "../../global/parameters";
 import { getProducts, productsOrderBy } from "../../hooks/queries/useProducts";
 import { useProductsFilters } from "../../hooks/queries/useProductsFilters";
@@ -54,17 +50,14 @@ import getImageByUrl from "../../utils/getImageByUrl";
 import { groupByObj } from "../../utils/groupByObj";
 
 export default function Produtos() {
-  const { ref, inView } = useInView();
   const toast = useToast();
   const toastIdRef = useRef();
   const router = useRouter();
-  const { setLoading } = useLoading();
-  const asPathBackHref = router.asPath.replaceAll("&", "!");
-  const { setQueryParams } = useQueryParams({ router });
 
+  const { setQueryParams } = useQueryParams({ router });
   const { isOpen, onToggle } = useDisclosure();
 
-  const { priceList, totalItems } = useStore();
+  // const { priceList, totalItems } = useStore();
 
   const {
     isActivated: isActivatedCatalog,
@@ -85,11 +78,8 @@ export default function Produtos() {
     onClose: onCloseOrderBy,
   } = useDisclosure();
 
-  const {
-    data: scrollPosition,
-    onRemove: onRemoveScrollPosition,
-    onSet: onSetScrollPosition,
-  } = useLocalStore("@ScrollY-Products");
+  const { data: scrollPosition, onRemove: onRemoveScrollPosition } =
+    useLocalStore("@ScrollY-Products");
 
   const { user } = useAuth();
 
@@ -124,31 +114,7 @@ export default function Produtos() {
   });
 
   const { data: productsFilters, isLoading: isLoadingProductsFilters } =
-    useProductsFilters({
-      filters: [
-        {
-          value: user.clienteCodigo ?? 0,
-          name: "clientCod",
-          field: "clientCod",
-        },
-        {
-          value: priceList?.codigo ?? 0,
-          name: "priceListCod",
-          field: "priceListCod",
-        },
-      ].filter((f) =>
-        user?.eCliente ? true : !["priceListCod", "clientCod"].includes(f.name)
-      ),
-    });
-
-  function setPositionScroll() {
-    onSetScrollPosition(window.scrollY.toString());
-  }
-
-  async function handleClickProduct() {
-    setPositionScroll();
-    setLoading(true);
-  }
+    useProductsFilters({});
 
   async function handleExportList({ noImage = false }: { noImage?: boolean }) {
     //@ts-ignore
@@ -644,13 +610,11 @@ export default function Produtos() {
           </Flex>
         }
         Right={
-          user.eCliente ? (
-            <ShoppingButton
-              qtdItens={totalItems}
-              onClick={onOpenOrder}
-              disabledTitle
-            />
-          ) : (
+          user.eCliente ? //   onClick={onOpenOrder} //   qtdItens={totalItems} // <ShoppingButton
+          //   disabledTitle
+          // />
+
+          null : (
             <Box display={["block", "block", "block", "none"]}>
               <Menu>
                 <MenuButton
@@ -869,78 +833,11 @@ export default function Produtos() {
             orderby={orderBy}
             distinct={groupProduct ? "codigoAlternativo" : undefined}
             search={search}
-            isCatalog={!user.eCliente}
-            isButtonAddCart={user.eCliente}
-            filters={[
-              ...filters,
-              {
-                value: user.clienteCodigo ?? 0,
-                name: "clientCod",
-                field: "clientCod",
-              },
-              {
-                value: priceList?.codigo ?? 0,
-                name: "priceListCod",
-                field: "priceListCod",
-              },
-            ].filter((f) =>
-              user?.eCliente
-                ? true
-                : !["priceListCod", "clientCod"].includes(f.name)
-            )}
+            isCatalog
+            // isCatalog={!user.eCliente}
+            // isButtonAddCart={user.eCliente}
+            filters={filters}
           />
-
-          {/* <LoadingInfiniteScroll isLoadingNextPage={isFetchingNextPage}>
-            <SimpleGrid columns={[2, 2, 3, 4, 4]} spacing="1" mb="1rem">
-              {data?.pages.map((page) =>
-                page?.products.map((product, i) =>
-                  i === page?.products.length - 4 ? (
-                    <Box key={product.codigo} ref={ref}>
-                      <Product
-                        isCatalog
-                        hrefBack={asPathBackHref}
-                        href={"produtos"}
-                        product={{
-                          cod: product.codigo,
-                          name: product.descricao,
-                          descriptionAdditional: product.descricaoAdicional,
-                          reference: product.referencia,
-                          amount: `PDV ${product.precoVendaFormat}`,
-                          uri: `${spaceImages}/Produtos/${
-                            product?.imagemPreview
-                              ? product.imagemPreview
-                              : product.referencia + "_01"
-                          }_smaller`,
-                        }}
-                        onClickProduct={handleClickProduct}
-                      />
-                    </Box>
-                  ) : (
-                    <Box key={product.codigo}>
-                      <Product
-                        isCatalog
-                        hrefBack={asPathBackHref}
-                        href="produtos"
-                        product={{
-                          cod: product.codigo,
-                          name: product.descricao,
-                          descriptionAdditional: product.descricaoAdicional,
-                          reference: product.referencia,
-                          amount: `PDV ${product.precoVendaFormat}`,
-                          uri: `${spaceImages}/Produtos/${
-                            product?.imagemPreview
-                              ? product.imagemPreview
-                              : product.referencia + "_01"
-                          }_smaller`,
-                        }}
-                        onClickProduct={handleClickProduct}
-                      />
-                    </Box>
-                  )
-                )
-              )}
-            </SimpleGrid>
-          </LoadingInfiniteScroll> */}
         </Box>
       </PanelLayout>
 
