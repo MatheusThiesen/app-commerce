@@ -34,6 +34,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 
+import { useAuth } from "@/contexts/AuthContext";
 import { GetServerSideProps } from "next";
 import { BiCartDownload } from "react-icons/bi";
 import { Input } from "../../../components/Form/Input";
@@ -64,7 +65,11 @@ type PaymentConditionState = {
 export default function CheckoutOrder() {
   const toast = useToast();
   const { data } = useBrands({});
-  const discountScope = useDiscountScope();
+  const { user } = useAuth();
+
+  const discountScope = useDiscountScope({
+    returnNull: !user?.vendedorCodigo,
+  });
   const [fetchingOrder, setFetchingOrder] = useState(false);
 
   const {
@@ -128,9 +133,9 @@ export default function CheckoutOrder() {
       if (order.differentiated?.tipoDesconto) {
         switch (order.differentiated?.tipoDesconto) {
           case "PERCENTUAL":
-            return !(Number(order.differentiated?.descontoPercentual) > 0);
+            return !(Number(order.differentiated?.descontoPercentual) >= 0);
           case "VALOR":
-            return !(Number(order.differentiated?.descontoValor) > 0);
+            return !(Number(order.differentiated?.descontoValor) >= 0);
         }
       } else {
         return true;
@@ -292,7 +297,7 @@ export default function CheckoutOrder() {
       <HeaderNavigation
         isGoBack
         title="Fechamento"
-        isNotNavigation
+        isNotNavigation={!user?.eCliente}
         isInativeEventScroll
       />
 
@@ -337,16 +342,18 @@ export default function CheckoutOrder() {
             {client && <Client client={client} />}
           </Box>
 
-          <Box>
-            <Text fontSize="lg" fontWeight="light" mb={"1"}>
-              LISTA DE PREÇO
-            </Text>
-            <Box bg="white" p="3" borderRadius="lg">
-              <Text fontWeight="bold" fontSize="lg">
-                {priceList?.descricao}
+          {!user?.eCliente && (
+            <Box>
+              <Text fontSize="lg" fontWeight="light" mb={"1"}>
+                LISTA DE PREÇO
               </Text>
+              <Box bg="white" p="3" borderRadius="lg">
+                <Text fontWeight="bold" fontSize="lg">
+                  {priceList?.descricao}
+                </Text>
+              </Box>
             </Box>
-          </Box>
+          )}
 
           <Box>
             <Text fontSize="lg" fontWeight="light" mb={"1"}>
@@ -428,23 +435,28 @@ export default function CheckoutOrder() {
                           </AccordionPanel>
                         </AccordionItem>
                       </Accordion>
+
                       {/* PEDIDO DIFERENCIADO */}
-                      <Text fontSize="md" fontWeight="bold" mb={"1"} mr="2">
-                        Diferenciado
-                      </Text>
-                      <Switch
-                        isChecked={order.differentiated?.isActive}
-                        onChange={(e) => {
-                          setDifferentiated({
-                            order: order,
-                            differentiated: {
-                              isActive: !!e.target.checked,
-                            },
-                          });
-                        }}
-                        size="lg"
-                        colorScheme="blue"
-                      />
+                      {!user?.eCliente && (
+                        <>
+                          <Text fontSize="md" fontWeight="bold" mb={"1"} mr="2">
+                            Diferenciado
+                          </Text>
+                          <Switch
+                            isChecked={order.differentiated?.isActive}
+                            onChange={(e) => {
+                              setDifferentiated({
+                                order: order,
+                                differentiated: {
+                                  isActive: !!e.target.checked,
+                                },
+                              });
+                            }}
+                            size="lg"
+                            colorScheme="blue"
+                          />
+                        </>
+                      )}
 
                       <Box mt="1rem">
                         <Text mb="2" fontSize="md" fontWeight="bold">
@@ -660,34 +672,37 @@ export default function CheckoutOrder() {
               spacing="4"
               direction={["column", "column", "column", "row"]}
             >
-              <Button
-                fontWeight={"normal"}
-                colorScheme="orange"
-                size="lg"
-                py="1.7 rem"
-                w="full"
-                fontSize="lg"
-                leftIcon={<Icon as={BiCartDownload} fontSize="30" />}
-                aria-disabled={
-                  !validOrders ||
-                  validMinimumAllOrder ||
-                  validDifferentiatedAllOrder
-                }
-                disabled={
-                  !validOrders ||
-                  validMinimumAllOrder ||
-                  validDifferentiatedAllOrder
-                }
-                onClick={
-                  validOrders &&
-                  !validMinimumAllOrder &&
-                  !validDifferentiatedAllOrder
-                    ? () => sendOrder({ isDraft: true })
-                    : () => {}
-                }
-              >
-                CRIAR RASCUNHO
-              </Button>
+              {!user.eCliente && (
+                <Button
+                  fontWeight={"normal"}
+                  colorScheme="orange"
+                  size="lg"
+                  py="1.7 rem"
+                  w="full"
+                  fontSize="lg"
+                  leftIcon={<Icon as={BiCartDownload} fontSize="30" />}
+                  aria-disabled={
+                    !validOrders ||
+                    validMinimumAllOrder ||
+                    validDifferentiatedAllOrder
+                  }
+                  disabled={
+                    !validOrders ||
+                    validMinimumAllOrder ||
+                    validDifferentiatedAllOrder
+                  }
+                  onClick={
+                    validOrders &&
+                    !validMinimumAllOrder &&
+                    !validDifferentiatedAllOrder
+                      ? () => sendOrder({ isDraft: true })
+                      : () => {}
+                  }
+                >
+                  CRIAR RASCUNHO
+                </Button>
+              )}
+
               <Button
                 fontWeight={"normal"}
                 colorScheme="green"

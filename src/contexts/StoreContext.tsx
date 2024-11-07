@@ -84,14 +84,14 @@ interface Item {
   amountFormat: string;
 }
 
-type SketchItem = {
+export type SketchItem = {
   quantidade: number;
   valorUnitario: number;
   sequencia: number;
   produto: Product;
 };
 
-type GetSketchOrderValidResponse = {
+export type GetSketchOrderValidResponse = {
   pedido: {
     cliente: Client;
     marca: Brand;
@@ -157,11 +157,8 @@ export function StoreProvider({ children }: StoreProviderProps) {
   const { user } = useAuth();
   const toast = useToast();
 
-  const {
-    onGet: onGetStoragePriceList,
-    onSet: onSetStoragePriceList,
-    onRemove: onRemoveStoragePriceList,
-  } = useLocalStore<PriceList>("@Order-price-list");
+  const { onGet: onGetStoragePriceList, onSet: onSetStoragePriceList } =
+    useLocalStore<PriceList>("@Order-price-list");
   const {
     onGet: onGetStorageClient,
     onSet: onSetStorageClient,
@@ -174,7 +171,10 @@ export function StoreProvider({ children }: StoreProviderProps) {
   } = useLocalStore<Order[]>("@Order-cart");
 
   const [client, setClient] = useState<Client>({} as Client);
-  const [priceList, setPriceList] = useState<PriceList>({} as PriceList);
+  const [priceList, setPriceList] = useState<PriceList>({
+    codigo: 28,
+    descricao: "28 DDL",
+  } as PriceList);
   const [orders, setOrders] = useState<Order[]>([]);
 
   const [sketchEditItems, setSketchEditItems] = useState<SketchItem[]>([]);
@@ -221,6 +221,36 @@ export function StoreProvider({ children }: StoreProviderProps) {
       );
     }
   }, []);
+
+  useEffect(() => {
+    if (user.eCliente) {
+      const clientNormalized = {
+        ...user.cliente,
+        cepFormat: mask(user.cliente.cep, "99999-999"),
+        cnpjFormat: mask(user.cliente.cnpj, "99.999.999/9999-99"),
+        telefone2Format: user.cliente.telefone2
+          ? mask(user.cliente.telefone2, [
+              "9999-9999",
+              "99999-9999",
+              "(99) 9999-9999",
+              "(99) 99999-9999",
+            ])
+          : undefined,
+        telefoneFormat: user.cliente.telefone
+          ? mask(user.cliente.telefone, [
+              "9999-9999",
+              "99999-9999",
+              "(99) 9999-9999",
+              "(99) 99999-9999",
+            ])
+          : undefined,
+      };
+
+      onSetStoragePriceList({ codigo: 28, descricao: "28 DDL" });
+      onSetStorageClient(clientNormalized);
+      setClient(clientNormalized);
+    }
+  }, [user]);
 
   function createOrder({
     client: clientData,
@@ -390,13 +420,13 @@ export function StoreProvider({ children }: StoreProviderProps) {
   }
 
   function reset() {
-    onRemoveStoragePriceList();
-    onRemoveStorageClient();
     onRemoveStorageOrder();
-
     setOrders([]);
-    setClient({} as Client);
-    setPriceList({} as PriceList);
+
+    if (!user.eCliente) {
+      onRemoveStorageClient();
+      setClient({} as Client);
+    }
   }
 
   function setPaymentCondition({
@@ -540,7 +570,11 @@ export function StoreProvider({ children }: StoreProviderProps) {
     recalculatePriceOrders();
 
     if (itens.atualizados.length <= 0 && itens.deletados.length <= 0) {
-      push("/pedidos/novo");
+      if (user.eCliente) {
+        push("/produtos");
+      } else {
+        push("/pedidos/novo");
+      }
     } else {
       setSketchEditItems(itens.atualizados);
       setSketchRemoveItems(itens.deletados);
@@ -678,7 +712,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
       {isAlertSketch && (
         <ModalAlertList
           isOpen={isAlertSketch}
-          onClose={handleRedirectSketch}
+          onClose={() => setIsAlertSketch(false)}
           title="Lista de produto que sofreram alterações"
         >
           <Stack py="4" px="4">

@@ -1,4 +1,5 @@
 import { Cart } from "@/components/Cart";
+import { InputQuantity } from "@/components/Form/InputQuantity";
 import { ShoppingButton } from "@/components/ShoppingButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStore } from "@/contexts/StoreContext";
@@ -10,8 +11,10 @@ import {
   Button,
   Divider,
   Flex,
+  Icon,
   Select,
   Spinner,
+  Stack,
   Table,
   TableCaption,
   TableContainer,
@@ -22,29 +25,37 @@ import {
   Thead,
   Tr,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { FaCartPlus } from "react-icons/fa";
 import { IoChevronForwardSharp } from "react-icons/io5";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductImageCarouse } from "../../components/ProductImageCarouse";
 import { VariationsProduct } from "../../components/VariationsProduct";
 import { useLoading } from "../../contexts/LoadingContext";
 import { spaceImages } from "../../global/parameters";
-import { useProductOne } from "../../hooks/queries/useProducts";
+import { StockLocation, useProductOne } from "../../hooks/queries/useProducts";
 import { useImagesProduct } from "../../hooks/useImagesProduct";
 
 export default function Produto() {
   const router = useRouter();
   const { codigo, hrefBack } = router.query;
+  const toast = useToast();
   const [images, setImages] = useState<string[]>([]);
-
+  const { addItem, orders, totalItems, priceList } = useStore();
   const { data: product, isLoading } = useProductOne(Number(codigo));
   const { setLoading } = useLoading();
   const { user } = useAuth();
-  const { totalItems } = useStore();
+
+  const [stockLocationSelected, setStockLocationSelected] = useState<
+    StockLocation | undefined
+  >();
+
+  const [quantity, setQuantity] = useState(0);
 
   const {
     isOpen: isOpenOrder,
@@ -62,6 +73,31 @@ export default function Produto() {
     }
   }
 
+  async function handleAddProductStore() {
+    if (!product || !stockLocationSelected) {
+      return toast({
+        title: "Informe o produto e disponibilidade",
+        status: "warning",
+        position: "top",
+        isClosable: true,
+      });
+    }
+
+    addItem({
+      product,
+      qtd: quantity,
+      stockLocation: stockLocationSelected,
+      brand: product.marca,
+    });
+
+    return toast({
+      title: "Produto adicionado no carrinho",
+      status: "success",
+      position: "top",
+      isClosable: true,
+    });
+  }
+
   useEffect(() => {
     (async () => {
       if (product) {
@@ -77,8 +113,36 @@ export default function Produto() {
     })();
   }, [product]);
 
+  useEffect(() => {
+    if (product && stockLocationSelected) {
+      const findOrder = orders.find(
+        (f) => f.stockLocation.periodo === stockLocationSelected.periodo
+      );
+
+      if (!findOrder) return setQuantity(0);
+
+      const findItem = findOrder.items.find(
+        (f) => f.product.codigo === product.codigo
+      );
+
+      if (!findItem) return setQuantity(0);
+
+      setQuantity(findItem.qtd);
+    }
+  }, [product, stockLocationSelected, orders]);
+
   const InfoProduct = () => (
     <>
+      {user?.eCliente && (
+        <Text as="p" color="gray.600" fontSize="md" fontWeight="md" mt="2">
+          {`${
+            product?.listaPreco?.find(
+              (f) => Number(f.codigo) === Number(priceList?.codigo)
+            )?.valorFormat ?? "-"
+          }`}
+        </Text>
+      )}
+
       <Text as="span" fontSize="2xl" fontWeight="medium">
         PDV {product?.precoVendaFormat}
       </Text>
@@ -112,24 +176,99 @@ export default function Produto() {
         />
       )}
 
-      <Box mt="4">
-        <Text fontWeight="light">Grade</Text>
-        <Select
-          onChange={(e) => {
-            if (Number(e?.target.value) !== product?.codigo) {
-              setLoading(true);
-              router.push(`/produtos/${e?.target.value}?hrefBack=${hrefBack}`);
-            }
-          }}
-          value={product?.codigo}
-        >
-          {product?.grades?.map((grid) => (
-            <option key={grid.codigo} value={grid.codigo}>
-              {grid.descricaoAdicional}
-            </option>
-          ))}
-        </Select>
-      </Box>
+      <Stack mt="4" spacing="4">
+        <Box mt="4">
+          <Text fontWeight="light">Grade</Text>
+          <Select
+            onChange={(e) => {
+              if (Number(e?.target.value) !== product?.codigo) {
+                setLoading(true);
+                router.push(
+                  `/produtos/${e?.target.value}?hrefBack=${hrefBack}`
+                );
+              }
+            }}
+            value={product?.codigo}
+          >
+            {product?.grades?.map((grid) => (
+              <option key={grid.codigo} value={grid.codigo}>
+                {grid.descricaoAdicional}
+              </option>
+            ))}
+          </Select>
+        </Box>
+        {user?.eCliente && (
+          <>
+            {product?.locaisEstoque && (
+              <Box>
+                <Text fontWeight="light">Disponibilidade</Text>
+                <Select
+                  value={stockLocationSelected?.periodo}
+                  onChange={(e) => {
+                    const findStockLocation = product?.locaisEstoque?.find(
+                      (f) => String(f.periodo) === String(e?.target.value)
+                    );
+
+                    setStockLocationSelected(findStockLocation);
+                  }}
+                >
+                  <option>Selecione...</option>
+                  {product.locaisEstoque?.map((stockLocation) => (
+                    <option value={stockLocation.periodo}>
+                      {stockLocation.descricao}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+            )}
+
+            {stockLocationSelected && (
+              <Box w="8rem">
+                <InputQuantity
+                  value={quantity}
+                  step={product?.qtdEmbalagem}
+                  max={stockLocationSelected?.quantidade}
+                  min={product?.qtdEmbalagem}
+                  onDecremental={(qtd) => setQuantity(qtd)}
+                  onIncremental={(qtd) => setQuantity(qtd)}
+                />
+                <Text
+                  mt="1"
+                  as={"span"}
+                  fontSize="sm"
+                  fontWeight="light"
+                  color="gray.500"
+                  display="block"
+                  textAlign="center"
+                >
+                  {stockLocationSelected?.quantidade
+                    ? `${stockLocationSelected?.quantidade} disponível`
+                    : "-"}
+                </Text>
+              </Box>
+            )}
+
+            <Button
+              colorScheme="blue"
+              size="lg"
+              w="full"
+              leftIcon={<Icon as={FaCartPlus} fontSize={30} />}
+              aria-disabled={!stockLocationSelected || !(Number(quantity) > 0)}
+              disabled={!stockLocationSelected || !(Number(quantity) > 0)}
+              onClick={() =>
+                !stockLocationSelected || !(Number(quantity) > 0)
+                  ? () => {}
+                  : handleAddProductStore()
+              }
+            >
+              Adicionar ao carrinho
+            </Button>
+          </>
+        )}
+      </Stack>
+
+      <Divider mt="8" />
+
       <TableContainer mt="6" w="70%">
         <Text mb="3" fontSize="lg">
           Locais de Estoque

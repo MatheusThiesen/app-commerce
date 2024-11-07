@@ -19,6 +19,8 @@ interface DrawerListProps {
   isOpen: boolean;
   onClose: () => void;
   children?: ReactNode;
+
+  headerComponent?: ReactNode;
 }
 
 export function DrawerList({
@@ -26,6 +28,7 @@ export function DrawerList({
   isOpen,
   children,
   title,
+  headerComponent,
 }: DrawerListProps) {
   return (
     <Drawer
@@ -47,6 +50,8 @@ export function DrawerList({
             <Flex align="center" justify="center">
               <Text fontSize="2xl">{title}</Text>
             </Flex>
+
+            {headerComponent}
           </Stack>
         </DrawerHeader>
 

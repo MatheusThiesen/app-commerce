@@ -13,7 +13,13 @@ type GetDiscountScopesResponse = {
   discountScope: DiscountScope;
 };
 
-export async function getDiscountScope() {
+type useDiscountScopeProps = {
+  returnNull?: boolean;
+};
+
+export async function getDiscountScope({ returnNull }: useDiscountScopeProps) {
+  if (returnNull) return null;
+
   const { data } = await api.get<DiscountScope>(
     "/differentiated/discount-scope"
   );
@@ -25,6 +31,6 @@ export async function getDiscountScope() {
   return response;
 }
 
-export function useDiscountScope() {
-  return useQuery(["discount-scope"], () => getDiscountScope(), {});
+export function useDiscountScope(data: useDiscountScopeProps) {
+  return useQuery(["discount-scope"], () => getDiscountScope(data), {});
 }

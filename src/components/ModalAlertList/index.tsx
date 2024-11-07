@@ -10,8 +10,8 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
+import { X } from "lucide-react";
 import { ReactNode } from "react";
-import { IoArrowForward } from "react-icons/io5";
 
 interface ModalAlertListProps {
   title: string;
@@ -40,7 +40,7 @@ export function ModalAlertList({
           <Stack>
             <Flex justify="end">
               <Button variant="unstyled" onClick={onClose}>
-                <Icon as={IoArrowForward} fontSize="1.8rem" />
+                <Icon as={X} fontSize="1.8rem" />
               </Button>
             </Flex>
 
