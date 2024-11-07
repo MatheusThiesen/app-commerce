@@ -128,9 +128,9 @@ export default function CheckoutOrder() {
       if (order.differentiated?.tipoDesconto) {
         switch (order.differentiated?.tipoDesconto) {
           case "PERCENTUAL":
-            return !(Number(order.differentiated?.descontoPercentual) > 0);
+            return !(Number(order.differentiated?.descontoPercentual) >= 0);
           case "VALOR":
-            return !(Number(order.differentiated?.descontoValor) > 0);
+            return !(Number(order.differentiated?.descontoValor) >= 0);
         }
       } else {
         return true;
