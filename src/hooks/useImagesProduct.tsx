@@ -17,22 +17,12 @@ type ResponseXmlToJson = {
 
 export const useImagesProduct = async ({
   reference,
-  images: imagesStorage,
 }: useImagesProductProps) => {
-  // if (imagesStorage && imagesStorage.length > 0) {
-  //   return imagesStorage.map((item) => `${spaceImages}/Produtos/${item}`);
-  // }
-
   var images: string[] = [];
   const response = await axios(
     `${spaceImages}/?prefix=Produtos%2F${reference}&max-keys=30`,
     {
       method: "GET",
-      // headers: {
-      //   "Access-Control-Allow-Origin": "*",
-      //   "Access-Control-Allow-Headers": "*",
-      //   "Access-Control-Allow-Credentials": "true",
-      // },
     }
   );
 
@@ -43,16 +33,14 @@ export const useImagesProduct = async ({
 
     images = xmlToJson?.ListBucketResult?.Contents?.map((key) => key?.Key[0]);
 
-    return (
-      images
-        .filter((f) => !f.endsWith("_smaller"))
-        // .filter((f) =>
-        //   imagesStorage?.length ?? 0 > 0
-        //     ? imagesStorage?.map((item) => `Produtos/${item}`).includes(f)
-        //     : true
-        // )
-        .map((image) => `${spaceImages}/${image}`)
-    );
+    return images
+      .filter((f) => !f.endsWith("_smaller"))
+      .filter(
+        (f) =>
+          f.split("/")[1].split("_")[0].toLocaleUpperCase() ===
+          reference.toLocaleUpperCase()
+      )
+      .map((image) => `${spaceImages}/${image}`);
   } catch (error) {
     return [""];
   }
