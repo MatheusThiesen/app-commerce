@@ -125,7 +125,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       path: "/",
     });
 
-    Router.push(ROUTE_HOME);
+    setTimeout(() => {
+      window.location.reload();
+      Router.push(ROUTE_HOME);
+    }, 1000);
   }
 
   async function signIn({
