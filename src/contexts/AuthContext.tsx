@@ -12,7 +12,6 @@ import {
   useState,
 } from "react";
 import { Me } from "../@types/me";
-import { ROUTE_HOME } from "../middleware";
 import { BASE_URL } from "../service/api";
 import { api } from "../service/apiClient";
 
@@ -125,8 +124,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       path: "/",
     });
 
-    window.location.reload();
-    Router.push(ROUTE_HOME);
+    setTimeout(() => {
+      window.location.reload();
+    }, 600);
   }
 
   async function signIn({

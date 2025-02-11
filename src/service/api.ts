@@ -17,7 +17,7 @@ const agent = new https.Agent({
 export const BASE_URL =
   process.env.NODE_ENV !== "development"
     ? "https://api-app.alpardobrasil.com.br/"
-    : "http://0.0.0.0:4444/";
+    : "http://localhost:4444/";
 
 export function setupAPIClient(
   ctx: GetServerSidePropsContext | undefined = undefined
