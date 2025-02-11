@@ -12,6 +12,7 @@ import {
   useState,
 } from "react";
 import { Me } from "../@types/me";
+import { ROUTE_HOME } from "../middleware";
 import { BASE_URL } from "../service/api";
 import { api } from "../service/apiClient";
 
@@ -21,13 +22,13 @@ type SignCredentials = {
 };
 
 type AuthContextData = {
-  signIn(creandentials: SignCredentials): Promise<ReponseSignIn | void>;
+  signIn(creandentials: SignCredentials): Promise<ResponseSignIn | void>;
   refreshToken(
     ctx?: GetServerSidePropsContext | undefined
   ): Promise<string | undefined>;
   signOut: () => void;
   sso: (token: string) => Promise<void>;
-  reset(p: ResetProps): Promise<ReponseSignIn | void>;
+  reset(p: ResetProps): Promise<ResponseSignIn | void>;
   user: Me;
   isAuthenticated: boolean;
 };
@@ -36,7 +37,7 @@ type AuthProviderProps = {
   children: ReactNode;
 };
 
-type ReponseSignIn = {
+type ResponseSignIn = {
   title: string;
   status: "warning" | "success" | "error";
 };
@@ -124,15 +125,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       path: "/",
     });
 
-    setTimeout(() => {
-      window.location.reload();
-    }, 600);
+    Router.push(ROUTE_HOME);
   }
 
   async function signIn({
     email,
     password,
-  }: SignCredentials): Promise<ReponseSignIn | void> {
+  }: SignCredentials): Promise<ResponseSignIn | void> {
     try {
       const response = await api.post("/auth/signin", {
         email,
@@ -154,7 +153,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   async function reset({
     password,
     token: tokenReset,
-  }: ResetProps): Promise<ReponseSignIn | void> {
+  }: ResetProps): Promise<ResponseSignIn | void> {
     try {
       const response = await api.post("/auth/reset", {
         senha: password,
