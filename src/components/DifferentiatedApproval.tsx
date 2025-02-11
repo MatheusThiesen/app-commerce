@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext";
 import {
   AlertDialog,
   AlertDialogBody,
@@ -75,7 +76,9 @@ export function DifferentiatedApproval({ order }: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef(null);
   const toast = useToast();
-  const discountScope = useDiscountScope();
+  const { user } = useAuth();
+
+  const discountScope = useDiscountScope({ returnNull: !user?.vendedorCodigo });
   const { push } = useRouter();
 
   const [isLoadingForm, setIsLoadingForm] = useState(false);
