@@ -242,7 +242,7 @@ export default function Home() {
                   {homeData?.brands.map((brand) => (
                     <div
                       key={brand.codigo}
-                      className="shrink-0 w-36 md:w-64 flex justify-center items-end px-4 md:px-16"
+                      className="shrink-0 w-36 md:w-64 flex justify-center items-center px-4 md:px-16"
                     >
                       <Link
                         href={`/produtos?marcaCodigo=${brand.descricao}|${brand.codigo}`}
