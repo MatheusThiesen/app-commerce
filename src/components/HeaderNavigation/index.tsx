@@ -2,7 +2,11 @@ import {
   CLIENT_EMAILS_ACCEPT_STORE,
   SELLER_EMAILS_ACCEPT_STORE,
 } from "@/global/parameters";
+
+import { Button as ButtonUI } from "@/components/ui/button";
+
 import { accessSsoPortal } from "@/hooks/accessSsoPortal";
+
 import { Link } from "@chakra-ui/next-js";
 import {
   Box,
@@ -10,20 +14,23 @@ import {
   Flex,
   HStack,
   Image,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuGroup,
-  MenuItem,
-  MenuList,
   Stack,
   Text,
 } from "@chakra-ui/react";
+import LinkNext from "next/link";
 import Router from "next/router";
 import { ReactNode, memo, useEffect, useState } from "react";
-import { FaRegUser } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 import { IoIosArrowBack } from "react-icons/io";
 import { useAuth } from "../../contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { NavLink } from "./NavLink";
 
 export interface HeaderProps {
@@ -254,56 +261,38 @@ export function HeaderNavigationComponent({
               justify="center"
             >
               {user && !isNotNavigation && (
-                <Menu>
-                  <MenuButton>
-                    <Flex align={"center"}>
-                      <FaRegUser className="text-white size-7 " />
-
-                      <Flex flexDir="column" alignItems="start">
-                        <Text
-                          fontSize="smaller"
-                          fontWeight="bold"
-                          ml="2"
-                          color="white"
-                          textTransform="capitalize"
-                          lineHeight="1"
-                          as={"span"}
-                        >
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <ButtonUI variant="link" className="relative flex p-0 ">
+                      <FaUser
+                        className="text-white"
+                        style={{ height: "1.8rem", width: "1.8rem" }}
+                      />
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-bold ml-1 text-white uppercase leading-none">
                           {user?.nome}
-                        </Text>
-                        <Text
-                          fontSize="smaller"
-                          fontWeight="light"
-                          ml="2"
-                          color="white"
-                          lineHeight="1"
-                          as={"span"}
-                        >
+                        </span>
+                        <span className="text-sm font-light ml-1 text-white leading-none">
                           {user?.email}
-                        </Text>
-                      </Flex>
-                    </Flex>
-                  </MenuButton>
-                  <MenuList zIndex="9999">
-                    <MenuGroup title="Perfil">
-                      <MenuItem>
-                        <Link href="/conta" _hover={{ textDecoration: "none" }}>
-                          Minha conta
-                        </Link>
-                      </MenuItem>
-                      <MenuItem>
-                        <Box
-                          onClick={accessSsoPortal}
-                          _hover={{ textDecoration: "none" }}
-                        >
-                          Acessar Portal Alpar
-                        </Box>
-                      </MenuItem>
-                      <MenuDivider />
-                      <MenuItem onClick={signOut}>Sair </MenuItem>
-                    </MenuGroup>
-                  </MenuList>
-                </Menu>
+                        </span>
+                      </div>
+                    </ButtonUI>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end">
+                    <DropdownMenuGroup>
+                      <Link href="/conta" _hover={{ textDecoration: "none" }}>
+                        <LinkNext href="/conta">
+                          <DropdownMenuItem>Minha conta</DropdownMenuItem>
+                        </LinkNext>
+                      </Link>
+                      <DropdownMenuItem onClick={accessSsoPortal}>
+                        Acessar Portal Alpar
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut}>Sair</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </Flex>
 
