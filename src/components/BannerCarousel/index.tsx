@@ -49,9 +49,12 @@ export function BannerCarousel({
             onClick={() => {
               if (onPress) onPress(banner.id);
             }}
+            style={{
+              width: "100vw",
+            }}
           >
             <Image
-              background="#fff"
+              className="bg-white"
               boxSize="full"
               objectFit="cover"
               cursor={onPress ? "pointer" : undefined}
