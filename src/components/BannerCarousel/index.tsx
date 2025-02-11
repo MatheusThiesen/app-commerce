@@ -2,7 +2,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-import { Autoplay, Navigation, Pagination } from "swiper";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
 import { Box, BoxProps, Image } from "@chakra-ui/react";
@@ -28,6 +28,7 @@ export function BannerCarousel({
   return (
     <Box h={400} {...rest}>
       <Swiper
+        cssMode={true}
         spaceBetween={30}
         centeredSlides={true}
         autoplay={{

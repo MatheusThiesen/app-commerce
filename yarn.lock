@@ -8179,11 +8179,6 @@ ssf@~0.11.2:
   dependencies:
     frac "~1.1.2"
 
-ssr-window@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/ssr-window/-/ssr-window-4.0.2.tgz#dc6b3ee37be86ac0e3ddc60030f7b3bc9b8553be"
-  integrity sha512-ISv/Ch+ig7SOtw7G2+qkwfVASzazUnvlDTwypdLoPoySv+6MqlOV10VwPSE6EWkGjhW50lUmghPmpYZXMu/+AQ==
-
 stable@^0.1.8:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/stable/-/stable-0.1.8.tgz#836eb3c8382fe2936feaf544631017ce7d47a3cf"
@@ -8441,12 +8436,10 @@ svgo@^1.2.2:
     unquote "~1.1.1"
     util.promisify "~1.0.0"
 
-swiper@^9.4.1:
-  version "9.4.1"
-  resolved "https://registry.yarnpkg.com/swiper/-/swiper-9.4.1.tgz#2f48bcd6ab4b4fcf4ae93eaee53980531d42fd42"
-  integrity sha512-1nT2T8EzUpZ0FagEqaN/YAhRj33F2x/lN6cyB0/xoYJDMf8KwTFT3hMOeoB8Tg4o3+P/CKqskP+WX0Df046fqA==
-  dependencies:
-    ssr-window "^4.0.2"
+swiper@11.2.2:
+  version "11.2.2"
+  resolved "https://registry.yarnpkg.com/swiper/-/swiper-11.2.2.tgz#b49089fad99501e34cb1be916e1ae05379aace9a"
+  integrity sha512-FmAN6zACpVUbd/1prO9xQ9gKo9cc6RE2UKU/z4oXtS8fNyX4sdOW/HHT/e444WucLJs0jeMId6WjdWM2Lrs8zA==
 
 tailwind-merge@2.5.2:
   version "2.5.2"

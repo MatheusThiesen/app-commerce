@@ -68,7 +68,7 @@
     "react-window": "^1.8.8",
     "remask": "^1.0.1",
     "sass": "^1.50.0",
-    "swiper": "^9.4.1",
+    "swiper": "11.2.2",
     "tailwind-merge": "2.5.2",
     "tailwindcss-animate": "1.0.7",
     "three": "^0.139.2",
