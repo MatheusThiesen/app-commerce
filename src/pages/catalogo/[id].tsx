@@ -31,7 +31,7 @@ import {
   Scrollbar,
   Grid as SwiperGrid,
   Thumbs,
-} from "swiper";
+} from "swiper/modules";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import styles from "../../components/ProductImageCarouse/style.module.scss";
