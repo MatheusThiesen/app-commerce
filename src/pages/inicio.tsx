@@ -9,7 +9,11 @@ import { ShoppingButton } from "@/components/ShoppingButton";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useStore } from "@/contexts/StoreContext";
-import { CLIENT_EMAILS_ACCEPT_STORE, spaceImages } from "@/global/parameters";
+import {
+  CLIENT_EMAILS_ACCEPT_STORE,
+  defaultNoImage,
+  spaceImages,
+} from "@/global/parameters";
 import { useHomeData } from "@/hooks/queries/useHomeData";
 import Image from "next/image";
 import Link from "next/link";
@@ -244,7 +248,7 @@ export default function Home() {
                         href={`/produtos?marcaCodigo=${brand.descricao}|${brand.codigo}`}
                       >
                         <Image
-                          src={brand.url}
+                          src={brand.url ?? defaultNoImage}
                           alt={`logo by ${brand.descricao}`}
                           className="h-fit w-fit object-cover"
                           width={300}
