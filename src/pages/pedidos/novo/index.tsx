@@ -112,7 +112,11 @@ export default function Order() {
     });
 
   useEffect(() => {
-    setQueryParams({ type: "set", data: { field: "orderby", value: orderBy } });
+    if (orderBy)
+      setQueryParams({
+        type: "set",
+        data: { field: "orderby", value: orderBy },
+      });
   }, [orderBy]);
   useEffect(() => {
     setQueryParams({ type: "set", data: { field: "search", value: search } });

@@ -37,7 +37,10 @@ import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { ProductImageCarouse } from "../../components/ProductImageCarouse";
 import { VariationsProduct } from "../../components/VariationsProduct";
 import { useLoading } from "../../contexts/LoadingContext";
-import { spaceImages } from "../../global/parameters";
+import {
+  CLIENT_EMAILS_ACCEPT_STORE,
+  spaceImages,
+} from "../../global/parameters";
 import { StockLocation, useProductOne } from "../../hooks/queries/useProducts";
 import { useImagesProduct } from "../../hooks/useImagesProduct";
 
@@ -133,7 +136,7 @@ export default function Produto() {
 
   const InfoProduct = () => (
     <>
-      {user?.eCliente && (
+      {user?.eCliente && CLIENT_EMAILS_ACCEPT_STORE.includes(user.email) && (
         <Text as="p" color="gray.600" fontSize="md" fontWeight="md" mt="2">
           {`${
             product?.listaPreco?.find(
@@ -197,7 +200,7 @@ export default function Produto() {
             ))}
           </Select>
         </Box>
-        {user?.eCliente && (
+        {user?.eCliente && CLIENT_EMAILS_ACCEPT_STORE.includes(user.email) && (
           <>
             {product?.locaisEstoque && (
               <Box>
@@ -344,7 +347,8 @@ export default function Produto() {
         onGoBack={handleGoBack}
         title="Detalhes"
         Right={
-          user.eCliente && (
+          user.eCliente &&
+          CLIENT_EMAILS_ACCEPT_STORE.includes(user.email) && (
             <ShoppingButton
               qtdItens={totalItems}
               onClick={onOpenOrder}

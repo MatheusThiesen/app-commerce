@@ -1,3 +1,7 @@
+import {
+  CLIENT_EMAILS_ACCEPT_STORE,
+  SELLER_EMAILS_ACCEPT_STORE,
+} from "@/global/parameters";
 import { accessSsoPortal } from "@/hooks/accessSsoPortal";
 import { Link } from "@chakra-ui/next-js";
 import {
@@ -17,31 +21,10 @@ import {
 } from "@chakra-ui/react";
 import Router from "next/router";
 import { ReactNode, memo, useEffect, useState } from "react";
+import { FaRegUser } from "react-icons/fa";
 import { IoIosArrowBack } from "react-icons/io";
 import { useAuth } from "../../contexts/AuthContext";
-import { Avatar, AvatarFallback } from "../ui/avatar";
 import { NavLink } from "./NavLink";
-
-export const SELLER_EMAILS_ACCEPT = [
-  "amanda.medeiros@alpardobrasil.com.br",
-  "rardy.maciel@alpardobrasil.com.br",
-  "yasmin.santos@alpardobrasil.com.br",
-  "vanessa.rodrigues@alpardobrasil.com.br",
-  "mariana.fonseca@alpardobrasil.com.br",
-  "lucas.machado@alpardobrasil.com.br",
-  "matheus.thiesen@alpardobrasil.com.br",
-  "joaoo@alpardobrasil.com.br",
-  "vinicius@alpardobrasil.com.br",
-  "fernando@alpardobrasil.com.br",
-  "bruna.anjos@alpardobrasil.com.br",
-  "diulia.abbott@alpardobrasil.com.br",
-  "flavioxavier.rs.oakley@gmail.com",
-  "flavioxavier.rs.nike@gmail.com",
-  "flavioxavier.rs.adidas@gmail.com",
-  "carlos.junior@alpardobrasil.com.br",
-  "uglio.scaravaglione@alpardobrasil.com.br",
-  "ti@alpardobrasil.com.br",
-];
 
 export interface HeaderProps {
   isInativeEventScroll?: boolean;
@@ -253,9 +236,10 @@ export function HeaderNavigationComponent({
 
                 {!user.eCliente && <NavLink href="/clientes">Clientes</NavLink>}
 
-                {(user.eCliente ||
+                {((user.eCliente &&
+                  CLIENT_EMAILS_ACCEPT_STORE.includes(user.email)) ||
                   (user.eVendedor &&
-                    SELLER_EMAILS_ACCEPT.includes(user.email))) && (
+                    SELLER_EMAILS_ACCEPT_STORE.includes(user.email))) && (
                   <NavLink href="/pedidos">Pedidos</NavLink>
                 )}
               </Stack>
@@ -273,11 +257,7 @@ export function HeaderNavigationComponent({
                 <Menu>
                   <MenuButton>
                     <Flex align={"center"}>
-                      <Avatar>
-                        <AvatarFallback>
-                          {user?.nome?.[0] ?? "-"}
-                        </AvatarFallback>
-                      </Avatar>
+                      <FaRegUser className="text-white size-7 " />
 
                       <Flex flexDir="column" alignItems="start">
                         <Text

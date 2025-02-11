@@ -14,7 +14,6 @@ import { ProductStore } from "../../../components/ProductStore";
 import {
   Differentiated,
   Order,
-  PaymentCondition,
   useStore,
 } from "../../../contexts/StoreContext";
 
@@ -35,6 +34,8 @@ import {
 } from "@chakra-ui/react";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { usePaymentConditions } from "@/hooks/queries/usePaymentConditions";
+import { usePriceList } from "@/hooks/queries/usePriceList";
 import { GetServerSideProps } from "next";
 import { BiCartDownload } from "react-icons/bi";
 import { Input } from "../../../components/Form/Input";
@@ -42,30 +43,22 @@ import { InputSelect } from "../../../components/Form/InputSelect";
 import { Textarea } from "../../../components/Form/TextArea";
 import { useBrands } from "../../../hooks/queries/useBrands";
 import { useDiscountScope } from "../../../hooks/queries/useDiscountScope";
-import { api } from "../../../service/apiClient";
 
-type PaymentConditionResponse = {
-  paymentConditions: PaymentCondition[];
-
-  priceListCod: number;
-  totalAmount: number;
-  clientCod: number;
-
-  stockLocationPeriod: string;
-  brandCod: number;
-};
-
-type PaymentConditionState = {
-  paymentConditions: PaymentCondition[];
-
-  stockLocationPeriod: string;
-  brandCod: number;
-};
+interface OrderWithCheckout extends Order {
+  priceLists: {
+    codigo: number;
+    totalValue: number;
+    totalValueFormat: string;
+  }[];
+}
 
 export default function CheckoutOrder() {
   const toast = useToast();
   const { data } = useBrands({});
   const { user } = useAuth();
+
+  const getPaymentConditions = usePaymentConditions({ isDifferentiated: true });
+  const getPriceLists = usePriceList();
 
   const discountScope = useDiscountScope({
     returnNull: !user?.vendedorCodigo,
@@ -73,7 +66,7 @@ export default function CheckoutOrder() {
   const [fetchingOrder, setFetchingOrder] = useState(false);
 
   const {
-    orders,
+    orders: ordersStore,
     client,
     priceList,
     totalAmountFormat,
@@ -84,9 +77,9 @@ export default function CheckoutOrder() {
     setDifferentiated,
   } = useStore();
 
-  const [paymentConditionOrders, setPaymentConditionOrders] = useState<
-    PaymentConditionState[]
-  >([]);
+  const [orders, setOrders] = useState<OrderWithCheckout[]>(
+    ordersStore.map((order) => ({ ...order, priceLists: [] }))
+  );
 
   const validMinimumAllOrder =
     orders
@@ -99,22 +92,33 @@ export default function CheckoutOrder() {
 
   function onSelectPaymentCondition({
     brandCod,
-    stockLocationPeriod,
+    isDifferentiated = false,
+    valueMinimum,
+    priceList,
   }: {
-    stockLocationPeriod: string;
     brandCod: number;
+    isDifferentiated?: boolean;
+    valueMinimum: number;
+    priceList: number;
   }) {
-    const findPaymentCondition = paymentConditionOrders.find(
-      (paymentCondition) =>
-        paymentCondition.brandCod === brandCod &&
-        paymentCondition.stockLocationPeriod === stockLocationPeriod
-    );
+    const paymentConditionFilters = getPaymentConditions.data?.paymentConditions
+      .filter((paymentCondition) => paymentCondition.marcaCodigo === brandCod)
+      .filter(
+        (paymentCondition) => valueMinimum >= paymentCondition.valorMinimo
+      )
+      .filter((paymentCondition) =>
+        isDifferentiated ? true : paymentCondition.eApenasDiferenciado === false
+      )
+      .filter((paymentCondition) =>
+        user.eCliente ? true : paymentCondition.listaPrecoCodigo === priceList
+      );
 
-    if (!findPaymentCondition) return [];
+    if (!paymentConditionFilters) return [];
 
-    return findPaymentCondition.paymentConditions.map((payment) => ({
+    return paymentConditionFilters.map((payment) => ({
       value: payment.codigo,
       label: payment.descricao,
+      priceList: payment.listaPrecoCodigo,
     }));
   }
 
@@ -261,32 +265,42 @@ export default function CheckoutOrder() {
   }
 
   useEffect(() => {
-    (async () => {
-      let paymentConditionOrdersNormalized: PaymentConditionState[] = [];
+    if (getPriceLists.data?.priceLists && orders.length > 0) {
+      const ordersCalculate: OrderWithCheckout[] = ordersStore.map((order) => ({
+        ...order,
+        priceLists: [],
+      }));
 
-      for (const order of orders) {
-        const paymentConditions = await api.post<PaymentConditionResponse>(
-          "/payment-conditions/list-to-order",
-          {
-            brandCod: order.brand.codigo,
-            priceListCod: priceList?.codigo,
-            totalAmount: order.amount,
-            clientCod: client?.codigo,
-            stockLocationPeriod: order.stockLocation.periodo,
-            isDifferentiated: order.differentiated?.isActive,
-          }
-        );
+      for (const order of ordersCalculate) {
+        order.priceLists = [];
+        for (const priceList of getPriceLists.data.priceLists) {
+          const totalValue = order.items.reduce(
+            (previousValue, currentValue) =>
+              previousValue +
+              (currentValue.product.listaPreco?.find(
+                (f) => f.codigo === priceList.codigo
+              )?.valor ?? 0) *
+                currentValue.qtd,
+            0
+          );
 
-        paymentConditionOrdersNormalized.push({
-          brandCod: paymentConditions.data.brandCod,
-          stockLocationPeriod: paymentConditions.data.stockLocationPeriod,
-          paymentConditions: paymentConditions.data.paymentConditions,
-        });
+          const subtractTotalValue =
+            totalValue - order.netAmount > 0 ? totalValue - order.netAmount : 0;
+
+          order.priceLists.push({
+            codigo: priceList.codigo,
+            totalValue: subtractTotalValue,
+            totalValueFormat: subtractTotalValue.toLocaleString("pt-br", {
+              style: "currency",
+              currency: "BRL",
+            }),
+          });
+        }
       }
 
-      setPaymentConditionOrders(paymentConditionOrdersNormalized);
-    })();
-  }, [orders]);
+      setOrders(ordersCalculate);
+    }
+  }, [getPriceLists.data?.priceLists, ordersStore]);
 
   return (
     <>
@@ -469,14 +483,21 @@ export default function CheckoutOrder() {
                             if (e) {
                               const find = onSelectPaymentCondition({
                                 brandCod: order.brand.codigo,
-                                stockLocationPeriod:
-                                  order.stockLocation.periodo,
+                                isDifferentiated:
+                                  order.differentiated?.isActive,
+                                valueMinimum: order.amount,
+                                priceList: priceList.codigo,
                               }).find(
                                 (f) =>
                                   Number(f.value) === Number(e.target.value)
                               );
 
-                              if (find)
+                              const getPriceList = order.priceLists.find(
+                                (f) =>
+                                  Number(f.codigo) === Number(find?.priceList)
+                              );
+
+                              if (find) {
                                 setPaymentCondition({
                                   brandCod: order.brand.codigo,
                                   stockLocationPeriod:
@@ -484,18 +505,46 @@ export default function CheckoutOrder() {
                                   paymentCondition: {
                                     codigo: Number(find.value),
                                     descricao: find.label,
+                                    priceList: find.priceList,
+                                    totalValue: getPriceList?.totalValue ?? 0,
+                                    totalValueFormat: Number(
+                                      getPriceList?.totalValue ?? 0
+                                    ).toLocaleString("pt-br", {
+                                      style: "currency",
+                                      currency: "BRL",
+                                    }),
                                   },
                                 });
+                              }
                             }
                           }}
                         >
                           <option value="">Selecionar...</option>
                           {onSelectPaymentCondition({
                             brandCod: order.brand.codigo,
-                            stockLocationPeriod: order.stockLocation.periodo,
-                          }).map((item) => (
-                            <option value={item.value}>{item.label}</option>
-                          ))}
+                            isDifferentiated: order.differentiated?.isActive,
+                            valueMinimum: order.amount,
+                            priceList: priceList.codigo,
+                          })
+                            .sort((a, b) => a.priceList - b.priceList)
+                            .map((item) => (
+                              <option key={item.value} value={item.value}>
+                                {item.label}
+                                {user.eCliente &&
+                                (order.priceLists.find(
+                                  (f) =>
+                                    Number(f.codigo) === Number(item.priceList)
+                                )?.totalValue ?? 0) > 0
+                                  ? ` (+${
+                                      order.priceLists.find(
+                                        (f) =>
+                                          Number(f.codigo) ===
+                                          Number(item.priceList)
+                                      )?.totalValueFormat
+                                    })`
+                                  : ""}
+                              </option>
+                            ))}
                         </InputSelect>
                       </Box>
 
@@ -586,6 +635,20 @@ export default function CheckoutOrder() {
                           color="gray.700"
                         >{`${order.items.length} itens`}</Text>
                       </Flex>
+                      {!!order.paymentCondition?.totalValue && (
+                        <Flex justify="space-between">
+                          <Text
+                            fontSize={["sm", "sm", "md", "md"]}
+                            color="gray.700"
+                          >{`Condição de Pagamento`}</Text>
+                          <Text
+                            fontSize={["sm", "sm", "md", "md"]}
+                            color="gray.700"
+                          >
+                            {order.paymentCondition?.totalValueFormat}
+                          </Text>
+                        </Flex>
+                      )}
 
                       {order.differentiated?.isActive && (
                         <>
@@ -672,36 +735,38 @@ export default function CheckoutOrder() {
               spacing="4"
               direction={["column", "column", "column", "row"]}
             >
-              {!user.eCliente && (
-                <Button
-                  fontWeight={"normal"}
-                  colorScheme="orange"
-                  size="lg"
-                  py="1.7 rem"
-                  w="full"
-                  fontSize="lg"
-                  leftIcon={<Icon as={BiCartDownload} fontSize="30" />}
-                  aria-disabled={
-                    !validOrders ||
-                    validMinimumAllOrder ||
-                    validDifferentiatedAllOrder
-                  }
-                  disabled={
-                    !validOrders ||
-                    validMinimumAllOrder ||
-                    validDifferentiatedAllOrder
-                  }
-                  onClick={
-                    validOrders &&
-                    !validMinimumAllOrder &&
-                    !validDifferentiatedAllOrder
-                      ? () => sendOrder({ isDraft: true })
-                      : () => {}
-                  }
-                >
-                  CRIAR RASCUNHO
-                </Button>
-              )}
+              {!user.eCliente &&
+                orders.map((order) => order.isSketch).filter((f) => f).length <=
+                  0 && (
+                  <Button
+                    fontWeight={"normal"}
+                    colorScheme="orange"
+                    size="lg"
+                    py="1.7 rem"
+                    w="full"
+                    fontSize="lg"
+                    leftIcon={<Icon as={BiCartDownload} fontSize="30" />}
+                    aria-disabled={
+                      !validOrders ||
+                      validMinimumAllOrder ||
+                      validDifferentiatedAllOrder
+                    }
+                    disabled={
+                      !validOrders ||
+                      validMinimumAllOrder ||
+                      validDifferentiatedAllOrder
+                    }
+                    onClick={
+                      validOrders &&
+                      !validMinimumAllOrder &&
+                      !validDifferentiatedAllOrder
+                        ? () => sendOrder({ isDraft: true })
+                        : () => {}
+                    }
+                  >
+                    CRIAR RASCUNHO
+                  </Button>
+                )}
 
               <Button
                 fontWeight={"normal"}

@@ -15,6 +15,7 @@ export type StockLocation = {
 export type Brand = {
   codigo: number;
   descricao: string;
+  url?: string;
 };
 
 export type Product = {

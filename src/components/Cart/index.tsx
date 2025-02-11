@@ -26,7 +26,7 @@ interface CartProps {
 }
 
 export function Cart({ isOpen, onClose }: CartProps) {
-  const { orders, totalItems, totalAmountFormat } = useStore();
+  const { orders, totalItems, totalNetAmountFormat } = useStore();
 
   const { data } = useBrands({});
 
@@ -74,7 +74,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
               mb="4"
               fontWeight="bold"
               fontSize={["lg", "lg", "lg", "lg"]}
-            >{`${totalAmountFormat}`}</Text>
+            >{`${totalNetAmountFormat}`}</Text>
           </Flex>
 
           <Button
@@ -101,7 +101,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
           {orders.map((order) => {
             const validateMinimum = validateMinimumOrder(
               order.brand.codigo,
-              order.amount
+              order.netAmount
             );
 
             return (
@@ -115,7 +115,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                 <AccordionButton>
                   <Box as="span" flex="1" textAlign="left">
                     <Text fontSize="lg">
-                      {`${order?.brand?.descricao} - ${order.stockLocation.descricao} - ${order.amountFormat}`}
+                      {`${order?.brand?.descricao} - ${order.stockLocation.descricao} - ${order.netAmountFormat}`}
 
                       {validateMinimum && (
                         <Text
@@ -154,7 +154,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                     fontSize="larger"
                     fontWeight="bold"
                   >
-                    TOTAL {order.amountFormat}
+                    TOTAL {order.netAmountFormat}
                   </Text>
                 </AccordionPanel>
               </AccordionItem>

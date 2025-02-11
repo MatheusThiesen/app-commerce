@@ -29,6 +29,10 @@ import {
   useOrderOne,
 } from "../../hooks/queries/useOrder";
 
+import { Alert } from "@/components/Alert";
+import { ModalAlert } from "@/components/ModalAlert";
+import { ModalAlertList } from "@/components/ModalAlertList";
+import { ProductOrder } from "@/components/ProductOrder";
 import { GroupInput } from "@/components/form-tailwind/GroupInput";
 import { InputBase } from "@/components/form-tailwind/InputBase";
 import {
@@ -43,10 +47,7 @@ import {
   DetailTitle,
 } from "@/components/layouts/detail";
 import { ScreenLoading } from "@/components/loading-screen";
-import { ModalAlert } from "@/components/ModalAlert";
-import { ModalAlertList } from "@/components/ModalAlertList";
 import { ProductItem } from "@/components/product-item";
-import { ProductOrder } from "@/components/ProductOrder";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -99,6 +100,17 @@ export default function Order() {
     isOpen: isOpenConfirmDeleteOrder,
     onOpen: onOpenConfirmDeleteOrder,
     onClose: onCloseConfirmDeleteOrder,
+  } = useDisclosure();
+
+  const {
+    isOpen: isOpenConfirmCancelOrder,
+    onOpen: onOpenConfirmCancelOrder,
+    onClose: onCloseConfirmCancelOrder,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenConfirmSendOrder,
+    onOpen: onOpenConfirmSendOrder,
+    onClose: onCloseConfirmSendOrder,
   } = useDisclosure();
 
   async function handleSketch() {
@@ -299,6 +311,47 @@ export default function Order() {
         </DetailHeader>
 
         <DetailMain>
+          {order?.ePendente && user.eVendedor && (
+            <DetailBox className="w-full mb-6">
+              <DetailBoxTitle>APROVAÇÃO DO PEDIDO</DetailBoxTitle>
+
+              <div className="gap-2 flex flex-col sm:flex-row">
+                <Button
+                  flex={1}
+                  // variant="outline"
+                  onClick={onOpenConfirmSendOrder}
+                  leftIcon={<ShoppingCart />}
+                  className="py-2"
+                  colorScheme="green"
+                >
+                  Digitar
+                </Button>
+                <Button
+                  flex={1}
+                  // variant="outline"
+                  onClick={handleSketch}
+                  leftIcon={<PenLine />}
+                  className="py-2"
+                  colorScheme="yellow"
+                  color="white"
+                  bg="yellow.500"
+                  _hover={{ bg: "yellow.600" }}
+                >
+                  Editar
+                </Button>
+                <Button
+                  flex={1}
+                  // variant="outline"
+                  onClick={onOpenConfirmCancelOrder}
+                  leftIcon={<CircleX />}
+                  className="py-2"
+                  colorScheme="red"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </DetailBox>
+          )}
           <div ref={targetRef} className="bg-slate-100">
             <DetailContent
               secondaryColumn={
@@ -586,6 +639,26 @@ export default function Order() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <Alert
+        title="Cancelar pedido"
+        description="Você tem certeza que deseja cancelar o pedido?"
+        isOpen={isOpenConfirmCancelOrder}
+        onClose={onCloseConfirmCancelOrder}
+        onAction={cancelOrder}
+        actionDescription="SIM"
+        closeDescription="NÃO"
+      />
+      <Alert
+        title="Digitar pedido"
+        description="Você tem certeza que deseja digitar o pedido?"
+        isOpen={isOpenConfirmSendOrder}
+        onClose={onCloseConfirmSendOrder}
+        onAction={sendOrder}
+        actionDescription="SIM"
+        closeDescription="NÃO"
+        closeColorSchema="green"
+      />
 
       {isAlertSketchNoItens && (
         <ModalAlert

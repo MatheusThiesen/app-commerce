@@ -1,3 +1,4 @@
+import { api } from "@/service/apiClient";
 import { Link } from "@chakra-ui/next-js";
 import { Box, Button, Flex, Icon, Image, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
@@ -32,7 +33,7 @@ export function ProductComponent({
   product,
   isCatalog,
   href,
-  hrefBack,
+  hrefBack = "",
   onClickProduct,
   onAddCard,
 }: ProductComponentProps) {
@@ -52,6 +53,14 @@ export function ProductComponent({
     }
   }
 
+  async function handleClickProduct() {
+    try {
+      await api.patch(`/products/click/${product.cod}`);
+    } catch (error) {
+      console.log("Error save click product: ", error);
+    }
+  }
+
   const MotionBox = motion(Box);
   return (
     <MotionBox
@@ -66,6 +75,7 @@ export function ProductComponent({
       }}
       viewport={{ once: true }}
       whileTap={{ scale: 0.98 }}
+      onClick={handleClickProduct}
     >
       <Flex position="relative" flexDir="column" alignItems="start" h="full">
         {isCatalog && (
@@ -138,7 +148,7 @@ export function ProductComponent({
           <Box w="95%">
             <Text
               w="full"
-              mt="4"
+              mt="1"
               fontSize="md"
               fontWeight="400"
               whiteSpace="nowrap"

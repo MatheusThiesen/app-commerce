@@ -25,6 +25,7 @@ import { SiMicrosoftexcel } from "react-icons/si";
 
 import { ListProducts } from "@/components/ListProducts";
 import { ShoppingButton } from "@/components/ShoppingButton";
+import { Switch as SwitchUI } from "@/components/ui/switch";
 import { useStore } from "@/contexts/StoreContext";
 import { Accordion } from "../../components/Accordion";
 import { Cart } from "../../components/Cart";
@@ -38,7 +39,10 @@ import { ModalOrderBy } from "../../components/ModalOrderBy";
 import { PanelLayout } from "../../components/PanelLayout";
 import { Search } from "../../components/Search";
 import { useAuth } from "../../contexts/AuthContext";
-import { spaceImages } from "../../global/parameters";
+import {
+  CLIENT_EMAILS_ACCEPT_STORE,
+  spaceImages,
+} from "../../global/parameters";
 import { getProducts, productsOrderBy } from "../../hooks/queries/useProducts";
 import { useProductsFilters } from "../../hooks/queries/useProductsFilters";
 import { useLocalStore } from "../../hooks/useLocalStore";
@@ -542,7 +546,11 @@ export default function Produtos() {
   }, [isActivatedCatalog]);
 
   useEffect(() => {
-    setQueryParams({ type: "set", data: { field: "orderby", value: orderBy } });
+    if (orderBy)
+      setQueryParams({
+        type: "set",
+        data: { field: "orderby", value: orderBy },
+      });
   }, [orderBy]);
   useEffect(() => {
     setQueryParams({ type: "set", data: { field: "search", value: search } });
@@ -613,11 +621,13 @@ export default function Produtos() {
         }
         Right={
           user.eCliente ? (
-            <ShoppingButton
-              onClick={onOpenOrder}
-              qtdItens={totalItems}
-              disabledTitle
-            />
+            CLIENT_EMAILS_ACCEPT_STORE.includes(user.email) && (
+              <ShoppingButton
+                onClick={onOpenOrder}
+                qtdItens={totalItems}
+                disabledTitle
+              />
+            )
           ) : (
             <Box display={["block", "block", "block", "none"]}>
               <Menu>
@@ -823,12 +833,10 @@ export default function Produtos() {
               <Text as={"span"} fontSize="sm" fontWeight="normal">
                 OCULTAR FILTROS
               </Text>
-              <Switch
-                ml="2"
-                size="md"
+              <SwitchUI
+                className="ml-2 "
                 checked={!isVisibleFilters}
-                onChange={(e) => setIsVisibleFilters(!e.target.checked)}
-                colorScheme="gray"
+                onCheckedChange={(e) => setIsVisibleFilters(!e)}
               />
             </Flex>
           </HeaderToList>
@@ -838,7 +846,9 @@ export default function Produtos() {
             distinct={groupProduct ? "codigoAlternativo" : undefined}
             search={search}
             isCatalog={!user.eCliente}
-            isButtonAddCart={user.eCliente}
+            isButtonAddCart={
+              user.eCliente && CLIENT_EMAILS_ACCEPT_STORE.includes(user.email)
+            }
             filters={filters}
           />
         </Box>

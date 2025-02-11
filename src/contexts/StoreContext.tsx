@@ -1,3 +1,4 @@
+import { Button, Icon, Stack, useToast } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import {
   ReactNode,
@@ -7,18 +8,20 @@ import {
   useState,
 } from "react";
 
-import { Button, Icon, Stack, useToast } from "@chakra-ui/react";
 import { differenceInDays } from "date-fns";
+import { mask } from "remask";
+import { api } from "../service/apiClient";
+
 import { IoBagHandle } from "react-icons/io5";
 import { TbShoppingCartCancel } from "react-icons/tb";
-import { mask } from "remask";
+
 import { ModalAlert } from "../components/ModalAlert";
 import { ModalAlertList } from "../components/ModalAlertList";
 import { ProductOrder } from "../components/ProductOrder";
+
 import { Client } from "../hooks/queries/useClients";
 import { Brand, Product, StockLocation } from "../hooks/queries/useProducts";
 import { useLocalStore } from "../hooks/useLocalStore";
-import { api } from "../service/apiClient";
 import { useAuth } from "./AuthContext";
 
 export type PriceList = {
@@ -29,6 +32,9 @@ export type PriceList = {
 export type PaymentCondition = {
   codigo: number;
   descricao: string;
+  totalValue: number;
+  totalValueFormat: string;
+  priceList: number;
 };
 
 export type Differentiated = {
@@ -71,9 +77,10 @@ export interface Order {
   diferenciado?: Differentiated;
 
   qtd: number;
+  netAmount: number;
+  netAmountFormat: string;
   amount: number;
   amountFormat: string;
-
   isSketch?: number;
 }
 
@@ -110,11 +117,13 @@ export type GetSketchOrderValidResponse = {
 
 type StoreContextData = {
   client?: Client;
-  priceList?: PriceList;
+  priceList: PriceList;
   orders: Order[];
   totalItems: number;
   totalAmount: number;
   totalAmountFormat: string;
+  totalNetAmount: number;
+  totalNetAmountFormat: string;
 
   validOrders: boolean;
 
@@ -198,6 +207,17 @@ export function StoreProvider({ children }: StoreProviderProps) {
     style: "currency",
     currency: "BRL",
   });
+  const totalNetAmount = orders.reduce(
+    (previousValue, currentValue) =>
+      previousValue +
+      (currentValue.netAmount -
+        (currentValue.differentiated?.amountDiscount ?? 0)),
+    0
+  );
+  const totalNetAmountFormat = totalNetAmount.toLocaleString("pt-br", {
+    style: "currency",
+    currency: "BRL",
+  });
 
   const validOrders =
     orders
@@ -216,7 +236,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
         orderStorage.filter((f) => {
           const differenceDays = differenceInDays(new Date(), f.createdAt);
 
-          return differenceDays < 7;
+          return differenceDays <= 2;
         }) ?? []
       );
     }
@@ -270,7 +290,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
   function exitOrder() {
     push("/pedidos");
 
-    setTimeout(reset, 2000);
+    setTimeout(reset, 1000);
   }
 
   function addItem({
@@ -330,6 +350,8 @@ export function StoreProvider({ children }: StoreProviderProps) {
         },
         brand: brand,
         qtd: qtd,
+        netAmount: amount,
+        netAmountFormat: amountFormat,
         amount,
         amountFormat,
         items: [
@@ -401,15 +423,29 @@ export function StoreProvider({ children }: StoreProviderProps) {
     setOrders((oldOrder) =>
       oldOrder.map((order) => ({
         ...order,
-        amount: order.items.reduce(
+        netAmount: order.items.reduce(
           (previousValue, currentValue) => previousValue + currentValue.amount,
           0
+        ),
+        netAmountFormat: order.items
+          .reduce(
+            (previousValue, currentValue) =>
+              previousValue + currentValue.amount,
+            0
+          )
+          .toLocaleString("pt-br", {
+            style: "currency",
+            currency: "BRL",
+          }),
+        amount: order.items.reduce(
+          (previousValue, currentValue) => previousValue + currentValue.amount,
+          order.paymentCondition?.totalValue ?? 0
         ),
         amountFormat: order.items
           .reduce(
             (previousValue, currentValue) =>
               previousValue + currentValue.amount,
-            0
+            order.paymentCondition?.totalValue ?? 0
           )
           .toLocaleString("pt-br", {
             style: "currency",
@@ -450,6 +486,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
 
     onSetStorageOrder(setPaymentConditionInOrder);
     setOrders(setPaymentConditionInOrder);
+    recalculatePriceOrders();
   }
 
   function setDifferentiated({
@@ -549,6 +586,8 @@ export function StoreProvider({ children }: StoreProviderProps) {
       qtd: itens.atuais.length,
       amount: amountOrder,
       amountFormat: amountOrderFormat,
+      netAmount: amountOrder,
+      netAmountFormat: amountOrderFormat,
       isSketch: orderCode,
       items: itens.atuais.map((item) => {
         const amount = Number(item.valorUnitario) * item.quantidade;
@@ -584,74 +623,49 @@ export function StoreProvider({ children }: StoreProviderProps) {
 
   async function sendOrder({ isDraft }: { isDraft: boolean }) {
     for (const order of orders) {
+      const priceListNormalized =
+        order.paymentCondition?.priceList === priceList.codigo
+          ? priceList.codigo
+          : order.paymentCondition?.priceList;
+
+      const orderNormalized = {
+        vendedorCodigo: user?.vendedorCodigo,
+        clienteCodigo: client.codigo,
+        condicaoPagamentoCodigo: order.paymentCondition?.codigo,
+        tabelaPrecoCodigo: priceListNormalized,
+        marcaCodigo: order.brand.codigo,
+        periodoEstoque: order.stockLocation.periodo,
+        rascunhoCodigo: order.isSketch,
+        eRascunho: isDraft,
+        eDiferenciado: !!order.differentiated?.isActive,
+        tipoDesconto: order.differentiated?.tipoDesconto,
+        descontoPercentual: order.differentiated?.descontoPercentual
+          ? Number(order.differentiated?.descontoPercentual)
+          : undefined,
+        descontoValor: order.differentiated?.descontoValor,
+        motivoDiferenciado: order.differentiated?.motivoDiferenciado,
+        descontoCalculado: order.differentiated?.amountDiscount,
+        itens: order.items.map((item) => {
+          const findPriceList = item?.product.listaPreco?.find(
+            (f) => Number(f.codigo) === Number(priceListNormalized)
+          );
+
+          const amount = findPriceList?.valor
+            ? findPriceList?.valor
+            : item.qtd / item.amount;
+
+          return {
+            produtoCodigo: item.product.codigo,
+            quantidade: item.qtd,
+            valorUnitario: amount,
+          };
+        }),
+      };
+
       if (!!order.isSketch) {
-        await api.put(`/orders/${order.isSketch}`, {
-          vendedorCodigo: user?.vendedorCodigo,
-          clienteCodigo: client.codigo,
-          condicaoPagamentoCodigo: order.paymentCondition?.codigo,
-          tabelaPrecoCodigo: priceList.codigo,
-          marcaCodigo: order.brand.codigo,
-          periodoEstoque: order.stockLocation.periodo,
-          rascunhoCodigo: order.isSketch,
-          eRascunho: isDraft,
-          eDiferenciado: !!order.differentiated?.isActive,
-          tipoDesconto: order.differentiated?.tipoDesconto,
-          descontoPercentual: order.differentiated?.descontoPercentual
-            ? Number(order.differentiated?.descontoPercentual)
-            : undefined,
-          descontoValor: order.differentiated?.descontoValor,
-          motivoDiferenciado: order.differentiated?.motivoDiferenciado,
-          descontoCalculado: order.differentiated?.amountDiscount,
-          itens: order.items.map((item) => {
-            const findPriceList = item?.product.listaPreco?.find(
-              (f) => Number(f.codigo) === Number(priceList?.codigo)
-            );
-
-            const amount = findPriceList?.valor
-              ? findPriceList?.valor
-              : item.qtd / item.amount;
-
-            return {
-              produtoCodigo: item.product.codigo,
-              quantidade: item.qtd,
-              valorUnitario: amount,
-            };
-          }),
-        });
+        await api.put(`/orders/${order.isSketch}`, orderNormalized);
       } else {
-        await api.post("/orders", {
-          vendedorCodigo: user?.vendedorCodigo,
-          clienteCodigo: client.codigo,
-          condicaoPagamentoCodigo: order.paymentCondition?.codigo,
-          tabelaPrecoCodigo: priceList.codigo,
-          marcaCodigo: order.brand.codigo,
-          periodoEstoque: order.stockLocation.periodo,
-          rascunhoCodigo: order.isSketch,
-          eRascunho: isDraft,
-          eDiferenciado: !!order.differentiated?.isActive,
-          descontoPercentual: order.differentiated?.descontoPercentual
-            ? Number(order.differentiated?.descontoPercentual)
-            : undefined,
-          descontoValor: order.differentiated?.descontoValor,
-          tipoDesconto: order.differentiated?.tipoDesconto,
-          motivoDiferenciado: order.differentiated?.motivoDiferenciado,
-          descontoCalculado: order.differentiated?.amountDiscount,
-          itens: order.items.map((item) => {
-            const findPriceList = item?.product.listaPreco?.find(
-              (f) => Number(f.codigo) === Number(priceList?.codigo)
-            );
-
-            const amount = findPriceList?.valor
-              ? findPriceList?.valor
-              : item.qtd / item.amount;
-
-            return {
-              produtoCodigo: item.product.codigo,
-              quantidade: item.qtd,
-              valorUnitario: amount,
-            };
-          }),
-        });
+        await api.post("/orders", orderNormalized);
       }
     }
 
@@ -697,7 +711,10 @@ export function StoreProvider({ children }: StoreProviderProps) {
         totalItems,
         totalAmount,
         totalAmountFormat,
+        totalNetAmount,
+        totalNetAmountFormat,
         validOrders,
+
         addItem,
         sendOrder,
         createOrder,
