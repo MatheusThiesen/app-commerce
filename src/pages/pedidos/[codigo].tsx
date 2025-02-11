@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Me } from "../../@types/me";
 
 import { setupAPIClient } from "../../service/api";
@@ -29,6 +29,10 @@ import {
   useOrderOne,
 } from "../../hooks/queries/useOrder";
 
+import { Alert } from "@/components/Alert";
+import { ModalAlert } from "@/components/ModalAlert";
+import { ModalAlertList } from "@/components/ModalAlertList";
+import { ProductOrder } from "@/components/ProductOrder";
 import { GroupInput } from "@/components/form-tailwind/GroupInput";
 import { InputBase } from "@/components/form-tailwind/InputBase";
 import {
@@ -47,14 +51,28 @@ import { ProductItem } from "@/components/product-item";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { Download, EllipsisVertical, ShoppingBag, Trash2 } from "lucide-react";
+import {
+  CircleX,
+  Download,
+  EllipsisVertical,
+  PenLine,
+  ShoppingBag,
+  ShoppingCart,
+  Trash2,
+} from "lucide-react";
 import { GetServerSideProps } from "next";
+import { IoBagHandle } from "react-icons/io5";
+import { TbShoppingCartCancel } from "react-icons/tb";
 import { Resolution, usePDF } from "react-to-pdf";
 import { DifferentiatedApproval } from "../../components/DifferentiatedApproval";
 import { DifferentiatedCard } from "../../components/DifferentiatedCard";
 import { HeaderNavigation } from "../../components/HeaderNavigation";
 import { useAuth } from "../../contexts/AuthContext";
-import { useStore } from "../../contexts/StoreContext";
+import {
+  GetSketchOrderValidResponse,
+  SketchItem,
+  useStore,
+} from "../../contexts/StoreContext";
 import { api } from "../../service/apiClient";
 
 export default function Order() {
@@ -62,11 +80,16 @@ export default function Order() {
   const toast = useToast();
   const { sketchOrder } = useStore();
   const { setLoading } = useLoading();
-
-  const { codigo } = router.query;
   const { user } = useAuth();
 
+  const { codigo } = router.query;
   const { data: order, isLoading } = useOrderOne(Number(codigo));
+
+  const [sketchEditItems, setSketchEditItems] = useState<SketchItem[]>([]);
+  const [sketchRemoveItems, setSketchRemoveItems] = useState<SketchItem[]>([]);
+  const [isAlertSketch, setIsAlertSketch] = useState<boolean>(false);
+  const [isAlertSketchNoItens, setIsAlertSketchNoItens] =
+    useState<boolean>(false);
 
   const { toPDF, targetRef } = usePDF({
     filename: `Pedido #${codigo} - Alpar Store`,
@@ -77,6 +100,17 @@ export default function Order() {
     isOpen: isOpenConfirmDeleteOrder,
     onOpen: onOpenConfirmDeleteOrder,
     onClose: onCloseConfirmDeleteOrder,
+  } = useDisclosure();
+
+  const {
+    isOpen: isOpenConfirmCancelOrder,
+    onOpen: onOpenConfirmCancelOrder,
+    onClose: onCloseConfirmCancelOrder,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenConfirmSendOrder,
+    onOpen: onOpenConfirmSendOrder,
+    onClose: onCloseConfirmSendOrder,
   } = useDisclosure();
 
   async function handleSketch() {
@@ -102,6 +136,48 @@ export default function Order() {
       position: "top",
       isClosable: true,
     });
+  }
+
+  async function cancelOrder() {
+    api.patch(`/orders/cancel/${order?.codigo}`);
+
+    await router.push("/pedidos");
+
+    return toast({
+      title: "Pedido cancelado",
+      status: "success",
+      position: "top",
+      isClosable: true,
+    });
+  }
+  async function sendOrder() {
+    const getSketch = await api.post<GetSketchOrderValidResponse>(
+      `/orders/sketch/${order?.codigo}`
+    );
+
+    if (!getSketch) throw new Error();
+
+    const { itens } = getSketch.data;
+
+    if (itens.atuais.length <= 0) {
+      return setIsAlertSketchNoItens(true);
+    }
+
+    if (itens.atualizados.length <= 0 && itens.deletados.length <= 0) {
+      api.patch(`/orders/send/${order?.codigo}`);
+      await router.push("/pedidos");
+
+      return toast({
+        title: "Pedido enviado",
+        status: "success",
+        position: "top",
+        isClosable: true,
+      });
+    } else {
+      setSketchEditItems(itens.atualizados);
+      setSketchRemoveItems(itens.deletados);
+      setIsAlertSketch(true);
+    }
   }
 
   useEffect(() => {
@@ -136,7 +212,7 @@ export default function Order() {
               }
               data={[
                 {
-                  description: "Espelho pedido",
+                  description: "Espelho do pedido",
                   handle: handleExportOrder,
                   icon: Download,
                 },
@@ -146,17 +222,36 @@ export default function Order() {
                   icon: ShoppingBag,
                 },
                 {
-                  description: "Deletar pedido",
+                  description: "Excluir",
                   handle: handleDeleteOrder,
                   icon: Trash2,
                 },
-              ].filter((f) =>
-                order?.eRascunho
-                  ? true
-                  : !["Deletar pedido", "Digitar rascunho"].includes(
-                      f.description
-                    )
-              )}
+                {
+                  description: "Digitar",
+                  handle: sendOrder,
+                  icon: ShoppingCart,
+                },
+                {
+                  description: "Editar",
+                  handle: handleSketch,
+                  icon: PenLine,
+                },
+                {
+                  description: "Cancelar",
+                  handle: cancelOrder,
+                  icon: CircleX,
+                },
+              ]
+                .filter((f) =>
+                  order?.eRascunho
+                    ? true
+                    : !["Excluir", "Digitar rascunho"].includes(f.description)
+                )
+                .filter((f) =>
+                  order?.ePendente && user.eVendedor
+                    ? true
+                    : !["Digitar", "Editar", "Cancelar"].includes(f.description)
+                )}
             />
           </div>
         }
@@ -172,7 +267,7 @@ export default function Order() {
           <DetailOptionsActions
             data={[
               {
-                description: "Espelho pedido",
+                description: "Espelho do pedido",
                 handle: handleExportOrder,
                 icon: Download,
               },
@@ -182,21 +277,81 @@ export default function Order() {
                 icon: ShoppingBag,
               },
               {
-                description: "Deletar pedido",
+                description: "Excluir",
                 handle: handleDeleteOrder,
                 icon: Trash2,
               },
-            ].filter((f) =>
-              order?.eRascunho
-                ? true
-                : !["Deletar pedido", "Digitar rascunho"].includes(
-                    f.description
-                  )
-            )}
+              {
+                description: "Digitar",
+                handle: sendOrder,
+                icon: ShoppingCart,
+              },
+              {
+                description: "Editar",
+                handle: handleSketch,
+                icon: PenLine,
+              },
+              {
+                description: "Cancelar",
+                handle: cancelOrder,
+                icon: CircleX,
+              },
+            ]
+              .filter((f) =>
+                order?.eRascunho
+                  ? true
+                  : !["Excluir", "Digitar rascunho"].includes(f.description)
+              )
+              .filter((f) =>
+                order?.ePendente && user.eVendedor
+                  ? true
+                  : !["Digitar", "Editar", "Cancelar"].includes(f.description)
+              )}
           />
         </DetailHeader>
 
         <DetailMain>
+          {order?.ePendente && user.eVendedor && (
+            <DetailBox className="w-full mb-6">
+              <DetailBoxTitle>APROVAÇÃO DO PEDIDO</DetailBoxTitle>
+
+              <div className="gap-2 flex flex-col sm:flex-row">
+                <Button
+                  flex={1}
+                  // variant="outline"
+                  onClick={onOpenConfirmSendOrder}
+                  leftIcon={<ShoppingCart />}
+                  className="py-2"
+                  colorScheme="green"
+                >
+                  Digitar
+                </Button>
+                <Button
+                  flex={1}
+                  // variant="outline"
+                  onClick={handleSketch}
+                  leftIcon={<PenLine />}
+                  className="py-2"
+                  colorScheme="yellow"
+                  color="white"
+                  bg="yellow.500"
+                  _hover={{ bg: "yellow.600" }}
+                >
+                  Editar
+                </Button>
+                <Button
+                  flex={1}
+                  // variant="outline"
+                  onClick={onOpenConfirmCancelOrder}
+                  leftIcon={<CircleX />}
+                  className="py-2"
+                  colorScheme="red"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </DetailBox>
+          )}
           <div ref={targetRef} className="bg-slate-100">
             <DetailContent
               secondaryColumn={
@@ -425,40 +580,37 @@ export default function Order() {
               </DetailBox>
             </DetailContent>
           </div>
+          {user.eVendedor && order.eDiferenciado && !order.eRascunho && (
+            <Stack w="full" align="center" spacing="6" mt="1.5rem">
+              <Box width="full">
+                <Text fontSize="lg" fontWeight="light">
+                  Histórico de Diferenciado
+                </Text>
+                <Stack bg="transparent" borderRadius="lg" rowGap="4">
+                  {order?.diferenciados?.map((differentiated) => (
+                    <DifferentiatedCard
+                      differentiated={differentiated}
+                      key={differentiated.id}
+                      colorTag={selectStatusColor(
+                        order.eRascunho ? 99 : order.situacaoPedido?.codigo
+                      )}
+                    />
+                  ))}
+                </Stack>
+              </Box>
 
-          <Stack w="full" align="center" spacing="6" mt="1.5rem">
-            {user.eVendedor && order.eDiferenciado && !order.eRascunho && (
-              <>
-                <Box width="full">
-                  <Text fontSize="lg" fontWeight="light">
-                    Histórico de Diferenciado
-                  </Text>
-                  <Stack bg="transparent" borderRadius="lg" rowGap="4">
-                    {order?.diferenciados?.map((differentiated) => (
-                      <DifferentiatedCard
-                        differentiated={differentiated}
-                        key={differentiated.id}
-                        colorTag={selectStatusColor(
-                          order.eRascunho ? 99 : order.situacaoPedido?.codigo
-                        )}
-                      />
-                    ))}
-                  </Stack>
-                </Box>
-
-                {order?.situacaoPedido?.codigo === 6 &&
-                  order.vendedorPendenteDiferenciadoCodigo ===
-                    user.vendedorCodigo && (
-                    <Box width="full">
-                      <Text fontSize="lg" fontWeight="light">
-                        Aprovar Diferenciado
-                      </Text>
-                      <DifferentiatedApproval order={order} />
-                    </Box>
-                  )}
-              </>
-            )}
-          </Stack>
+              {order?.situacaoPedido?.codigo === 6 &&
+                order.vendedorPendenteDiferenciadoCodigo ===
+                  user.vendedorCodigo && (
+                  <Box width="full">
+                    <Text fontSize="lg" fontWeight="light">
+                      Aprovar Diferenciado
+                    </Text>
+                    <DifferentiatedApproval order={order} />
+                  </Box>
+                )}
+            </Stack>
+          )}
         </DetailMain>
       </DetailPage>
 
@@ -487,6 +639,139 @@ export default function Order() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <Alert
+        title="Cancelar pedido"
+        description="Você tem certeza que deseja cancelar o pedido?"
+        isOpen={isOpenConfirmCancelOrder}
+        onClose={onCloseConfirmCancelOrder}
+        onAction={cancelOrder}
+        actionDescription="SIM"
+        closeDescription="NÃO"
+      />
+      <Alert
+        title="Digitar pedido"
+        description="Você tem certeza que deseja digitar o pedido?"
+        isOpen={isOpenConfirmSendOrder}
+        onClose={onCloseConfirmSendOrder}
+        onAction={sendOrder}
+        actionDescription="SIM"
+        closeDescription="NÃO"
+        closeColorSchema="green"
+      />
+
+      {isAlertSketchNoItens && (
+        <ModalAlert
+          isOpen={isAlertSketchNoItens}
+          onClose={() => {
+            setIsAlertSketchNoItens(false);
+          }}
+          data={{
+            Icon: TbShoppingCartCancel,
+            title: "Sem produtos disponíveis.",
+          }}
+        />
+      )}
+      {isAlertSketch && (
+        <ModalAlertList
+          isOpen={isAlertSketch}
+          onClose={() => {
+            setIsAlertSketch(false);
+          }}
+          title="Lista de produto que sofreram alterações"
+        >
+          <Stack py="4" px="4">
+            {sketchEditItems.map((item) => {
+              const unitAmount = item.valorUnitario;
+              const unitAmountFormat = unitAmount.toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
+              });
+              const amount = item.valorUnitario * item.quantidade;
+              const amountFormat = amount.toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
+              });
+
+              return (
+                <ProductOrder
+                  key={item.produto.codigo}
+                  product={item.produto}
+                  amount={amountFormat}
+                  qtd={item.quantidade}
+                  unitAmount={unitAmountFormat}
+                  isChange
+                />
+              );
+            })}
+
+            {sketchRemoveItems.map((item) => {
+              const unitAmount = item.valorUnitario;
+              const amount = item.valorUnitario * item.quantidade;
+              const unitAmountFormat = unitAmount.toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
+              });
+              const amountFormat = amount.toLocaleString("pt-br", {
+                style: "currency",
+                currency: "BRL",
+              });
+
+              return (
+                <ProductOrder
+                  key={item.produto.codigo}
+                  product={item.produto}
+                  amount={amountFormat}
+                  qtd={item.quantidade}
+                  unitAmount={unitAmountFormat}
+                  isTrash
+                />
+              );
+            })}
+
+            <div className="flex flex-1 w-full gap-2">
+              <Button
+                onClick={async () => {
+                  api.patch(`/orders/send/${order?.codigo}`);
+                  await router.push("/pedidos");
+
+                  return toast({
+                    title: "Pedido enviado",
+                    status: "success",
+                    position: "top",
+                    isClosable: true,
+                  });
+                }}
+                type="button"
+                colorScheme="orange"
+                leftIcon={<Icon as={PenLine} type="button" />}
+                className="flex-1"
+              >
+                EDITAR
+              </Button>
+              <Button
+                onClick={async () => {
+                  api.patch(`/orders/send/${order?.codigo}`);
+                  await router.push("/pedidos");
+
+                  return toast({
+                    title: "Pedido enviado",
+                    status: "success",
+                    position: "top",
+                    isClosable: true,
+                  });
+                }}
+                type="button"
+                colorScheme="green"
+                leftIcon={<Icon as={IoBagHandle} type="button" />}
+                className="flex-1"
+              >
+                ENVIAR
+              </Button>
+            </div>
+          </Stack>
+        </ModalAlertList>
+      )}
     </>
   );
 }

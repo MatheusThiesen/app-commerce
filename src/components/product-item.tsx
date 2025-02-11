@@ -1,4 +1,5 @@
 import { ImageWithFallback } from "@/components/ImageWithFallback";
+import { useAuth } from "@/contexts/AuthContext";
 import { spaceImages } from "@/global/parameters";
 import { ItemOrder } from "@/hooks/queries/useOrder";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ type ProductItemProps = {
 };
 
 export function ProductItem({ data, status }: ProductItemProps) {
+  const { user } = useAuth();
   const isQuantityDifferent = data.itemErp
     ? data.itemErp?.quantidade !== data.quantidade
     : false;
@@ -98,20 +100,24 @@ export function ProductItem({ data, status }: ProductItemProps) {
             : data.valorTotalFormat}
         </span>
 
-        {data.itemErp?.situacao === "Cancelado" &&
-          data.itemErp?.motivoCancelamento?.descricao && (
-            <span className="font-light text-xs text-red-500">
-              {data.itemErp?.motivoCancelamento?.descricao}
-            </span>
-          )}
+        {!user.eCliente && (
+          <>
+            {data.itemErp?.situacao === "Cancelado" &&
+              data.itemErp?.motivoCancelamento?.descricao && (
+                <span className="font-light text-xs text-red-500">
+                  {data.itemErp?.motivoCancelamento?.descricao}
+                </span>
+              )}
 
-        {data.itemErp?.situacao !== "Cancelado" &&
-          status === "Recusado" &&
-          data.itemErp?.motivoRecusa?.descricao && (
-            <span className="font-light text-xs text-purple-500">
-              {data.itemErp?.motivoRecusa?.descricao}
-            </span>
-          )}
+            {data.itemErp?.situacao !== "Cancelado" &&
+              status === "Recusado" &&
+              data.itemErp?.motivoRecusa?.descricao && (
+                <span className="font-light text-xs text-purple-500">
+                  {data.itemErp?.motivoRecusa?.descricao}
+                </span>
+              )}
+          </>
+        )}
       </div>
     </div>
   );

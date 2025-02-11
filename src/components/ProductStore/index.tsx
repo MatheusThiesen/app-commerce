@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { Box, Button, Flex, Image, Text } from "@chakra-ui/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -22,6 +23,7 @@ export function ProductStoreComponent({
   isOnlyInfo,
 }: ProductStoreComponentProps) {
   const { removeItem, addItem } = useStore();
+  const { user } = useAuth();
 
   const stockLocationsQtd =
     product?.locaisEstoque?.find(
@@ -53,7 +55,14 @@ export function ProductStoreComponent({
       flexDir={["column", "column", "row", "row", "row"]}
     >
       <Flex flex="1" align="center">
-        <Link href={`/pedidos/novo/produtos/${product.codigo}`} passHref>
+        <Link
+          href={
+            user.eCliente
+              ? `/produtos/${product.codigo}`
+              : `/pedidos/novo/produtos/${product.codigo}`
+          }
+          passHref
+        >
           <Box as="a" h="full">
             <Image
               h={

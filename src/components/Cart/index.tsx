@@ -7,7 +7,6 @@ import {
   Box,
   Button,
   DrawerBody,
-  DrawerFooter,
   Flex,
   Icon,
   Text,
@@ -27,7 +26,7 @@ interface CartProps {
 }
 
 export function Cart({ isOpen, onClose }: CartProps) {
-  const { orders, totalItems, totalAmountFormat } = useStore();
+  const { orders, totalItems, totalNetAmountFormat } = useStore();
 
   const { data } = useBrands({});
 
@@ -51,13 +50,58 @@ export function Cart({ isOpen, onClose }: CartProps) {
       title={`Carrinho (${totalItems})`}
       isOpen={isOpen}
       onClose={onClose}
+      headerComponent={
+        <Flex flexDir="column" w="full">
+          <Flex justify="space-between">
+            <Text
+              fontSize={["sm", "sm", "sm", "sm"]}
+              color="gray.700"
+              fontWeight="300"
+            >{`Quantidade`}</Text>
+            <Text
+              fontSize={["sm", "sm", "sm", "sm"]}
+              color="gray.700"
+              fontWeight="300"
+            >{`${totalItems} itens`}</Text>
+          </Flex>
+          <Flex justify="space-between">
+            <Text
+              mb="4"
+              fontWeight="bold"
+              fontSize={["lg", "lg", "lg", "lg"]}
+            >{`Valor total`}</Text>
+            <Text
+              mb="4"
+              fontWeight="bold"
+              fontSize={["lg", "lg", "lg", "lg"]}
+            >{`${totalNetAmountFormat}`}</Text>
+          </Flex>
+
+          <Button
+            colorScheme="green"
+            size="lg"
+            w="full"
+            fontSize="lg"
+            onClick={
+              validMinimumAllOrder
+                ? () => {}
+                : () => Router.push("/pedidos/novo/fechamento")
+            }
+            leftIcon={<Icon as={IoCart} fontSize={30} />}
+            aria-disabled={validMinimumAllOrder}
+            disabled={validMinimumAllOrder}
+          >
+            FECHAMENTO DO PEDIDO
+          </Button>
+        </Flex>
+      }
     >
       <DrawerBody bg="gray.50" p="0">
         <Accordion mt="2rem" px="1rem" allowMultiple>
           {orders.map((order) => {
             const validateMinimum = validateMinimumOrder(
               order.brand.codigo,
-              order.amount
+              order.netAmount
             );
 
             return (
@@ -71,7 +115,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                 <AccordionButton>
                   <Box as="span" flex="1" textAlign="left">
                     <Text fontSize="lg">
-                      {`${order?.brand?.descricao} - ${order.stockLocation.descricao} - ${order.amountFormat}`}
+                      {`${order?.brand?.descricao} - ${order.stockLocation.descricao} - ${order.netAmountFormat}`}
 
                       {validateMinimum && (
                         <Text
@@ -110,7 +154,7 @@ export function Cart({ isOpen, onClose }: CartProps) {
                     fontSize="larger"
                     fontWeight="bold"
                   >
-                    TOTAL {order.amountFormat}
+                    TOTAL {order.netAmountFormat}
                   </Text>
                 </AccordionPanel>
               </AccordionItem>
@@ -118,53 +162,6 @@ export function Cart({ isOpen, onClose }: CartProps) {
           })}
         </Accordion>
       </DrawerBody>
-
-      <DrawerFooter
-        boxShadow="dark-lg"
-        pb={["6.5rem", "6.5rem", "4rem", "1rem"]}
-      >
-        <Flex flexDir="column" w="full">
-          <Flex justify="space-between">
-            <Text
-              fontSize={["md", "md", "lg", "lg"]}
-              color="gray.700"
-            >{`Quantidade`}</Text>
-            <Text
-              fontSize={["md", "md", "lg", "lg"]}
-              color="gray.700"
-            >{`${totalItems} itens`}</Text>
-          </Flex>
-          <Flex justify="space-between">
-            <Text
-              mb="4"
-              fontWeight="bold"
-              fontSize={["lg", "lg", "2xl", "2xl"]}
-            >{`Valor total`}</Text>
-            <Text
-              mb="4"
-              fontWeight="bold"
-              fontSize={["lg", "lg", "2xl", "2xl"]}
-            >{`${totalAmountFormat}`}</Text>
-          </Flex>
-
-          <Button
-            colorScheme="green"
-            size="lg"
-            w="full"
-            fontSize="lg"
-            onClick={
-              validMinimumAllOrder
-                ? () => {}
-                : () => Router.push("/pedidos/novo/fechamento")
-            }
-            leftIcon={<Icon as={IoCart} fontSize={30} />}
-            aria-disabled={validMinimumAllOrder}
-            disabled={validMinimumAllOrder}
-          >
-            FECHAMENTO DO PEDIDO
-          </Button>
-        </Flex>
-      </DrawerFooter>
     </DrawerList>
   );
 }

@@ -16,6 +16,7 @@ import {
   BsFillCloudArrowUpFill,
   BsFillFileTextFill,
 } from "react-icons/bs";
+import { FaBusinessTime } from "react-icons/fa";
 import { FcClock } from "react-icons/fc";
 import { HiBadgeCheck } from "react-icons/hi";
 import { RiCloseCircleFill } from "react-icons/ri";
@@ -33,6 +34,7 @@ export type Order = {
   valorTotalFormat: string;
   valorTotalCusto: number;
   eRascunho: boolean;
+  ePendente: boolean;
   eDiferenciado: boolean;
   tipoDesconto?: "VALOR" | "PERCENTUAL";
   descontoCalculado?: number;
@@ -146,6 +148,10 @@ export function selectStatusColor(statusCode?: number): string {
       return "red.500";
     case 9:
       return "purple.500";
+    case 10:
+      return "purple.500";
+    case 11:
+      return "red.500";
     case 99:
       return "orange.400";
 
@@ -174,6 +180,10 @@ export function selectStatusIcon(statusCode?: number) {
       return RiCloseCircleFill;
     case 9:
       return TbAlertSquareFilled;
+    case 10:
+      return FaBusinessTime;
+    case 11:
+      return RiCloseCircleFill;
     case 99:
       return BsFillFileTextFill;
 
@@ -192,6 +202,8 @@ export const orderStatusStyle = {
   7: { textColor: "text-orange-500", bgColor: "bg-orange-500" },
   8: { textColor: "text-red-600", bgColor: "bg-red-600" },
   9: { textColor: "text-purple-500", bgColor: "bg-purple-500" },
+  10: { textColor: "text-purple-500", bgColor: "bg-purple-500" },
+  11: { textColor: "text-red-600", bgColor: "bg-red-600" },
 };
 
 export async function getOrders({

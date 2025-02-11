@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useProducts } from "../../hooks/queries/useProducts";
 import { ItemFilter } from "../../hooks/queries/useProductsFilters";
 
+import { useAuth } from "@/contexts/AuthContext";
 import { Box, SimpleGrid } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useInView } from "react-intersection-observer";
@@ -38,6 +39,7 @@ export function ListProducts({
   const router = useRouter();
   const { setLoading } = useLoading();
   const { priceList } = useStore();
+  const { user } = useAuth();
 
   const {
     data: scrollPosition,
@@ -128,7 +130,7 @@ export function ListProducts({
                           : product.referencia + "_01"
                       }_smaller`,
                       subInfo: isButtonAddCart
-                        ? `${priceList?.descricao} ${
+                        ? `${!!user?.cliente ? "" : priceList?.descricao} ${
                             //@ts-ignore
                             product[`precoTabela${priceList?.codigo}Format`]
                           }`
@@ -162,7 +164,7 @@ export function ListProducts({
                         : product.referencia + "_01"
                     }_smaller`,
                     subInfo: isButtonAddCart
-                      ? `${priceList?.descricao} ${
+                      ? `${!!user?.cliente ? "" : priceList?.descricao} ${
                           //@ts-ignore
                           product[`precoTabela${priceList?.codigo}Format`]
                         }`

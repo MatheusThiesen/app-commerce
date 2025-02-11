@@ -19,5 +19,7 @@ export async function getPriceList(): Promise<GetPriceListsResponse> {
 export function usePriceList() {
   return useQuery(["price-list"], () => getPriceList(), {
     staleTime: 1000 * 60 * 5, // 5 Minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }

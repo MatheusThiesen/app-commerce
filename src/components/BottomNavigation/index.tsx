@@ -1,10 +1,13 @@
+import {
+  CLIENT_EMAILS_ACCEPT_STORE,
+  SELLER_EMAILS_ACCEPT_STORE,
+} from "@/global/parameters";
 import { Flex, List, ListItem } from "@chakra-ui/react";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { BsBoxSeam } from "react-icons/bs";
 import { FiUsers } from "react-icons/fi";
 import { IoBagHandleOutline, IoHomeOutline } from "react-icons/io5";
 import { useAuth } from "../../contexts/AuthContext";
-import { SELLER_EMAILS_ACCEPT } from "../HeaderNavigation";
 import { MainNavLink } from "./MainNavLink";
 import { NavLink } from "./NavLink";
 
@@ -51,13 +54,14 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
             </ListItem>
           )}
 
-          {user?.eVendedor && SELLER_EMAILS_ACCEPT.includes(user.email) && (
-            <ListItem h="full">
-              <MainNavLink href="/pedidos" icon={IoBagHandleOutline}>
-                Pedidos
-              </MainNavLink>
-            </ListItem>
-          )}
+          {user?.eVendedor &&
+            SELLER_EMAILS_ACCEPT_STORE.includes(user.email) && (
+              <ListItem h="full">
+                <MainNavLink href="/pedidos" icon={IoBagHandleOutline}>
+                  Pedidos
+                </MainNavLink>
+              </ListItem>
+            )}
 
           <ListItem h="full">
             <NavLink href="/produtos" icon={BsBoxSeam}>
@@ -65,13 +69,14 @@ export function BottomNavigation({ height }: BottomNavigationPros) {
             </NavLink>
           </ListItem>
 
-          {/* {user?.eCliente && (
-            <ListItem h="full">
-              <NavLink href="/pedidos" icon={IoBagHandleOutline}>
-                Pedidos
-              </NavLink>
-            </ListItem>
-          )} */}
+          {user?.eCliente &&
+            CLIENT_EMAILS_ACCEPT_STORE.includes(user.email) && (
+              <ListItem h="full">
+                <NavLink href="/pedidos" icon={IoBagHandleOutline}>
+                  Pedidos
+                </NavLink>
+              </ListItem>
+            )}
 
           <ListItem h="full">
             <NavLink href="/mais" icon={BiDotsHorizontalRounded}>

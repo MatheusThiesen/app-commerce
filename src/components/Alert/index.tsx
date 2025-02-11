@@ -16,13 +16,22 @@ interface ModalAlertProps {
 
   isOpen: boolean;
   onClose: () => void;
+  closeDescription?: string;
+  closeColorSchema?: string;
+
+  onAction?: () => void;
+  actionDescription?: string;
 }
 
 export function Alert({
   title,
   description,
-  onClose,
   isOpen,
+  onClose,
+  closeDescription = "Fechar",
+  closeColorSchema = "red",
+  onAction,
+  actionDescription = "SIM",
 }: ModalAlertProps) {
   const cancelRef = useRef(null);
 
@@ -40,10 +49,20 @@ export function Alert({
         <AlertDialogHeader>{title}</AlertDialogHeader>
         <AlertDialogCloseButton />
         <AlertDialogBody>{description}</AlertDialogBody>
-        <AlertDialogFooter>
-          <Button ref={cancelRef} onClick={onClose} colorScheme="red">
-            Fechar
+        <AlertDialogFooter className="gap-2">
+          <Button ref={cancelRef} onClick={onClose} variant="outline">
+            {closeDescription}
           </Button>
+
+          {onAction && (
+            <Button
+              ref={cancelRef}
+              onClick={onAction}
+              colorScheme={closeColorSchema}
+            >
+              {actionDescription}
+            </Button>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
