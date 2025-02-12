@@ -97,15 +97,16 @@ export async function refreshToken(
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { "nextauth.token": token } = parseCookies();
+  const { "nextauth.token": tokenCookies } = parseCookies();
 
   const [user, setUser] = useState<Me>({} as Me);
+  const [token, setToken] = useState(tokenCookies);
   const isAuthenticated = !!user && !!token;
 
   useEffect(() => {
     if (token) {
       api
-        .get<Me>("/auth/me")
+        .get<Me>("/auth/me", { headers: { Authorization: `Bearer ${token}` } })
         .then((response) => {
           setUser(response.data);
         })
@@ -115,7 +116,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [token]);
 
+  useEffect(() => {
+    setToken(tokenCookies);
+  }, [tokenCookies]);
+
   async function authenticate(data: { token: string; refreshToken: string }) {
+    setToken(data.token);
+
     setCookie(undefined, "nextauth.token", data.token, {
       maxAge: 60 * 60 * 24 * 30, //30 Days
       path: "/",
@@ -125,10 +132,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       path: "/",
     });
 
-    setTimeout(() => {
-      window.location.reload();
-      Router.push(ROUTE_HOME);
-    }, 1000);
+    Router.push(ROUTE_HOME);
   }
 
   async function signIn({
