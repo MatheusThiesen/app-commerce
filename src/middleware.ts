@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUrl } from "./lib/get-url";
 
-export const ROUTE_HOME = "/inicio";
+export const ROUTE_HOME = "/carregando";
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("nextauth.token");

@@ -33,6 +33,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 
+import { Loading } from "@/components/loading";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePaymentConditions } from "@/hooks/queries/usePaymentConditions";
 import { usePriceList } from "@/hooks/queries/usePriceList";
@@ -775,7 +776,11 @@ export default function CheckoutOrder() {
                 py="1.7 rem"
                 w="full"
                 fontSize="lg"
-                leftIcon={<Icon as={MdShoppingCartCheckout} fontSize="30" />}
+                leftIcon={
+                  fetchingOrder ? undefined : (
+                    <Icon as={MdShoppingCartCheckout} fontSize="30" />
+                  )
+                }
                 aria-disabled={
                   !validOrders ||
                   validMinimumAllOrder ||
@@ -795,7 +800,11 @@ export default function CheckoutOrder() {
                     : () => {}
                 }
               >
-                ENVIAR PEDIDO
+                {fetchingOrder ? (
+                  <Loading className="text-white" />
+                ) : (
+                  "ENVIAR PEDIDO"
+                )}
               </Button>
             </Stack>
           </Flex>
