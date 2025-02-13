@@ -133,8 +133,8 @@ export function ProductComponent({
           >
             <Image
               w="full"
-              minH="13rem"
-              maxH="13rem"
+              minH="12rem"
+              maxH="12rem"
               src={uri}
               objectFit="contain"
               objectPosition="50% 50%"
@@ -164,6 +164,9 @@ export function ProductComponent({
                 fontSize="smaller"
                 color="gray.600"
                 fontWeight="light"
+                whiteSpace="nowrap"
+                overflow="hidden"
+                textOverflow="ellipsis"
               >
                 Referência {reference}
               </Text>
@@ -188,7 +191,7 @@ export function ProductComponent({
           <Button
             onClick={() => onAddCard(product)}
             leftIcon={<Icon as={FaCartArrowDown} fontSize="24" />}
-            mt="4"
+            mt="2"
             w="full"
             bg="primary"
             _hover={{ bg: "primary.hover" }}

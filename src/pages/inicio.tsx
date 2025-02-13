@@ -165,7 +165,7 @@ export default function Home() {
                       href={`/produtos?linhaCodigo=${item.descricao}|${item.codigo}`}
                     >
                       <Button
-                        className="text-white truncate w-48 uppercase rounded-none px-2 md:px-10 flex justify-start font-bold"
+                        className="text-white truncate w-36 md:w-48 uppercase rounded-none px-2 md:px-10 flex justify-start font-bold"
                         variant="ghost"
                       >
                         {item.descricao}
@@ -186,7 +186,7 @@ export default function Home() {
                         href={`/produtos?linhaCodigo=${item.descricao}|${item.codigo}`}
                       >
                         <Button
-                          className="text-white truncate w-48 uppercase rounded-none px-2 md:px-10 flex justify-start font-bold"
+                          className="text-white truncate w-36 md:w-48 uppercase rounded-none px-2 md:px-10 flex justify-start font-bold"
                           variant="ghost"
                         >
                           {item.descricao}
@@ -197,7 +197,7 @@ export default function Home() {
                   {(homeData?.lines?.slice(21, 30).length ?? 0) <= 0 && (
                     <Link href={`/produtos`}>
                       <Button
-                        className="text-white truncate w-48 uppercase rounded-none px-2 md:px-10 flex justify-start font-bold"
+                        className="text-white truncate w-36 md:w-48 uppercase rounded-none px-2 md:px-10 flex justify-start font-bold"
                         variant="ghost"
                       >
                         ...MAIS
@@ -213,7 +213,7 @@ export default function Home() {
                         href={`/produtos?linhaCodigo=${item.descricao}|${item.codigo}`}
                       >
                         <Button
-                          className="text-white truncate w-48 uppercase rounded-none px-2 md:px-10 flex justify-start font-bold"
+                          className="text-white truncate w-36 md:w-48 uppercase rounded-none px-2 md:px-10 flex justify-start font-bold"
                           variant="ghost"
                         >
                           {item.descricao}
@@ -222,7 +222,7 @@ export default function Home() {
                     ))}
                     <Link href={`/produtos`}>
                       <Button
-                        className="text-white truncate w-48 uppercase rounded-none px-2 md:px-10 flex justify-start font-bold"
+                        className="text-white truncate w-36 md:w-48 uppercase rounded-none px-2 md:px-10 flex justify-start font-bold"
                         variant="ghost"
                       >
                         ...MAIS
@@ -238,11 +238,11 @@ export default function Home() {
             <div className="w-full max-w-screen-xl px-4 py-12 flex flex-col items-start">
               <h3 className="text-2xl font-light mb-4">Marcas</h3>
               <ScrollArea className="w-full pb-3">
-                <div className="flex w-max space-x-4 ">
+                <div className="flex w-max space-x-2 ">
                   {homeData?.brands.map((brand) => (
                     <div
                       key={brand.codigo}
-                      className="shrink-0 w-36 md:w-64 flex justify-center items-center px-4 md:px-16"
+                      className="shrink-0 w-36 md:w-64 flex justify-center items-center px-4 md:px-12"
                     >
                       <Link
                         href={`/produtos?marcaCodigo=${brand.descricao}|${brand.codigo}`}
