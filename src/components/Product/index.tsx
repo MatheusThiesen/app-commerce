@@ -1,6 +1,6 @@
 import { api } from "@/service/apiClient";
 import { Link } from "@chakra-ui/next-js";
-import { Box, Button, Flex, Icon, Image, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Icon, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { memo } from "react";
 import { FaCartArrowDown } from "react-icons/fa";
@@ -8,6 +8,8 @@ import {
   MdCollectionsBookmark,
   MdOutlineCollectionsBookmark,
 } from "react-icons/md";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+
 import { defaultNoImage } from "../../global/parameters";
 import { useProductCatalog } from "../../hooks/useProductCatalog";
 
@@ -131,16 +133,16 @@ export function ProductComponent({
             justify="center"
             flex={1}
           >
-            <Image
-              w="full"
-              minH="12rem"
-              maxH="12rem"
+            <LazyLoadImage
+              className="w-full min-h-[12rem] max-h-[12rem] object-contain object-center"
               src={uri}
-              objectFit="contain"
-              objectPosition="50% 50%"
               onError={({ currentTarget }) => {
-                currentTarget.onerror = null; // prevents looping
+                currentTarget.onerror = null;
                 currentTarget.src = defaultNoImage;
+              }}
+              effect="blur"
+              wrapperProps={{
+                style: { transitionDelay: "0.2s" },
               }}
             />
           </Flex>

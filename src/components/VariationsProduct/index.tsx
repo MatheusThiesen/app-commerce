@@ -1,5 +1,6 @@
-import { Box, HStack, Image } from "@chakra-ui/react";
+import { Box, HStack } from "@chakra-ui/react";
 import { useRouter } from "next/router";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 import { defaultNoImage, spaceImages } from "../../global/parameters";
 import { VariationsProduct as VariationsProductQueryHook } from "../../hooks/queries/useProducts";
 
@@ -55,19 +56,20 @@ export function VariationsProduct({
             currentReference === variation.referencia ? "blue.500" : "gray.200"
           }
         >
-          <Image
-            w="full"
-            h="full"
-            objectFit="contain"
+          <LazyLoadImage
+            className="w-full h-full object-contain object-center"
             src={`${spaceImages}/Produtos/${
               variation.imagemPreview
                 ? variation.imagemPreview
                 : variation.referencia + "_01"
             }_smaller`}
-            alt={variation.descricao}
             onError={({ currentTarget }) => {
-              currentTarget.onerror = null; // prevents looping
+              currentTarget.onerror = null;
               currentTarget.src = defaultNoImage;
+            }}
+            effect="blur"
+            wrapperProps={{
+              style: { transitionDelay: "0.2s" },
             }}
           />
         </Box>
