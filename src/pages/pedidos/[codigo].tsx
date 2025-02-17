@@ -55,6 +55,7 @@ import {
   CircleX,
   Download,
   EllipsisVertical,
+  Mail,
   PenLine,
   ShoppingBag,
   ShoppingCart,
@@ -125,6 +126,17 @@ export default function Order() {
     toPDF();
   }
 
+  function handleSendEmail() {
+    api.post(`/orders/email/${order?.codigo}`);
+
+    return toast({
+      title: "Espelho do pedido enviado por email.",
+      status: "info",
+      position: "top",
+      isClosable: true,
+    });
+  }
+
   async function deleteOrder() {
     api.delete(`/orders/${order?.codigo}`);
 
@@ -137,7 +149,6 @@ export default function Order() {
       isClosable: true,
     });
   }
-
   async function cancelOrder() {
     api.patch(`/orders/cancel/${order?.codigo}`);
 
@@ -212,6 +223,11 @@ export default function Order() {
               }
               data={[
                 {
+                  description: "Email do pedido",
+                  handle: handleSendEmail,
+                  icon: Mail,
+                },
+                {
                   description: "Espelho do pedido",
                   handle: handleExportOrder,
                   icon: Download,
@@ -266,6 +282,11 @@ export default function Order() {
 
           <DetailOptionsActions
             data={[
+              {
+                description: "Email do pedido",
+                handle: handleSendEmail,
+                icon: Mail,
+              },
               {
                 description: "Espelho do pedido",
                 handle: handleExportOrder,
