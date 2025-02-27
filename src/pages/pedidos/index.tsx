@@ -375,7 +375,7 @@ export default function Orders() {
 
       <Alert
         title="Cliente bloqueado"
-        description="possui títulos atrasados com mais de 7 dias."
+        description="possui títulos atrasados com mais de 15 dias."
         isOpen={isOpenAlertBilletClient}
         onClose={onCloseAlertBilletClient}
       />

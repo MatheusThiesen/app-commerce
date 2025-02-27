@@ -81,7 +81,7 @@ export function ProductComponent({
     >
       <Flex position="relative" flexDir="column" alignItems="start" h="full">
         {isCatalog && (
-          <Box position="absolute" top="0" left="0">
+          <Box position="absolute" top="0" left="0" zIndex={5}>
             <Button
               h="2.5rem"
               w="2.5rem"
@@ -141,9 +141,9 @@ export function ProductComponent({
                 currentTarget.src = defaultNoImage;
               }}
               effect="blur"
-              wrapperProps={{
-                style: { transitionDelay: "0.2s" },
-              }}
+              // wrapperProps={{
+              //   style: { transitionDelay: "0.2s" },
+              // }}
             />
           </Flex>
 
