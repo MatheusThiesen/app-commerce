@@ -19,6 +19,7 @@ export const SELLER_EMAILS_ACCEPT_STORE = [
   "fernando@alpardobrasil.com.br",
   "bruna.anjos@alpardobrasil.com.br",
   "diulia.abbott@alpardobrasil.com.br",
+  "flavioxavier.rs@gmail.com",
   "flavioxavier.rs.oakley@gmail.com",
   "flavioxavier.rs.nike@gmail.com",
   "flavioxavier.rs.adidas@gmail.com",
