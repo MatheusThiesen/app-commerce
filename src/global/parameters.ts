@@ -27,4 +27,6 @@ export const SELLER_EMAILS_ACCEPT_STORE = [
   "uglio.scaravaglione@alpardobrasil.com.br",
   "ti@alpardobrasil.com.br",
   "b2b@alpardobrasil.com.br",
+  "cleiton.kaiser@alpardobrasil.com.br",
+  "paulo.araujo@alpardobrasil.com.br",
 ];
