@@ -65,6 +65,7 @@ export default function CheckoutOrder() {
     returnNull: !user?.vendedorCodigo,
   });
   const [fetchingOrder, setFetchingOrder] = useState(false);
+  const [isUpdateOrCreateSketch, setIsUpdateOrCreateSketch] = useState(false);
 
   const {
     orders: ordersStore,
@@ -259,10 +260,40 @@ export default function CheckoutOrder() {
 
   async function handleSendOrder() {
     setFetchingOrder(true);
-    await sendOrder({
-      isDraft: false,
-    });
-    setFetchingOrder(false);
+    try {
+      await sendOrder({
+        isDraft: false,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro Interno 🚨",
+        description:
+          "Ocorreu um erro inesperado. Se o problema persistir, entre em contato com o suporte.",
+        status: "error",
+        isClosable: true,
+        position: "top",
+      });
+    } finally {
+      setFetchingOrder(false);
+    }
+  }
+  async function handleSendSketch() {
+    setIsUpdateOrCreateSketch(true);
+
+    try {
+      await sendOrder({ isDraft: true });
+    } catch (error) {
+      toast({
+        title: "Erro Interno 🚨",
+        description:
+          "Ocorreu um erro inesperado. Se o problema persistir, entre em contato com o suporte.",
+        status: "error",
+        isClosable: true,
+        position: "top",
+      });
+    } finally {
+      setIsUpdateOrCreateSketch(false);
+    }
   }
 
   useEffect(() => {
@@ -746,29 +777,40 @@ export default function CheckoutOrder() {
                     py="1.7 rem"
                     w="full"
                     fontSize="lg"
-                    leftIcon={<Icon as={BiCartDownload} fontSize="30" />}
+                    leftIcon={
+                      isUpdateOrCreateSketch ? undefined : (
+                        <Icon as={BiCartDownload} fontSize="30" />
+                      )
+                    }
                     aria-disabled={
                       !validOrders ||
                       validMinimumAllOrder ||
-                      validDifferentiatedAllOrder
+                      validDifferentiatedAllOrder ||
+                      isUpdateOrCreateSketch
                     }
                     disabled={
                       !validOrders ||
                       validMinimumAllOrder ||
-                      validDifferentiatedAllOrder
+                      validDifferentiatedAllOrder ||
+                      isUpdateOrCreateSketch
                     }
                     onClick={
                       validOrders &&
+                      !isUpdateOrCreateSketch &&
                       !validMinimumAllOrder &&
                       !validDifferentiatedAllOrder
-                        ? () => sendOrder({ isDraft: true })
+                        ? () => handleSendSketch()
                         : () => {}
                     }
                   >
-                    {orders.map((order) => order.isSketch).filter((f) => f)
-                      .length <= 0
-                      ? "CRIAR RASCUNHO"
-                      : "EDITAR RASCUNHO"}
+                    {isUpdateOrCreateSketch ? (
+                      <Loading className="text-white" />
+                    ) : orders.map((order) => order.isSketch).filter((f) => f)
+                        .length <= 0 ? (
+                      "CRIAR RASCUNHO"
+                    ) : (
+                      "EDITAR RASCUNHO"
+                    )}
                   </Button>
                 )}
 
