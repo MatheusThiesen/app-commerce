@@ -45,11 +45,6 @@ export function ListProducts({
     data: scrollPosition,
     onRemove: onRemoveScrollPosition,
     onSet: onSetScrollPosition,
-  } = useLocalStore("@ScrollY-Products-Order");
-  const {
-    data: scrollPositionProducts,
-    onRemove: onRemoveScrollPositionProducts,
-    onSet: onSetScrollPositionProducts,
   } = useLocalStore("@ScrollY-Products");
 
   const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
@@ -120,7 +115,7 @@ export function ListProducts({
                     }
                     product={{
                       cod: product.codigo,
-                      name: product.descricao,
+                      name: product.descricaoComplementar,
                       descriptionAdditional: product.descricaoAdicional,
                       reference: product.referencia,
                       amount: "PDV " + product.precoVendaFormat ?? "-",
@@ -154,7 +149,7 @@ export function ListProducts({
                   key={product.codigo}
                   product={{
                     cod: product.codigo,
-                    name: product.descricao,
+                    name: product.descricaoComplementar,
                     descriptionAdditional: product.descricaoAdicional,
                     reference: product.referencia,
                     amount: "PDV " + product.precoVendaFormat ?? "-",

@@ -23,6 +23,13 @@ import { RiCloseCircleFill } from "react-icons/ri";
 import { TbAlertSquareFilled } from "react-icons/tb";
 import { Differentiated } from "../../contexts/StoreContext";
 
+const TYPE_SELLER_NORMALIZED = {
+  DIRETOR: "DIRETOR",
+  GERENTE: "GERENTE NACIONAL",
+  SUPERVISOR: "GERENTE REGIONAL",
+  VENDEDOR: "REPRESENTANTE",
+};
+
 export type Order = {
   codigo: number;
   codigoErp: number;
@@ -49,6 +56,12 @@ export type Order = {
   situacaoPedido?: {
     codigo: number;
     descricao: string;
+  };
+  vendedorPendenteDiferenciado?: {
+    codigo: number;
+    nome: string;
+    nomeGuerra: string;
+    tipoVendedor: string;
   };
   vendedores: {
     tipo: number;
@@ -386,6 +399,19 @@ export async function getOrderOne(
           }
         : undefined,
     })),
+    vendedorPendenteDiferenciado: data.vendedorPendenteDiferenciado
+      ? {
+          ...data.vendedorPendenteDiferenciado,
+          tipoVendedor:
+            TYPE_SELLER_NORMALIZED?.[
+              data.vendedorPendenteDiferenciado.tipoVendedor as
+                | "DIRETOR"
+                | "GERENTE"
+                | "SUPERVISOR"
+                | "VENDEDOR"
+            ],
+        }
+      : undefined,
   };
 
   return order;

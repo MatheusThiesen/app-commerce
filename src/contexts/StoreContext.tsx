@@ -82,6 +82,7 @@ export interface Order {
   amount: number;
   amountFormat: string;
   isSketch?: number;
+  isCreatedByClient?: boolean;
 }
 
 interface Item {
@@ -100,6 +101,7 @@ export type SketchItem = {
 
 export type GetSketchOrderValidResponse = {
   pedido: {
+    eCriadoPeloCliente: boolean;
     cliente: Client;
     marca: Brand;
     condicaoPagamento: PaymentCondition;
@@ -571,7 +573,10 @@ export function StoreProvider({ children }: StoreProviderProps) {
 
     const orderCreate: Order = {
       createdAt: new Date(),
-      paymentCondition: pedido.condicaoPagamento,
+      paymentCondition: {
+        ...pedido.condicaoPagamento,
+        priceList: pedido.tabelaPreco.codigo,
+      },
       stockLocation: {
         descricao: pedido.periodoEstoque.descricao,
         periodo: pedido.periodoEstoque.periodo,
@@ -589,6 +594,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
       netAmount: amountOrder,
       netAmountFormat: amountOrderFormat,
       isSketch: orderCode,
+      isCreatedByClient: pedido.eCriadoPeloCliente,
       items: itens.atuais.map((item) => {
         const amount = Number(item.valorUnitario) * item.quantidade;
         const amountFormat = amount.toLocaleString("pt-br", {

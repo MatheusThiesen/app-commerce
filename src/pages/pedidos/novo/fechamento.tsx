@@ -737,8 +737,8 @@ export default function CheckoutOrder() {
               direction={["column", "column", "column", "row"]}
             >
               {!user.eCliente &&
-                orders.map((order) => order.isSketch).filter((f) => f).length <=
-                  0 && (
+                orders.map((order) => order.isCreatedByClient).filter((f) => f)
+                  .length <= 0 && (
                   <Button
                     fontWeight={"normal"}
                     colorScheme="orange"
@@ -765,7 +765,10 @@ export default function CheckoutOrder() {
                         : () => {}
                     }
                   >
-                    CRIAR RASCUNHO
+                    {orders.map((order) => order.isSketch).filter((f) => f)
+                      .length <= 0
+                      ? "CRIAR RASCUNHO"
+                      : "EDITAR RASCUNHO"}
                   </Button>
                 )}
 

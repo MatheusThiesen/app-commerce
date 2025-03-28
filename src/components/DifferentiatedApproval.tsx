@@ -25,6 +25,7 @@ import { Order } from "../hooks/queries/useOrder";
 import { api } from "../service/apiClient";
 import { Input } from "./Form/Input";
 import { InputSelect } from "./Form/InputSelect";
+import { InputSwitch } from "./Form/InputSwitch";
 import { Textarea } from "./Form/TextArea";
 
 const createDifferentiatedFormSchema = z
@@ -49,6 +50,7 @@ const createDifferentiatedFormSchema = z
       })
       .nullable(),
     reason: z.string().nullable(),
+    isBlockedAnalysis: z.boolean(),
   })
   .refine((data) => (data.type === "VALOR" ? !!data.value : true), {
     message: "É obrigado informar valor",
@@ -66,6 +68,7 @@ interface Differentiated {
   descontoPercentual?: number;
   descontoValor?: number;
   motivoDiferenciado?: string;
+  eBloqueadoParaAnalise?: boolean;
 }
 
 interface Props {
@@ -90,6 +93,7 @@ export function DifferentiatedApproval({ order }: Props) {
         type: order.tipoDesconto,
         percent: String(order.descontoPercentual),
         value: order.descontoValor,
+        isBlockedAnalysis: false,
       },
       resolver: zodResolver(createDifferentiatedFormSchema),
     });
@@ -99,6 +103,7 @@ export function DifferentiatedApproval({ order }: Props) {
   const watchValue = watch("value");
   const watchPercent = watch("percent");
   const watchReason = watch("reason");
+  const watchIsBlockedAnalysis = watch("isBlockedAnalysis");
 
   async function handleSubmitDifferentiatedApproval(
     data: CreateDifferentiatedProps
@@ -112,6 +117,7 @@ export function DifferentiatedApproval({ order }: Props) {
           data.type === "PERCENTUAL" ? Number(data.percent) : undefined,
         descontoValor: data.type === "VALOR" ? Number(data.value) : undefined,
         motivoDiferenciado: data.reason ? data.reason : undefined,
+        eBloqueadoParaAnalise: data.isBlockedAnalysis ?? false,
       };
 
       await api.post(`/differentiated/approval/${order.codigo}`, normalized);
@@ -278,6 +284,18 @@ export function DifferentiatedApproval({ order }: Props) {
             ).toFixed(2)}
             name="markup"
             isReadOnly
+          />
+
+          <InputSwitch
+            label="Bloquear para análise"
+            name="isBlockedAnalysis"
+            checked={watchIsBlockedAnalysis}
+            onCheckedChange={(data) => setValue("isBlockedAnalysis", data)}
+            error={
+              !!errors?.isBlockedAnalysis?.message
+                ? String(errors?.isBlockedAnalysis?.message)
+                : undefined
+            }
           />
 
           <InputSelect

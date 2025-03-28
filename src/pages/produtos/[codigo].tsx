@@ -430,7 +430,9 @@ export default function Produto() {
                       <Link
                         href={`/produtos/${product?.codigo}?hrefBack=${hrefBack}`}
                       >
-                        <BreadcrumbLink>{product?.descricao}</BreadcrumbLink>
+                        <BreadcrumbLink>
+                          {product?.descricaoComplementar}
+                        </BreadcrumbLink>
                       </Link>
                     </BreadcrumbItem>
                   </Breadcrumb>
@@ -463,7 +465,7 @@ export default function Produto() {
                     banners={
                       images?.map((image, index) => ({
                         id: index.toString(),
-                        name: product?.descricao ?? "-",
+                        name: product?.descricaoComplementar ?? "-",
                         uri: image,
                       })) ?? []
                     }
@@ -611,7 +613,7 @@ export default function Produto() {
                       Referência {product?.referencia}
                     </Text>
                     <Text as="h1" fontSize="2xl" fontWeight="bold">
-                      {product?.descricao}
+                      {product?.descricaoComplementar}
                     </Text>
                     <Text
                       as="p"
