@@ -273,7 +273,6 @@ export default function CheckoutOrder() {
         isClosable: true,
         position: "top",
       });
-    } finally {
       setFetchingOrder(false);
     }
   }
@@ -291,7 +290,6 @@ export default function CheckoutOrder() {
         isClosable: true,
         position: "top",
       });
-    } finally {
       setIsUpdateOrCreateSketch(false);
     }
   }
@@ -785,14 +783,12 @@ export default function CheckoutOrder() {
                     aria-disabled={
                       !validOrders ||
                       validMinimumAllOrder ||
-                      validDifferentiatedAllOrder ||
-                      isUpdateOrCreateSketch
+                      validDifferentiatedAllOrder
                     }
                     disabled={
                       !validOrders ||
                       validMinimumAllOrder ||
-                      validDifferentiatedAllOrder ||
-                      isUpdateOrCreateSketch
+                      validDifferentiatedAllOrder
                     }
                     onClick={
                       validOrders &&
