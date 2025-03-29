@@ -621,33 +621,34 @@ export default function Order() {
               </Box>
 
               {order.vendedorPendenteDiferenciadoCodigo !==
-                user?.vendedorCodigo && (
-                <DetailBox className="w-full">
-                  <DetailBoxTitle>Pendente de aprovação</DetailBoxTitle>
+                user?.vendedorCodigo &&
+                order?.situacaoPedido?.codigo === 6 && (
+                  <DetailBox className="w-full">
+                    <DetailBoxTitle>Pendente de aprovação</DetailBoxTitle>
 
-                  <InputBase
-                    name="sellerApproval"
-                    label="Código"
-                    defaultValue={order.vendedorPendenteDiferenciado?.codigo}
-                    readOnly
-                  />
+                    <InputBase
+                      name="sellerApproval"
+                      label="Código"
+                      defaultValue={order.vendedorPendenteDiferenciado?.codigo}
+                      readOnly
+                    />
 
-                  <InputBase
-                    name="sellerAllName"
-                    label="Nome"
-                    defaultValue={order.vendedorPendenteDiferenciado?.nome}
-                    readOnly
-                  />
-                  <InputBase
-                    name="sellerAllName"
-                    label="Hierarquia"
-                    defaultValue={
-                      order.vendedorPendenteDiferenciado?.tipoVendedor
-                    }
-                    readOnly
-                  />
-                </DetailBox>
-              )}
+                    <InputBase
+                      name="sellerAllName"
+                      label="Nome"
+                      defaultValue={order.vendedorPendenteDiferenciado?.nome}
+                      readOnly
+                    />
+                    <InputBase
+                      name="sellerAllName"
+                      label="Hierarquia"
+                      defaultValue={
+                        order.vendedorPendenteDiferenciado?.tipoVendedor
+                      }
+                      readOnly
+                    />
+                  </DetailBox>
+                )}
 
               {order?.situacaoPedido?.codigo === 6 &&
                 order.vendedorPendenteDiferenciadoCodigo ===
